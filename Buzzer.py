@@ -3,16 +3,16 @@
 import threading
 import time
 
-# import imp
 try:
-    # imp.find_module('cwiid')
     import cwiid
     cwiid_found = True
 except ImportError:
     cwiid_found = False
 
+# TODO: Support de Windows (et Mac)
+
 BOUTONS = {
-    'AUCUN': 0,
+    'no': 0,
     'A': 8,
     'B': 4,
     'HAUT': 2048,
@@ -72,15 +72,15 @@ class Buzzer:
                 print "Manette connectée !"
                 break
         else: # Echec
-            print "Echec des tentatives de connexion, passage en mode dummy !"
-            self.dummy = True
+            if not self.dummy:
+                print "Echec des tentatives de connexion, passage en mode dummy !"
+                self.dummy = True
 
         if self.dummy:
             time.sleep(2)
             self.connected = True
             print "Manette connectée (dummy mode) !"
             return
-
 
     def async_wait(self):
         t = threading.Thread(target=self.wait_for_connection)
@@ -94,3 +94,16 @@ class Buzzer:
     def allumer_led(self, tab):
         led = sum([((2 * tab[i]) ** i) * tab[i] for i in xrange(len(tab))])
         self.wiimote.led = led
+
+    def is_pressed(self, btn):
+        if btn == 'any':
+            return bool(self.wiimote.state['buttons'] != 0)
+        else:
+            return bool(self.wiimote.state['buttons'] & Buzzer.to_cwiid(btn))
+
+    @staticmethod
+    def to_cwiid(btn):
+        if btn in BOUTONS:
+            return BOUTONS[btn]
+        else:
+            return 0

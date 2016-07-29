@@ -1,8 +1,10 @@
 # coding=utf-8
 
-import sys
-import os.path
 import importlib
+import os.path
+import sys
+
+from tools import prompt_int
 
 
 class GamesMgr:
@@ -20,7 +22,8 @@ class GamesMgr:
         while True:
             print 'Quel jeu désirez-vous lancer ? (0 pour Quitter)'
             self.list_games(True)
-            choix = int(raw_input())
+
+            choix = prompt_int(0, len(self.games))
             if choix == 0:
                 break
 

@@ -18,7 +18,8 @@ def prompt_nb_wiimotes(need_master):
     else:
         print "A combien de Wiimotes voulez-vous jouer ? "
 
-    return int(raw_input())
+    from tools import prompt_int
+    return prompt_int(0, 4)
 
 
 # noinspection PyUnresolvedReferences
@@ -51,7 +52,7 @@ class BuzzerMgr:
         # Démarre PyGame
         pygame.init()
         pygame.display.set_caption('Initialisation des Buzzers')
-        self.py_screen = pygame.display.set_mode((self.py_width, self.py_height), RESIZABLE)
+        self.py_screen = pygame.display.set_mode((self.py_width, self.py_height))
 
         # Images
         self.py_img_sync = pygame.image.load("res/sync_buzzer.jpg").convert()
@@ -146,25 +147,19 @@ class BuzzerMgr:
     def button_pressed(self, which, btn):
         if which not in self.buzzers.keys() or self.buzzers[which].dummy:
             return False
-        if btn == 'any':
-            return bool(self.buzzers[which].wiimote.state['buttons'] != 0)
-        else:
-            return bool(self.buzzers[which].wiimote.state['buttons'] & btn)
+        return self.buzzers[which].is_pressed(btn)
 
     def buzzers_which(self, btn):
         list_which = []
         for poop, b in self.buzzers.iteritems():
             if b.dummy:
                 return []
-            if btn == 'any':
-                if bool(b.wiimote.state['buttons'] != 0):
-                    list_which.append(b)
-            else:
-                if bool(b.wiimote.state['buttons'] & btn):
-                    list_which.append(b)
+            if b.is_pressed(btn):
+                list_which.append(b)
         return list_which
 
-    def any_of(self, buzzers):
+    @staticmethod
+    def any_of(buzzers):
         """ Sélectionne un buzzer au hasard, sauf avec master qui a la priorité """
         if len(buzzers) == 0:
             return None

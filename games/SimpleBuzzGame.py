@@ -4,13 +4,11 @@ import time
 
 import pygame
 from pygame.locals import *
+
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
 
 from BuzzerMgr import BuzzerMgr
-
-# Pour la complétion IDE
-import cwiid
 
 
 # noinspection PyUnresolvedReferences
@@ -36,8 +34,6 @@ class SimpleBuzzGame():
         self.py_margin = 35
         self.py_border = 5
         self.py_frame_top = self.py_frame_left = self.py_margin + self.py_border
-        self.py_frame_width = self.py_width - 2 * (self.py_margin + self.py_border)
-        self.py_frame_height = self.py_height - 2 * (self.py_margin + self.py_border)
         self.py_color_BLACK = (0, 0, 0)
         self.py_color_txt = (50, 150, 250)
         self.py_color_border = (200, 200, 200)
@@ -56,14 +52,14 @@ class SimpleBuzzGame():
         self.font = None
         self.font_scores = None
 
-        self.buzzerMgr = BuzzerMgr('ask', True, dummy=False)
-        self.nb_buzzers = len(self.buzzerMgr.buzzers) - 1 # enlève le master
+        self.buzzerMgr = BuzzerMgr('ask', True, dummy=True)
+        self.nb_buzzers = len(self.buzzerMgr.buzzers) - 1  # enlève le master
 
     def run(self):
         # Démarre PyGame
         pygame.init()
         pygame.display.set_caption('Buzzer simple')
-        self.py_screen = pygame.display.set_mode((self.py_width, self.py_height), RESIZABLE)
+        self.py_screen = pygame.display.set_mode((self.py_width, self.py_height), pygame.RESIZABLE)
         # TODO: A redimentionnement de la fenêtre, changer les variables pour ajuster la vue
 
         # Sons
@@ -89,6 +85,10 @@ class SimpleBuzzGame():
             for event in pygame.event.get():
                 if event.type == QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
                     running = False
+                if event.type == VIDEORESIZE:
+                    self.py_height = event.h
+                    self.py_width = event.w
+                    self.py_screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
 
             # Evènements Wiimote
             new_edge, new_which, new_btn = False, None, None
@@ -109,8 +109,8 @@ class SimpleBuzzGame():
                             state = 'buzz_team_{}_'.format(buzzer_any.team)
                 elif state == 'blocked' or state[0:10] == 'buzz_team_':
                     master_any = self.buzzerMgr.button_pressed('master', 'any')
-                    master_plus = self.buzzerMgr.button_pressed('master', cwiid.BTN_PLUS)
-                    master_minus = self.buzzerMgr.button_pressed('master', cwiid.BTN_MINUS)
+                    master_plus = self.buzzerMgr.button_pressed('master', '+')
+                    master_minus = self.buzzerMgr.button_pressed('master', '-')
                     if master_plus and not state == 'blocked':
                         current_team = int(state[-1])
                         self.py_snd_win.play()
@@ -166,21 +166,28 @@ class SimpleBuzzGame():
                              self.py_border)
             pygame.draw.rect(self.py_screen, color_bckg,
                              pygame.Rect((self.py_frame_top, self.py_frame_left),
-                                         (self.py_frame_width, self.py_frame_height)), 0)
+                                         (self.frame_width(), self.frame_height())), 0)
             py_txt = self.font.render(unicode(texte_affiche, 'utf-8'), True, self.py_color_txt)
             txt_pos_x = (self.py_width - py_txt.get_rect().width) / 2
             self.py_screen.blit(py_txt, (txt_pos_x, 110))
 
             if self.nb_buzzers >= 1:
-                self.py_screen.blit(self.font_scores.render(unicode('{} : {}'.format(self.team_names[1], scores[0]), 'utf-8'), True, self.py_color_team1), (10, 10))
+                self.py_screen.blit(
+                    self.font_scores.render(unicode('{} : {}'.format(self.team_names[1], scores[0]), 'utf-8'), True,
+                                            self.py_color_team1), (10, 10))
             if self.nb_buzzers >= 2:
-                score_2_txt = self.font_scores.render(unicode('{} : {}'.format(self.team_names[2], scores[1]), 'utf-8'), True, self.py_color_team2)
+                score_2_txt = self.font_scores.render(unicode('{} : {}'.format(self.team_names[2], scores[1]), 'utf-8'),
+                                                      True, self.py_color_team2)
                 self.py_screen.blit(score_2_txt, (self.py_width - score_2_txt.get_rect().width - 10, 10))
             if self.nb_buzzers >= 3:
-                self.py_screen.blit(self.font_scores.render(unicode('{} : {}'.format(self.team_names[3], scores[2]), 'utf-8'), True, self.py_color_team3), (10, self.py_height - 30))
-                score_4_txt = self.font_scores.render(unicode('{} : {}'.format(self.team_names[4], scores[3]), 'utf-8'), True, self.py_color_team4)
+                self.py_screen.blit(
+                    self.font_scores.render(unicode('{} : {}'.format(self.team_names[3], scores[2]), 'utf-8'), True,
+                                            self.py_color_team3), (10, self.py_height - 30))
+                score_4_txt = self.font_scores.render(unicode('{} : {}'.format(self.team_names[4], scores[3]), 'utf-8'),
+                                                      True, self.py_color_team4)
             if self.nb_buzzers >= 4:
-                self.py_screen.blit(score_4_txt, (self.py_width - score_4_txt.get_rect().width - 10, self.py_height - 30))
+                self.py_screen.blit(score_4_txt,
+                                    (self.py_width - score_4_txt.get_rect().width - 10, self.py_height - 30))
 
             pygame.display.flip()
 
@@ -189,3 +196,9 @@ class SimpleBuzzGame():
 
         pygame.display.quit()
         pygame.quit()
+
+    def frame_width(self):
+        return self.py_width - 2 * (self.py_margin + self.py_border)
+
+    def frame_height(self):
+        return self.py_height - 2 * (self.py_margin + self.py_border)
