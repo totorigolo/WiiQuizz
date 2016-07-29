@@ -5,6 +5,7 @@ import time
 
 import pygame
 from pygame.locals import *
+
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
 
@@ -143,7 +144,7 @@ class BuzzerMgr:
             time.sleep(1. / 25)
 
     def button_pressed(self, which, btn):
-        if which not in self.buzzers.keys():
+        if which not in self.buzzers.keys() or self.dummy:
             return False
         if btn == 'any':
             return bool(self.buzzers[which].wiimote.state['buttons'] != 0)
@@ -151,6 +152,8 @@ class BuzzerMgr:
             return bool(self.buzzers[which].wiimote.state['buttons'] & btn)
 
     def buzzers_which(self, btn):
+        if self.dummy:
+            return []
         list_which = []
         for poop, b in self.buzzers.iteritems():
             if btn == 'any':
