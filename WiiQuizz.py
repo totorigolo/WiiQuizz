@@ -3,9 +3,9 @@
 from GamesMgr import GamesMgr
 
 if __name__ == '__main__':
-    # Création du gestionnaire de manettes
-    stateMgr = GamesMgr()
-    stateMgr.run()
+    # Création du gestionnaire de jeux
+    gamesMgr = GamesMgr()
+    gamesMgr.run()
 
     # try:
     #     # Création du gestionnaire de manettes
