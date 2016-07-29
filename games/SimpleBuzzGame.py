@@ -1,6 +1,5 @@
 # coding=utf-8
 
-import sys
 import time
 
 import pygame
@@ -12,7 +11,7 @@ from BuzzerMgr import BuzzerMgr
 
 # Pour la complétion IDE
 import cwiid
-from Buzzer import Buzzer
+
 
 # noinspection PyUnresolvedReferences
 class SimpleBuzzGame():
@@ -108,25 +107,25 @@ class SimpleBuzzGame():
                         else:
                             self.py_snd_buzzer.play()
                             state = 'buzz_team_{}_'.format(buzzer_any.team)
-                elif state[0:10] == 'buzz_team_':
-                    current_team = int(state[-1])
+                elif state == 'blocked' or state[0:10] == 'buzz_team_':
+                    master_any = self.buzzerMgr.button_pressed('master', 'any')
                     master_plus = self.buzzerMgr.button_pressed('master', cwiid.BTN_PLUS)
                     master_minus = self.buzzerMgr.button_pressed('master', cwiid.BTN_MINUS)
-                    if master_plus:
+                    if master_plus and not state == 'blocked':
+                        current_team = int(state[-1])
                         self.py_snd_win.play()
                         scores[current_team - 1] += self.score_win
                         state = 'win_team_{}_'.format(current_team)
                         new_edge = 'rising'
                         new_which, new_btn = 'master', 'any'
-                    elif master_minus:
+                    elif master_minus and not state == 'blocked':
+                        current_team = int(state[-1])
                         self.py_snd_loose.play()
                         scores[current_team - 1] -= self.score_loose
                         state = 'loose_team_{}_'.format(current_team)
                         new_edge = 'rising'
                         new_which, new_btn = 'master', 'any'
-                elif state == 'blocked' or state[0:10] == 'buzz_team_':
-                    master_any = self.buzzerMgr.button_pressed('master', 'any')
-                    if master_any:
+                    elif master_any:
                         state = 'waiting_'
                         new_edge = 'rising'
                         new_which, new_btn = 'master', 'any'
