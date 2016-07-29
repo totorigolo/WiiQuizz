@@ -52,7 +52,7 @@ class SimpleBuzzGame():
         self.font = None
         self.font_scores = None
 
-        self.buzzerMgr = BuzzerMgr('ask', True, dummy=True)
+        self.buzzerMgr = BuzzerMgr('ask', True)
         self.nb_buzzers = len(self.buzzerMgr.buzzers) - 1  # enlève le master
 
     def run(self):

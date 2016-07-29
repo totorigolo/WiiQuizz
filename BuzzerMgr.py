@@ -136,8 +136,7 @@ class BuzzerMgr:
                 py_txt = self.font.render(texte_affiche, True, self.py_color_txt)
                 txt_pos_x = (self.py_width - py_txt.get_rect().width) / 2
                 self.py_screen.blit(py_txt, (txt_pos_x, 110))
-                if init_state == 'waiting_master' or sub_state == 0 or sub_state != 1:
-                    self.py_screen.blit(self.py_img_sync, (250, 250))
+                self.py_screen.blit(self.py_img_sync, (250, 250))
 
             pygame.display.flip()
 
