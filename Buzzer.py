@@ -1,8 +1,15 @@
 # coding: utf8
 
-import time
-import cwiid
 import threading
+import time
+
+# import imp
+try:
+    # imp.find_module('cwiid')
+    import cwiid
+    cwiid_found = True
+except ImportError:
+    cwiid_found = False
 
 BOUTONS = {
     'AUCUN': 0,
@@ -28,20 +35,22 @@ class Buzzer:
         self.dummy = dummy
         self.team = team
 
+        if not cwiid_found:
+            self.dummy = True
+            print "CWiid non trouvé, passage en mode dummy !"
+
     def wait_for_connection(self, tries=4, overwrite=True):
         """ Attend qu'une Wiimote se connecte """
-        if self.dummy:
-            time.sleep(2)
-            self.connected = True
-            print "Manette connectée (dummy mode) !"
-            return
+        if self.wiimote is not None:
+            if overwrite:
+                try:
+                    self.wiimote.close()
+                finally:
+                    self.wiimote = None
+            else:
+                return
 
-        if self.wiimote is not None and overwrite:
-            try:
-                self.wiimote.close()
-            finally:
-                self.wiimote = None
-        while tries > 0:
+        while tries > 0 and not self.dummy:
             print "Tentative..."
             try:
                 self.wiimote = cwiid.Wiimote()
@@ -62,6 +71,16 @@ class Buzzer:
                 self.connected = True
                 print "Manette connectée !"
                 break
+        else: # Echec
+            print "Echec des tentatives de connexion, passage en mode dummy !"
+            self.dummy = True
+
+        if self.dummy:
+            time.sleep(2)
+            self.connected = True
+            print "Manette connectée (dummy mode) !"
+            return
+
 
     def async_wait(self):
         t = threading.Thread(target=self.wait_for_connection)
