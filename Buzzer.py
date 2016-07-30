@@ -19,6 +19,10 @@ BOUTONS = {
     'BAS': 1024,
     'GAUCHE': 256,
     'DROITE': 512,
+    'UP': 2048,
+    'DOWN': 1024,
+    'LEFT': 256,
+    'RIGHT': 512,
     '+': 4096,
     '-': 16,
     'HOME': 128,
@@ -104,6 +108,7 @@ class Buzzer:
 
     @staticmethod
     def to_cwiid(btn):
+        btn = btn.upper()
         if btn in BOUTONS:
             return BOUTONS[btn]
         else:

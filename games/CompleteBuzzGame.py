@@ -9,6 +9,7 @@ from pygame.locals import *
 
 from BuzzerMgr import BuzzerMgr
 from ListDialog import ListDialog
+from tools import py_encode_font_txt, py_encode_title
 
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
@@ -35,7 +36,7 @@ class CompleteBuzzGame:
         # Constantes pour PyGame
         self.py_width = 800
         self.py_height = 600
-        self.py_margin = 35
+        self.py_margin = 55
         self.py_border = 5
         self.py_frame_top = self.py_frame_left = self.py_margin + self.py_border
         self.py_color_BLACK = (0, 0, 0)
@@ -55,6 +56,7 @@ class CompleteBuzzGame:
         self.py_snd_loose = None
         self.font = None
         self.font_scores = None
+        self.font_sous_txt = None
 
         # Images
         self.image_mode = False
@@ -82,17 +84,17 @@ class CompleteBuzzGame:
 
         # Démarre PyGame
         pygame.init()
-        pygame.display.set_caption(unicode(self.window_title, 'utf-8'))
+        pygame.display.set_caption(py_encode_title(self.window_title))
         self.py_screen = pygame.display.set_mode((self.py_width, self.py_height), pygame.RESIZABLE)
 
-        # Chargement des images
+        # Mode image activé : Chargement des images
         if self.image_mode:
             self.image_list = CompleteBuzzGame.get_image_list(self.image_folder)
             if len(self.image_list) > 0:
                 self.py_images = []
                 for image_filename in self.image_list:
-                    print abspath('/'.join((self.image_folder, image_filename)))
-                    self.py_images.append(pygame.image.load(abspath('/'.join((self.image_folder, image_filename)))).convert())
+                    self.py_images.append(
+                        pygame.image.load(abspath('/'.join((self.image_folder, image_filename)))).convert())
             else:
                 # TODO: Afficher une erreur avec MessageDialog
                 return
@@ -104,7 +106,8 @@ class CompleteBuzzGame:
 
         # Police de caractère (is watching you)
         self.font = pygame.font.SysFont('Arial', 35)
-        self.font_scores = pygame.font.SysFont('Arial', 15)
+        self.font_scores = pygame.font.SysFont('Arial', 20)
+        self.font_sous_txt = pygame.font.SysFont('Arial', 20)
 
         # Boucle d'exécution
         running = True
@@ -112,6 +115,7 @@ class CompleteBuzzGame:
         texte_affiche = self.default_text
         state = 'waiting'
         image_cursor = 0
+        image_mode_displayed = False
         rising_edge = False
         rising_edge_which = False
         rising_edge_btn = False
@@ -133,16 +137,35 @@ class CompleteBuzzGame:
                     rising_edge = False
             else:
                 if state == 'waiting':
-                    liste_any = self.buzzerMgr.buzzers_which('any')
-                    buzzer_any = self.buzzerMgr.any_of(liste_any)
-                    if buzzer_any is not None:
-                        if buzzer_any.team == 'master':
-                            state = 'blocked_'
-                            new_edge = 'rising'
-                            new_which, new_btn = 'master', 'any'
+                    # Mode image activé : Gestion des images
+                    change = False
+                    if self.image_mode:
+                        change = True
+                        if self.buzzerMgr.button_pressed('master', 'up'):
+                            image_mode_displayed = True
+                            new_edge, new_which, new_btn = 'rising', 'master', 'up'
+                        elif self.buzzerMgr.button_pressed('master', 'down'):
+                            image_mode_displayed = False
+                            new_edge, new_which, new_btn = 'rising', 'master', 'down'
+                        elif self.buzzerMgr.button_pressed('master', 'right'):
+                            image_cursor += 1
+                            new_edge, new_which, new_btn = 'rising', 'master', 'right'
+                        elif self.buzzerMgr.button_pressed('master', 'left'):
+                            image_cursor -= 1
+                            new_edge, new_which, new_btn = 'rising', 'master', 'left'
                         else:
-                            self.py_snd_buzzer.play()
-                            state = 'buzz_team_{}_'.format(buzzer_any.team)
+                            change = False
+                        image_cursor %= len(self.image_list)
+                    if not change:
+                        liste_any = self.buzzerMgr.buzzers_which('any')
+                        buzzer_any = self.buzzerMgr.any_of(liste_any)
+                        if buzzer_any is not None:
+                            if buzzer_any.team == 'master':
+                                state = 'blocked_'
+                                new_edge, new_which, new_btn = 'rising', 'master', 'any'
+                            else:
+                                self.py_snd_buzzer.play()
+                                state = 'buzz_team_{}_'.format(buzzer_any.team)
                 elif state == 'blocked' or state[0:10] == 'buzz_team_':
                     master_any = self.buzzerMgr.button_pressed('master', 'any')
                     master_plus = self.buzzerMgr.button_pressed('master', '+')
@@ -152,19 +175,16 @@ class CompleteBuzzGame:
                         self.py_snd_win.play()
                         scores[current_team - 1] += self.score_win
                         state = 'win_team_{}_'.format(current_team)
-                        new_edge = 'rising'
-                        new_which, new_btn = 'master', 'any'
+                        new_edge, new_which, new_btn = 'rising', 'master', 'any'
                     elif master_minus and not state == 'blocked':
                         current_team = int(state[-1])
                         self.py_snd_loose.play()
                         scores[current_team - 1] -= self.score_loose
                         state = 'loose_team_{}_'.format(current_team)
-                        new_edge = 'rising'
-                        new_which, new_btn = 'master', 'any'
+                        new_edge, new_which, new_btn = 'rising', 'master', 'any'
                     elif master_any:
                         state = 'waiting_'
-                        new_edge = 'rising'
-                        new_which, new_btn = 'master', 'any'
+                        new_edge, new_which, new_btn = 'rising', 'master', 'any'
             if new_edge == 'rising':
                 rising_edge = True
                 rising_edge_which, rising_edge_btn = new_which, new_btn
@@ -208,33 +228,46 @@ class CompleteBuzzGame:
                              pygame.Rect((self.py_frame_top, self.py_frame_left),
                                          (self.frame_width(), self.frame_height())), 0)
 
-            """ Texte affiché """
-            py_txt = self.font.render(unicode(texte_affiche), True, self.py_color_txt)
-            txt_pos_x = (self.py_width - py_txt.get_rect().width) / 2
-            self.py_screen.blit(py_txt, (txt_pos_x, 110))
-
             """ Mode image activé : Affiche l'image"""
             if self.image_mode:
-                img = self.py_images[image_cursor]
-                img_x = (self.py_width - img.get_rect().width) / 2
-                img_y = (self.py_height - img.get_rect().height) / 2 + 250
-                self.py_screen.blit(img, (img_x, img_y))
+                if image_mode_displayed:  # Affiche l'image
+                    img = self.py_images[image_cursor]
+                    img_x = (self.py_width - img.get_rect().width) / 2
+                    img_y = (self.py_height - img.get_rect().height) / 2
+                    self.py_screen.blit(img, (img_x, img_y))
+                else:  # Affiche quelle image n'est pas affiche
+                    py_txt = self.font_sous_txt.render(
+                        py_encode_font_txt('{} / {}'.format(image_cursor + 1, len(self.image_list))),
+                        True, self.py_color_txt
+                    )
+                    txt_pos_x = self.py_margin + self.py_border + 5
+                    txt_pos_y = self.py_margin + self.py_border + 5
+                    self.py_screen.blit(py_txt, (txt_pos_x, txt_pos_y))
+                    txt_pos_y += py_txt.get_rect().height
+
+            """ Texte affiché """
+            if state != 'waiting' or not (self.image_mode and image_mode_displayed):
+                py_txt = self.font.render(py_encode_font_txt(texte_affiche), True, self.py_color_txt)
+                txt_pos_x = (self.py_width - py_txt.get_rect().width) / 2
+                self.py_screen.blit(py_txt, (txt_pos_x, 110))
 
             """ Affiche les scores """
             if self.nb_buzzers >= 1:
                 self.py_screen.blit(
-                    self.font_scores.render(unicode('{} : {}'.format(self.team_names[1], scores[0]), 'utf-8'), True,
+                    self.font_scores.render(py_encode_font_txt('{} : {}'.format(self.team_names[1], scores[0])), True,
                                             self.py_color_team1), (10, 10))
             if self.nb_buzzers >= 2:
-                score_2_txt = self.font_scores.render(unicode('{} : {}'.format(self.team_names[2], scores[1]), 'utf-8'),
-                                                      True, self.py_color_team2)
+                score_2_txt = self.font_scores.render(
+                    py_encode_font_txt('{} : {}'.format(self.team_names[2], scores[1])),
+                    True, self.py_color_team2)
                 self.py_screen.blit(score_2_txt, (self.py_width - score_2_txt.get_rect().width - 10, 10))
             if self.nb_buzzers >= 3:
                 self.py_screen.blit(
-                    self.font_scores.render(unicode('{} : {}'.format(self.team_names[3], scores[2]), 'utf-8'), True,
+                    self.font_scores.render(py_encode_font_txt('{} : {}'.format(self.team_names[3], scores[2])), True,
                                             self.py_color_team3), (10, self.py_height - 30))
-                score_4_txt = self.font_scores.render(unicode('{} : {}'.format(self.team_names[4], scores[3]), 'utf-8'),
-                                                      True, self.py_color_team4)
+                score_4_txt = self.font_scores.render(
+                    py_encode_font_txt('{} : {}'.format(self.team_names[4], scores[3])),
+                    True, self.py_color_team4)
             if self.nb_buzzers >= 4:
                 self.py_screen.blit(score_4_txt,
                                     (self.py_width - score_4_txt.get_rect().width - 10, self.py_height - 30))
