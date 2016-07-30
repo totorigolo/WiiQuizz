@@ -41,10 +41,13 @@ class ListDialog:
         self.font_title = None
         self.font_txt = None
 
-    def get_answer(self, list, question=None):
+    def get_answer(self, list, question=None, sous_texte = None):
         self.list = list
+        self.question_txt, self.sous_texte = None, None
         if question is not None:
             self.question_txt = question
+        if sous_texte is not None:
+            self.sous_texte = sous_texte
 
         # Démarre PyGame
         pygame.init()
@@ -54,6 +57,7 @@ class ListDialog:
         # Police de caractère (is watching you)
         self.font_title = pygame.font.SysFont('Arial', 35)
         self.font_txt = pygame.font.SysFont('Arial', 30)
+        self.font_sous_txt = pygame.font.SysFont('Arial', 20)
 
         # Boucle d'exécution
         cursor = 0
@@ -80,12 +84,24 @@ class ListDialog:
                                                                                (self.py_width - 2 * self.py_margin,
                                                                                 self.py_height - 2 * self.py_margin)),
                              self.py_border)
-
-            py_txt = self.font_title.render(py_encode_font_txt(self.question_txt), True, self.py_color_question)
-            txt_pos_x = (self.py_width - py_txt.get_rect().width) / 2
+                             
+                             
             txt_pos_y = self.py_question_height
-            self.py_screen.blit(py_txt, (txt_pos_x, txt_pos_y))
-            txt_pos_y += py_txt.get_rect().height
+            
+            if self.question_txt is not None:
+                py_txt = self.font_title.render(py_encode_font_txt(self.question_txt), True, self.py_color_question)
+                txt_pos_x = (self.py_width - py_txt.get_rect().width) / 2
+                txt_pos_y = self.py_question_height
+                self.py_screen.blit(py_txt, (txt_pos_x, txt_pos_y))
+                txt_pos_y += py_txt.get_rect().height
+                
+            
+            if self.sous_texte is not None:
+                py_txt = self.font_sous_txt.render(py_encode_font_txt(self.sous_texte), True, self.py_color_question)
+                txt_pos_x = (self.py_width - py_txt.get_rect().width) / 2
+                txt_pos_y = self.py_question_height + 50
+                self.py_screen.blit(py_txt, (txt_pos_x, txt_pos_y))
+                txt_pos_y += py_txt.get_rect().height
 
             i = 0
             for str in self.list:

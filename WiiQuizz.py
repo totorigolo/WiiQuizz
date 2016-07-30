@@ -1,6 +1,7 @@
 # coding: utf8
 
 from GamesMgr import GamesMgr
+import os
 
 
 if __name__ == '__main__':
