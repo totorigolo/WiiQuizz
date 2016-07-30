@@ -3,6 +3,7 @@
 import random
 import sys
 import time
+import sys
 
 import pygame
 from pygame.locals import *
