@@ -85,6 +85,7 @@ class Buzzer:
     def async_wait(self):
         t = threading.Thread(target=self.wait_for_connection)
         t.start()
+        # TODO: Faire un t.join() dans le destructeur
 
     def vibrer(self, temps=0.5):
         self.wiimote.rumble = 1

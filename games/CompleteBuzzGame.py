@@ -8,6 +8,7 @@ import pygame
 from pygame.locals import *
 
 from BuzzerMgr import BuzzerMgr
+from ListDialog import ListDialog
 
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
@@ -57,21 +58,28 @@ class CompleteBuzzGame:
 
         # Images
         self.image_mode = False
+        self.image_path = images_path
         self.image_folder = None
         self.image_list = None
         self.py_images = None
-        if images_path == 'prompt' or images_path == 'ask':
-            self.image_folder = CompleteBuzzGame.prompt_image_folder()
-            print self.image_folder
-            self.image_mode = True
-            self.image_list = []
-            self.py_images = []
 
         # Buzzers
         self.buzzerMgr = BuzzerMgr('ask', True)
         self.nb_buzzers = len(self.buzzerMgr.buzzers) - 1  # enlève le master
 
     def run(self):
+        # Mode image activé : Demande le répertoire des images
+        if self.image_path == 'prompt' or self.image_path == 'ask':
+            self.image_folder = CompleteBuzzGame.prompt_image_folder()
+            if self.image_folder is not None:
+                self.image_mode = True
+                self.image_list = []
+                self.py_images = []
+                # TODO: Demander un autre dossier à la fin de celui-ci
+            else:
+                # TODO: Afficher une erreur avec MessageDialog
+                return
+
         # Démarre PyGame
         pygame.init()
         pygame.display.set_caption(unicode(self.window_title, 'utf-8'))
@@ -80,10 +88,14 @@ class CompleteBuzzGame:
         # Chargement des images
         if self.image_mode:
             self.image_list = CompleteBuzzGame.get_image_list(self.image_folder)
-            print self.image_list
-            self.py_images = []
-            for image_filename in self.image_list:
-                self.py_images.append(pygame.image.load(abspath('/'.join((self.image_folder, image_filename))).convert()))
+            if len(self.image_list) > 0:
+                self.py_images = []
+                for image_filename in self.image_list:
+                    print abspath('/'.join((self.image_folder, image_filename)))
+                    self.py_images.append(pygame.image.load(abspath('/'.join((self.image_folder, image_filename)))).convert())
+            else:
+                # TODO: Afficher une erreur avec MessageDialog
+                return
 
         # Sons
         self.py_snd_buzzer = pygame.mixer.Sound(abspath('./res/buzzer.ogg'))
@@ -238,14 +250,26 @@ class CompleteBuzzGame:
 
     @staticmethod
     def get_image_folders():
+        default_dir = './games/images/'
         try:
             folders = []
-            for folder in listdir('./games/images/'):
-                if not isfile(join('.games/images/', folder)):
+            for folder in listdir(abspath(default_dir)):
+                if not isfile(join(abspath(default_dir), folder)):
                     folders.append(folder)
+            return default_dir, folders
         except OSError:
             print u"Aucun répertoire d'images trouvé !"
             return []
+
+    @staticmethod
+    def prompt_image_folder():
+        folder, folder_list = CompleteBuzzGame.get_image_folders()
+        dialog = ListDialog()
+        # TODO: Gérer quand il n'y a aucun dossier
+        choix = dialog.get_answer(folder_list + ['Annuler'], 'Sélectionnez un dossier :')
+        if choix >= len(folder_list):
+            return None
+        return ''.join((folder, folder_list[choix]))
 
     @staticmethod
     def get_image_list(dir):
@@ -254,19 +278,10 @@ class CompleteBuzzGame:
             for image in listdir(dir):
                 if isfile(join(dir, image)):
                     images.append(image)
+            return images
         except OSError:
             print 'Répertoire introuvable ({}) !'.format(dir)
             return []
-
-    @staticmethod
-    def prompt_image_folder():
-        folder_list = CompleteBuzzGame.get_image_folders()
-        dialog = ListDialog()
-        choix = dialog.get_answer(folder_list + ['Annuler'], 'Sélectionnez un dossier :')
-        if choix >= len(folder_list):
-            return None
-        return folder_list[choix]
-
 
     def frame_width(self):
         return self.py_width - 2 * (self.py_margin + self.py_border)

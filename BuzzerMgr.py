@@ -18,7 +18,7 @@ class BuzzerMgr:
     def __init__(self, nb_wiimote, need_master, dummy=False):
         """ Initialise les Wiimote dans une GUI """
 
-        # TODO: S'arranger pour ne demander q''une seule fois la connexion des manettes durant une session
+        # TODO: S'arranger pour ne demander qu'une seule fois la connexion des manettes durant une session
 
         # Nombre de wiimotes
         if nb_wiimote == 'ask':
