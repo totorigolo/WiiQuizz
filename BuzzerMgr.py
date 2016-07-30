@@ -160,14 +160,15 @@ class BuzzerMgr:
 
     @staticmethod
     def prompt_nb_wiimotes(need_master):
-        if need_master:
-            question = u"Combien de Wiimotes joueuses ? "
-            sous_texte = "une manette supplémentaire est requise pour le contrôle du jeu"
-        else:
-            question = u"A combien de Wiimotes voulez-vous jouer ? "
-            sous_texte = None
-
         from ListDialog import ListDialog
         dialog = ListDialog()
-        return dialog.get_answer([i for i in range(1, 5)], question, sous_texte)
+
+        if need_master:
+            question = u'Combien de Wiimotes joueuses ?'
+            sous_texte = "une manette supplémentaire est requise pour le contrôle du jeu"
+            return dialog.get_answer([i for i in range(1, 5)], question, sous_texte) + 1
+        else:
+            question = u'A combien de Wiimotes voulez-vous jouer ?'
+            sous_texte = None
+            return dialog.get_answer([i for i in range(1, 5)], question, sous_texte)
 
