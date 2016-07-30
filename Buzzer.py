@@ -39,7 +39,7 @@ class Buzzer:
             self.dummy = True
             print "CWiid non trouvé, passage en mode dummy !"
 
-    def wait_for_connection(self, tries=4, overwrite=True):
+    def wait_for_connection(self, tries=4, overwrite=False):
         """ Attend qu'une Wiimote se connecte """
         if self.wiimote is not None:
             if overwrite:
@@ -47,7 +47,7 @@ class Buzzer:
                     self.wiimote.close()
                 finally:
                     self.wiimote = None
-            else:
+            else: # Déjà connecté et pas d'overwrite, donc on ne fait rien
                 return
 
         while tries > 0 and not self.dummy:

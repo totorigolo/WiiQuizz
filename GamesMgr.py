@@ -20,7 +20,7 @@ class GamesMgr:
         while True:
             dialog = ListDialog()
             choix = dialog.get_answer([g[0] for g in self.games] + ['Quitter'], 'Quel jeu désirez-vous lancer ?')
-            choix = (choix + 1) % (len(self.games) + 1)
+            choix = (choix + 1) % (len(self.games) + 1) # Quitter correspond au choix 0
             if choix == 0:
                 break
 
