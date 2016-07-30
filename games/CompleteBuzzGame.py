@@ -2,7 +2,7 @@
 
 import time
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, abspath
 
 import pygame
 from pygame.locals import *
@@ -62,6 +62,7 @@ class CompleteBuzzGame:
         self.py_images = None
         if images_path == 'prompt' or images_path == 'ask':
             self.image_folder = CompleteBuzzGame.prompt_image_folder()
+            print self.image_folder
             self.image_mode = True
             self.image_list = []
             self.py_images = []
@@ -79,14 +80,15 @@ class CompleteBuzzGame:
         # Chargement des images
         if self.image_mode:
             self.image_list = CompleteBuzzGame.get_image_list(self.image_folder)
+            print self.image_list
             self.py_images = []
             for image_filename in self.image_list:
-                self.py_images.append(pygame.image.load('/'.join((self.image_folder, image_filename))).convert())
+                self.py_images.append(pygame.image.load(abspath('/'.join((self.image_folder, image_filename))).convert()))
 
         # Sons
-        self.py_snd_buzzer = pygame.mixer.Sound('./res/buzzer.ogg')
-        self.py_snd_win = pygame.mixer.Sound('./res/win.ogg')
-        self.py_snd_loose = pygame.mixer.Sound('./res/loose.ogg')
+        self.py_snd_buzzer = pygame.mixer.Sound(abspath('./res/buzzer.ogg'))
+        self.py_snd_win = pygame.mixer.Sound(abspath('./res/win.ogg'))
+        self.py_snd_loose = pygame.mixer.Sound(abspath('./res/loose.ogg'))
 
         # Police de caractère (is watching you)
         self.font = pygame.font.SysFont('Arial', 35)
@@ -183,23 +185,30 @@ class CompleteBuzzGame:
             # Affichage
             self.py_screen.fill(self.py_color_BLACK)
 
+            """ Bordures """
             pygame.draw.rect(self.py_screen, self.py_color_border, pygame.Rect((self.py_margin, self.py_margin),
                                                                                (self.py_width - 2 * self.py_margin,
                                                                                 self.py_height - 2 * self.py_margin)),
                              self.py_border)
+
+            """ Fond """
             pygame.draw.rect(self.py_screen, color_bckg,
                              pygame.Rect((self.py_frame_top, self.py_frame_left),
                                          (self.frame_width(), self.frame_height())), 0)
+
+            """ Texte affiché """
             py_txt = self.font.render(unicode(texte_affiche), True, self.py_color_txt)
             txt_pos_x = (self.py_width - py_txt.get_rect().width) / 2
             self.py_screen.blit(py_txt, (txt_pos_x, 110))
 
+            """ Mode image activé : Affiche l'image"""
             if self.image_mode:
                 img = self.py_images[image_cursor]
                 img_x = (self.py_width - img.get_rect().width) / 2
                 img_y = (self.py_height - img.get_rect().height) / 2 + 250
                 self.py_screen.blit(img, (img_x, img_y))
 
+            """ Affiche les scores """
             if self.nb_buzzers >= 1:
                 self.py_screen.blit(
                     self.font_scores.render(unicode('{} : {}'.format(self.team_names[1], scores[0]), 'utf-8'), True,
@@ -218,6 +227,7 @@ class CompleteBuzzGame:
                 self.py_screen.blit(score_4_txt,
                                     (self.py_width - score_4_txt.get_rect().width - 10, self.py_height - 30))
 
+            """ Màj écran """
             pygame.display.flip()
 
             # Baisse les FPS
