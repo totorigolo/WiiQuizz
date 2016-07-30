@@ -1,33 +1,30 @@
 # coding=utf-8
 
 import importlib
-import os.path
 import sys
 
-from tools import prompt_int
+from ListDialog import ListDialog
+from games import game_list
 
 
 class GamesMgr:
     def __init__(self):
-        scriptDir = os.path.abspath('./games/')
         self.games = []
-        for file in os.listdir(scriptDir):
-            if file[-3:] == ".py" and file != '__init__.py':
-                sys.stdout.write('Chargement du jeu : {}...'.format(file))
-                current = importlib.import_module('games.{}'.format(file.split('.')[0]))
-                self.games.append(current)
-                print ' chargé !'
+        for name, file in game_list.iteritems():
+            sys.stdout.write('Chargement du jeu : {}...'.format(name))
+            current = importlib.import_module('games.{}'.format(file))
+            self.games.append((name, current))
+            print ' chargé !'
 
     def run(self):
         while True:
-            print 'Quel jeu désirez-vous lancer ? (0 pour Quitter)'
-            self.list_games(True)
-
-            choix = prompt_int(0, len(self.games))
+            dialog = ListDialog()
+            choix = dialog.get_answer([g[0] for g in self.games] + ['Quitter'], 'Quel jeu désirez-vous lancer ?')
+            choix = (choix + 1) % (len(self.games) + 1)
             if choix == 0:
                 break
 
-            game_module = self.games[choix - 1]
+            game_module = self.games[choix - 1][1]
 
             game_class = getattr(game_module, game_module.__name__.split('.')[1])
             game = game_class()
@@ -35,10 +32,11 @@ class GamesMgr:
 
     def list_games(self, numbers=False):
         """ Cette fonction affiche les jeux chargés """
-        print u'Jeux chargés :'
+        print 'Jeux chargés :'
         i = 0
         for m in self.games:
             if numbers:
-                print "   - {}. {}".format(i + 1, m.__name__.split('.')[1])
+                print "   - {}. {}".format(i + 1, m[0])
             else:
-                print "   - {}".format(m.__name__)
+                print "   - {}".format(m[0])
+            i += 1

@@ -6,20 +6,10 @@ import time
 import pygame
 from pygame.locals import *
 
-if not pygame.font: print 'Warning, fonts disabled'
-if not pygame.mixer: print 'Warning, sound disabled'
-
 from Buzzer import Buzzer
+from tools import py_encode_font_txt, py_encode_title
 
-
-def prompt_nb_wiimotes(need_master):
-    if need_master:
-        print "A combien de Wiimotes voulez-vous jouer, sachant qu'il faut une Wiimote Master (qui ne joue pas) ? "
-    else:
-        print "A combien de Wiimotes voulez-vous jouer ? "
-
-    from tools import prompt_int
-    return prompt_int(0, 4)
+if not pygame.font: print 'Warning, fonts disabled'
 
 
 # noinspection PyUnresolvedReferences
@@ -27,10 +17,11 @@ class BuzzerMgr:
     def __init__(self, nb_wiimote, need_master, dummy=False):
         """ Initialise les Wiimote dans une GUI """
 
+        # TODO: S'arranger pour ne demander q''une seule fois la connexion des manettes durant une session
+
         # Nombre de wiimotes
         if nb_wiimote == 'ask':
-            # TODO: Faire une GUI
-            nb_wiimote = prompt_nb_wiimotes(need_master)
+            nb_wiimote = BuzzerMgr.prompt_nb_wiimotes(need_master)
 
         # Initialisation des attributs
         self.buzzers = dict()
@@ -51,11 +42,11 @@ class BuzzerMgr:
 
         # Démarre PyGame
         pygame.init()
-        pygame.display.set_caption('Initialisation des Buzzers')
+        pygame.display.set_caption(py_encode_title('Initialisation des Buzzers'))
         self.py_screen = pygame.display.set_mode((self.py_width, self.py_height))
 
         # Images
-        self.py_img_sync = pygame.image.load("res/sync_buzzer.jpg").convert()
+        self.py_img_sync = pygame.image.load('res/sync_buzzer.jpg').convert()
 
         # Police de caractère (is watching you)
         self.font = pygame.font.SysFont('Arial', 35)
@@ -65,7 +56,7 @@ class BuzzerMgr:
         sub_state = -1
         init_state = 'aucun'
         current_buzzer = None
-        texte_affiche = u'Chargement'
+        texte_affiche = 'Chargement'
         transition_next = 0
         transition_percent = 0
         while running:
@@ -80,7 +71,7 @@ class BuzzerMgr:
                     current_buzzer = Buzzer('master', dummy=self.dummy)
                     init_state = 'waiting_master'
                     current_buzzer.async_wait()
-                    texte_affiche = u'Télécommande Master'
+                    texte_affiche = 'Télécommande Master'
                 else:
                     init_state = 10
             elif init_state == 'waiting_master':
@@ -94,7 +85,7 @@ class BuzzerMgr:
                 state_wii_nb = int(init_state / 10)
                 sub_state = init_state - 10 * state_wii_nb
                 if sub_state == 0:
-                    texte_affiche = u'Télécommande {}'.format(state_wii_nb)
+                    texte_affiche = 'Télécommande {}'.format(state_wii_nb)
                     current_buzzer = Buzzer(state_wii_nb, dummy=self.dummy)
                     current_buzzer.async_wait()
                     init_state += 1
@@ -129,11 +120,10 @@ class BuzzerMgr:
                 green_width = self.py_width - 2 * (self.py_margin + self.py_border)
                 green_height = self.py_height - 2 * (self.py_margin + self.py_border)
                 green_color = tuple(int(round(c * (100 - transition_percent) / 100.0)) for c in self.py_color_success)
-
                 pygame.draw.rect(self.py_screen, green_color,
                                  pygame.Rect((green_top, green_left), (green_width, green_height)), 0)
             else:
-                py_txt = self.font.render(texte_affiche, True, self.py_color_txt)
+                py_txt = self.font.render(py_encode_font_txt(texte_affiche), True, self.py_color_txt)
                 txt_pos_x = (self.py_width - py_txt.get_rect().width) / 2
                 self.py_screen.blit(py_txt, (txt_pos_x, 110))
                 self.py_screen.blit(self.py_img_sync, (250, 250))
@@ -166,3 +156,15 @@ class BuzzerMgr:
             if b.team == 'master':
                 return b
         return random.choice(buzzers)
+
+    @staticmethod
+    def prompt_nb_wiimotes(need_master):
+        if need_master:
+            question = u"Combien de Wiimotes, dont master ? "
+        else:
+            question = u"A combien de Wiimotes voulez-vous jouer ? "
+
+        from ListDialog import ListDialog
+        dialog = ListDialog()
+        return dialog.get_answer([i for i in range(5)], question)
+

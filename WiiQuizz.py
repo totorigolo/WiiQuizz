@@ -2,6 +2,7 @@
 
 from GamesMgr import GamesMgr
 
+
 if __name__ == '__main__':
 
     try:
@@ -9,4 +10,4 @@ if __name__ == '__main__':
         gamesMgr = GamesMgr()
         gamesMgr.run()
     except KeyboardInterrupt:
-        print "Application stoppée."
+        print 'Application stoppée.'

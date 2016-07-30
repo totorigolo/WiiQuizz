@@ -3,6 +3,22 @@
 from random import randint
 
 
+def py_encode_font_txt(txt):
+    if not isinstance(txt, str) or not isinstance(txt, unicode):
+        txt = str(txt)
+    if isinstance(txt, unicode):
+        return txt
+    else:
+        return unicode(txt, 'utf-8')
+
+def py_encode_title(txt):
+    if not isinstance(txt, str) or not isinstance(txt, unicode):
+        txt = str(txt)
+    if isinstance(txt, unicode):
+        return txt.encode('utf-8')
+    else:
+        return txt
+
 def prompt_int(min=None, max=None):
     def condition_bad_prompt(choix, min, max):
         try:
