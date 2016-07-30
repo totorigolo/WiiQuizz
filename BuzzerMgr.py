@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import random
+import sys
 import time
 
 import pygame
@@ -46,7 +47,7 @@ class BuzzerMgr:
         self.py_screen = pygame.display.set_mode((self.py_width, self.py_height))
 
         # Images
-        self.py_img_sync = pygame.image.load('res/sync_buzzer.jpg').convert()
+        self.py_img_sync = pygame.image.load(sys.path[1] + '\\res\\sync_buzzer.jpg').convert()
 
         # Police de caractère (is watching you)
         self.font = pygame.font.SysFont('Arial', 35)
