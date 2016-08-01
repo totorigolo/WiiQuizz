@@ -87,7 +87,6 @@ class ListDialog:
                              self.py_border)
 
             txt_pos_y = self.py_question_height
-            
             if self.question_txt is not None:
                 py_txt = self.font_title.render(py_encode_font_txt(self.question_txt), True, self.py_color_question)
                 txt_pos_x = (self.py_width - py_txt.get_rect().width) / 2
@@ -98,7 +97,7 @@ class ListDialog:
             if self.sous_texte is not None:
                 py_txt = self.font_sous_txt.render(py_encode_font_txt(self.sous_texte), True, self.py_color_question)
                 txt_pos_x = (self.py_width - py_txt.get_rect().width) / 2
-                txt_pos_y = self.py_question_height + 50
+                txt_pos_y += 10
                 self.py_screen.blit(py_txt, (txt_pos_x, txt_pos_y))
                 txt_pos_y += py_txt.get_rect().height
 
