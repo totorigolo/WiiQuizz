@@ -7,7 +7,6 @@ from os.path import isfile, join, abspath
 import pygame
 from pygame.locals import *
 
-from BuzzerMgr import BuzzerMgr
 from ListDialog import ListDialog
 from tools import py_encode_font_txt, py_encode_title
 
@@ -19,7 +18,7 @@ if not pygame.mixer: print 'Warning, sound disabled'
 class CompleteBuzzGame:
     """ Jeu simple affichant uniquement l'équipe qui a buzzé, avec le contrôle d'un Master """
 
-    def __init__(self, default_text='Grenade Quizz', window_title='BuzzGame', images_path=None, music_path=None):
+    def __init__(self, buzzerMgr, default_text='Grenade Quizz', window_title='BuzzGame', images_path=None, music_path=None):
         # Constantes du jeu
         self.default_text = default_text
         self.window_title = window_title
@@ -71,7 +70,7 @@ class CompleteBuzzGame:
         self.py_musics = None
 
         # Buzzers
-        self.buzzerMgr = BuzzerMgr('ask', True)
+        self.buzzerMgr = buzzerMgr
         self.nb_buzzers = len(self.buzzerMgr.buzzers) - 1  # enlève le master
 
     def run(self):
@@ -138,7 +137,7 @@ class CompleteBuzzGame:
 
         # Police de caractère (is watching you)
         self.font = pygame.font.SysFont('Arial', 35)
-        self.font_scores = pygame.font.SysFont('Arial', 20)
+        self.font_scores = pygame.font.SysFont('Arial', 24)
         self.font_sous_txt = pygame.font.SysFont('Arial', 20)
 
         # Boucle d'exécution
@@ -230,7 +229,7 @@ class CompleteBuzzGame:
                         state = 'loose_team_{}_'.format(current_team)
                         new_edge, new_which, new_btn = 'rising', 'master', 'any'
                     elif master_any:
-                        music_mode_playing, music_mode_changed = True, True
+                        music_mode_playing, music_mode_changed = False, True
                         state = 'waiting_'
                         new_edge, new_which, new_btn = 'rising', 'master', 'any'
             if new_edge == 'rising':

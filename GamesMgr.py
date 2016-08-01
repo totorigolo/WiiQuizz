@@ -3,6 +3,7 @@
 import importlib
 import sys
 
+from BuzzerMgr import BuzzerMgr
 from ListDialog import ListDialog
 from games import game_list
 
@@ -16,6 +17,10 @@ class GamesMgr:
             self.games.append((name, current))
             print ' chargé !'
 
+        # Buzzers
+        # TODO: Faire quelque chose du need_master qui est devenu inutile
+        self.buzzerMgr = BuzzerMgr('ask', True, dummy=True)
+
     def run(self):
         while True:
             dialog = ListDialog()
@@ -27,7 +32,7 @@ class GamesMgr:
             game_module = self.games[choix - 1][1]
 
             game_class = getattr(game_module, game_module.__name__.split('.')[1])
-            game = game_class()
+            game = game_class(self.buzzerMgr)
             game.run()
 
     def list_games(self, numbers=False):
