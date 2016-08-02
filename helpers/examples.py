@@ -36,7 +36,7 @@ window = windowHelper(width, height, title="Première fenêtre")
 # Ajouter une image
 
 # def setImg(self, url, x, y, page = None, convert = True, alpha = False, colorkey = False, label = None)
-window.setImg(os.path.abspath('../res/sync_buzzer.jpg'), 10, 10, label = "wiimote_info")
+window.addImg(os.path.abspath('../res/sync_buzzer.jpg'), 10, 10, label = "wiimote_info")
 """ Par défaut, la page est la page courante """
 """ pour le colorKey, utiliser un objet de type colorHelper """
 
