@@ -4,13 +4,14 @@ from colorHelper import colorHelper
 from tools import py_encode_font_txt, py_encode_title
 
 class windowHelper:
-     """ Lance une fenêtre de taille width x height """
+    """ Lance une fenêtre de taille width x height """
     def __init__(self, width, height, title = None, resizable = True, autoFlip = True):
         pg.init()
         if resizable:
             self.window = pg.display.set_mode((width, height), RESIZABLE)
         else:
             self.window = pg.display.set_mode((width, height))
+            
         
         self.page = 0
         self.lastPage = 0
@@ -46,15 +47,26 @@ class windowHelper:
 
     """ Ajoute du texte
     	param: text string texte à ajouter
-    	params: x, y
     	param: font label de la police choisie (doit être ajouté avec la méthode addFont)
     	param: color label de la couleur choisie (doit être ajouté avec la méthode addColor)
+    	params: x, y default: 0, 0
     	param: page int numéro de page à afficher default: page active
-    	param: label string label du texte default: le numéro de l'élément """
-    def addText(self, text, x, y, font, color, page = None, label = None):
+    	param: label string label du texte default: le numéro de l'élément 
+    	param: opt dict options : widthcentered et heightcentered"""
+    def addText(self, text, font, color, x=0, y=0, page = None, label = None, opt = {}):
+        options = {
+                    "widthcentered": False,
+                    "heightcentered": False
+        }
+        options.update(opt)
+        width, height = pg.display.get_surface().get_size()
         if page is None:
             page = self.page
-        text = self.fonts[font].render(py_encode_font_txt(self.question_txt), True, self.colors[color])
+        text = self.fonts[font].render(py_encode_font_txt(text), True, self.colors[color])
+        if options["widthcentered"]:
+            x = (width - text.get_rect().width) / 2
+        if options["heightcentered"]:
+            y = (height - text.get_rect().height) / 2
         if label is None:
             label = self.elementsCounter
             self.elementsCounter += 1
@@ -70,8 +82,8 @@ class windowHelper:
         if page is None:
             page = self.page
         if colorkey != False:
-        	if not isinstance(colorkey, tuple):
-        		colorkey = colorkey.getTuple()
+            if not isinstance(colorkey, tuple):
+                colorkey = colorkey.getTuple()
             pg.image.set_colorkey(colorkey.getTuple())
         if alpha:
             bg = pg.image.load(url).convert_alpha()
@@ -79,7 +91,7 @@ class windowHelper:
             bg = pg.image.load(url).convert()
         else:
             bg = pg.image.load(url)
-        if self.page = page:
+        if self.page == page:
             self.window.blit(bg, (x, y))
         if self.autoFlip:
             pg.display.flip()
@@ -167,7 +179,7 @@ class windowHelper:
             page = self.page
         return self.elements[page][i][0].get_rect()
 
-	def moveElement(self, i, x, y, page = None):
+    def moveElement(self, i, x, y, page = None):
         if page is None:
             page = self.page
         rec = self.getInfoElement(i).move(x, y)
