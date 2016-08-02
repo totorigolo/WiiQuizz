@@ -1,3 +1,4 @@
+# coding: utf8
 
 class colorHelper:
     def __init__(self, c, a = 1):
