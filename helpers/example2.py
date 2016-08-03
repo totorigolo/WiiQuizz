@@ -6,13 +6,13 @@ import os
 import time
 
 
-window = windowsHelper(800, 800, title="Accueil")
+window = windowsHelper(800, 800, title="Accueil", bg = colorHelper("white"))
 
 window.addFont("Arial", 20, "menu")
 window.addFont("Arial", 30, "titre")
-window.addColor("menu_defaut", colorHelper("lightskyblue"))
-window.addColor("menu_act", colorHelper("darkblue"))
-window.addColor("menu_bordure_act", colorHelper("lightgrey"))
+window.addColor("menu_defaut", colorHelper("burlywood"))
+window.addColor("menu_act", colorHelper("snow"))
+window.addColor("menu_bordure_act", colorHelper("indianred"))
 # def addMenu(self, x=0, y=0, menu = [], opt = {})
 
 window.newPage("page 1", goTo= False)

@@ -9,14 +9,17 @@ import time
 
 class windowsHelper:
     """ Lance une fenêtre de taille width x height """
-    def __init__(self, width, height, title = None, resizable = True, autoFlip = True):
+    def __init__(self, width, height, title = None, resizable = True, autoFlip = True, bg = colorHelper("black")):
         pg.init()
         if resizable:
             self.window = pg.display.set_mode((width, height), RESIZABLE)
         else:
             self.window = pg.display.set_mode((width, height))
             
-        
+        if not isinstance(bg, tuple):
+            bg = bg.getTuple()
+            
+        self.bg = [bg]
         self.page = 0
         self.lastPage = 0
         self.autoFlip = autoFlip
@@ -27,6 +30,9 @@ class windowsHelper:
         self.colors = {}
         self.vars = {}
         self.actions = [[]]
+        
+
+        self.reset(keepElem=True)
         
         self.addFont("Arial", 10, "default")
         self.addColor("white", colorHelper("white"))
@@ -123,6 +129,37 @@ class windowsHelper:
             self.elementsCounter += 1
         self.elements[page][label] = (bg, convert, alpha, colorkey, x, y)
         
+    
+    def addRect(self, color, x1, y1, x2, y2, border_width, page = None, label = None):
+        if page is None:
+            page = self.page
+        if isinstance(color, str):
+            color = self.colors[color]
+        elif not isinstance(color, tuple):
+            color = color.getTuple()
+        if label is None:
+            label = self.elementsCounter
+            self.elementsCounter += 1
+        self.elements[page][label] = ("rect", color, x1, y1, x2, y2, border_width)
+        if page == self.page:
+            self.printElem(label, page, autoFlip = self.autoFlip)
+            
+
+    def addCircle(self, color, c_x, c_y, radius, border_width, page = None, label = None):
+        if page is None:
+            page = self.page
+        if isinstance(color, str):
+            color = self.colors[color]
+        elif not isinstance(color, tuple):
+            color = color.getTuple()
+        if label is None:
+            label = self.elementsCounter
+            self.elementsCounter += 1
+        self.elements[page][label] = ("circle", color, c_x, c_y, radius, border_width)
+        if page == self.page:
+            self.printElem(label, page, autoFlip = self.autoFlip)
+        
+        
     """
         [["Menu 1", function, param1, param2], ["Menu 2", "addText", param1, param2, ...]]
     """
@@ -140,17 +177,19 @@ class windowsHelper:
         options.update(opt)
         width_win, height_win = pg.display.get_surface().get_size()
         choix = 0
-        cont = True
+        done = False
         pressed = False
         ax, ay = x, y
-        while cont:
+        clock = pg.time.Clock()
+        while not done:
+            clock.tick(25) # Ne boucle que 25 fois/sec
             x, y = ax, ay
             for event in pg.event.get():
                 if event.type == QUIT:
-                    cont = False
+                    done = True
                 if event.type == KEYDOWN:
                     if event.key == K_RETURN or event.key == K_KP_ENTER:
-                        cont = False
+                        done = True
                         pressed = True
                     if event.key == K_UP:
                         choix -= 1
@@ -203,8 +242,6 @@ class windowsHelper:
                 
             
             pg.display.flip()
-            # Baisse les FPS
-            time.sleep(1. / 25)
         return choix
                 
     
@@ -241,8 +278,15 @@ class windowsHelper:
             page = self.page
         if page > self.lastPage:
             page = 0
-        bg, convert, alpha, colorkey, x, y = self.elements[page][i]
-        self.window.blit(bg, (x, y))
+        if self.elements[page][i][0] == "rect":
+            type, color, x1, y1, x2, y2, border_width = self.elements[page][i]
+            pg.draw.rect(self.window, color, [x1, y1, x2, y2], border_width)
+        elif self.elements[page][i][0] == "circle":
+            type, color, c_x, c_y, radius, border_width = self.elements[page][i]
+            pg.draw.circle(self.window, color, [c_x, c_y], radius, border_width)
+        else:
+            bg, convert, alpha, colorkey, x, y = self.elements[page][i]
+            self.window.blit(bg, (x, y))
         if autoFlip:
             pg.display.flip()
     
@@ -250,11 +294,14 @@ class windowsHelper:
     """ Ajoute une nouvelle page
         param: title string titre de la page
         param: goTo boolean si True, la fenêtre ira vers cette page après appel default: True"""
-    def newPage(self, title = None, goTo = True):
+    def newPage(self, title = None, bg = None, goTo = True):
+        if bg is None:
+            bg = self.bg[-1]
         self.lastPage += 1 
         self.elements.append({})
         self.titles.append(title)
         self.actions.append([])
+        self.bg.append(bg)
         if goTo:
             self.reset(keepElem = True)
             self.page = self.lastPage
@@ -320,11 +367,11 @@ class windowsHelper:
 
     """ Renvoie une fenêtre vide """
     def reset(self, keepElem = False, printElem = False, page = None):
-        self.fill(colorHelper("black"), page)
         if page is None:
             page = self.page
         if page > self.lastPage:
             page = 0
+        self.fill(self.bg[page], page)
         if printElem:
             for cle, val in self.elements[page].items():
                 self.printElem(cle, page)

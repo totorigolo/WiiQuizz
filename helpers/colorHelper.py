@@ -10,6 +10,8 @@ class colorHelper:
         
     
     def getTuple(self):
+        if self.isTransparent:
+            return (self.r, self.g, self.b, self.a)
         return (self.r, self.g, self.b)
         
         
@@ -90,17 +92,17 @@ class colorHelper:
             "peru":(205, 133, 63),
             "lightskyblue": (135, 206, 250),
             "skyblue": (135, 206, 235),
-            "darkblue": (0, 0, 139)
+            "darkblue": (0, 0, 139),
+            "linen":(250, 240, 230),
+            "bisque":(255, 228, 196),
+            "darkorange":(255, 140, 0),
+            "burlywood":(222, 184, 135),
+            "antiquewhite":(250, 235, 215)
         }
         return colors[color]
         
 
-"""linen":,
-"bisque":,
-"darkorange":,
-"burlywood":,
-"antiquewhite":,
-"tan":,
+""""tan":,
 "navajowhite":,
 "blanchedalmond":,
 "papayawhip":,
