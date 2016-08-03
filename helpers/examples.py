@@ -17,7 +17,7 @@ print couleurNoirBis.getTuple()
 # Initialiser une couleur avec une transparence de 50%
 couleurNoirPrime = colorHelper("black", 0.5)
 # Récupérer la transparence
-print couleurNoirPrime.getTransparence()
+print couleurNoirPrime.getTransparency()
 
 # savoir si une couleur utilise la transparence
 print couleurNoirPrime.isTransparent()
@@ -103,7 +103,11 @@ print window.getInfoElement("wiimote_info", 0)
 
 # def moveElement(self, i, x, y, page = None)
 
-window.moveElement("wiimote_info", 50, 50, page = 0)
+time.sleep(1)
+
+window.moveElement("wiimote_info", 100, 100, page = 0)
+
+time.sleep(2)
 
 
 
