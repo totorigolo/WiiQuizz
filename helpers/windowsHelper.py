@@ -158,6 +158,25 @@ class windowsHelper:
         self.elements[page][label] = ("circle", color, c_x, c_y, radius, border_width)
         if page == self.page:
             self.printElem(label, page, autoFlip = self.autoFlip)
+            
+     
+    """
+    param: aa bool anti-aliasing
+    """      
+    def addLine(self, color, o_x, o_y, e_x, e_y, border_width, aa=True, page = None, label = None):
+        if page is None:
+            page = self.page
+        if isinstance(color, str):
+            color = self.colors[color]
+        elif not isinstance(color, tuple):
+            color = color.getTuple()
+        if label is None:
+            label = self.elementsCounter
+            self.elementsCounter += 1
+        self.elements[page][label] = ("line", color, o_x, o_y, e_x, e_y, border_width, aa)
+        if page == self.page:
+            self.printElem(label, page, autoFlip = self.autoFlip)
+    
         
         
     """
@@ -284,6 +303,12 @@ class windowsHelper:
         elif self.elements[page][i][0] == "circle":
             type, color, c_x, c_y, radius, border_width = self.elements[page][i]
             pg.draw.circle(self.window, color, [c_x, c_y], radius, border_width)
+        elif self.elements[page][i][0] == "line":
+            type, color, o_x, o_y, e_x, e_y, border_width, aa = self.elements[page][i]
+            if aa:
+                pg.draw.aaline(self.window, color, [o_x, o_y], [e_x, e_y], border_width)
+            else:
+                pg.draw.line(self.window, color, [o_x, o_y], [e_x, e_y], border_width)
         else:
             bg, convert, alpha, colorkey, x, y = self.elements[page][i]
             self.window.blit(bg, (x, y))
