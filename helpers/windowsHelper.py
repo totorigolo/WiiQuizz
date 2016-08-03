@@ -54,10 +54,23 @@ class windowsHelper:
         param: nom string police de caratère default : Arial
         param: size int taille de la police default : 10
         param: label string label de la police default: None """
-    def addFont(self, nom = "Arial", size = 10, label = None):
+    def addFont(self, nom = "Arial", size = 10, label = None, opt = {}):
+        options = {
+            "bold": False,
+            "italic": False,
+            "underline": False,
+            "antialiasing": True
+        }
+        options.update(opt)
         if label is None:
             label = nom + str(size)
-        self.fonts[label] = pg.font.SysFont(nom, size)
+        self.fonts[label] = (pg.font.SysFont(nom, size), options["antialiasing"])
+        if options["bold"]:
+            self.fonts[label][0].set_bold()
+        if options["italic"]:
+            self.fonts[label][0].set_italic()
+        if options["underline"]:
+            self.fonts[label][0].set_underline()
     
     
     """ Ajoute une couleur
@@ -89,7 +102,7 @@ class windowsHelper:
             page = self.page
         if page > self.lastPage:
             page = 0
-        text = self.fonts[font].render(py_encode_font_txt(text), True, self.colors[color])
+        text = self.fonts[font][0].render(py_encode_font_txt(text), self.fonts[font][1], self.colors[color])
         if options["widthcentered"]:
             x = (width - text.get_rect().width) / 2
         if options["heightcentered"]:
@@ -243,14 +256,14 @@ class windowsHelper:
                 
                 if choix == k:
                     if options["borderActive"] is not None:
-                        txt = self.fonts[options["fontActive"]].render(py_encode_font_txt(text), True, self.colors[options["colorActive"]], self.colors[options["borderActive"]])
+                        txt = self.fonts[options["fontActive"]][0].render(py_encode_font_txt(text), self.fonts[options["fontActive"]][1], self.colors[options["colorActive"]], self.colors[options["borderActive"]])
                     else:
-                        txt = self.fonts[options["fontActive"]].render(py_encode_font_txt(text), True, self.colors[options["colorActive"]])
+                        txt = self.fonts[options["fontActive"]][0].render(py_encode_font_txt(text), self.fonts[options["fontActive"]][1], self.colors[options["colorActive"]])
                 else:
                     if options["border"] is not None:
-                        txt = self.fonts[options["font"]].render(py_encode_font_txt(text), True, self.colors[options["color"]], self.colors[options["border"]])
+                        txt = self.fonts[options["font"]][0].render(py_encode_font_txt(text), self.fonts[options["fontActive"]][1], self.colors[options["color"]], self.colors[options["border"]])
                     else:
-                        txt = self.fonts[options["font"]].render(py_encode_font_txt(text), True, self.colors[options["color"]])
+                        txt = self.fonts[options["font"]][0].render(py_encode_font_txt(text), self.fonts[options["fontActive"]][1], self.colors[options["color"]])
 
                 if options["widthcentered"]:
                     x = (width_win - txt.get_rect().width) / 2
