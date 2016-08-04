@@ -111,7 +111,7 @@ class colorHelper:
             "goldenrod":(218, 165, 32),
             "cornsilk":(255, 248, 220),
             "gold":(255, 215, 0),
-            "lemonchiffon":255, 250, 205),
+            "lemonchiffon":(255, 250, 205),
             "khaki":(240, 230, 140),
             "palegoldenrod":(238, 232, 170),
             "darkkhaki":(189, 183, 107),
