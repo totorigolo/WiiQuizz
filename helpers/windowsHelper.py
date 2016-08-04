@@ -250,7 +250,7 @@ class windowsHelper:
                                 callback += ", "
                         callback += ")"
                         eval(callback)
-                    if pressed and choix == k and not isfunction(callback):
+                    if pressed and choix == k and isfunction(callback):
                         params = "("
                         for i in range(2, len(m)):
                             params += str(m[i])
@@ -334,7 +334,7 @@ class windowsHelper:
             pg.draw.circle(self.window, color, [c_x, c_y], radius, border_width)
         elif self.elements[page][i][0] == "line":
             type, color, o_x, o_y, e_x, e_y, border_width, aa = self.elements[page][i]
-            if aa:
+            if aa: # anti-aliasing
                 pg.draw.aaline(self.window, color, [o_x, o_y], [e_x, e_y], border_width)
             else:
                 pg.draw.line(self.window, color, [o_x, o_y], [e_x, e_y], border_width)
