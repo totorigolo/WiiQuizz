@@ -5,7 +5,6 @@ from pygame.locals import *
 from colorHelper import colorHelper
 from tools import py_encode_font_txt, py_encode_title
 from inspect import isfunction
-import time
 
 
 class windowsHelper:
@@ -31,6 +30,7 @@ class windowsHelper:
         self.colors = {}
         self.vars = {}
         self.actions = [[]]
+        self.toQuit = False
 
         self.reset(keepElem=True)
 
@@ -44,8 +44,7 @@ class windowsHelper:
         self.quit()
 
 
-    def quit(self, temps=1):
-        time.sleep(temps)
+    def quit(self):
         pg.display.quit()
         pg.quit()
 
@@ -122,7 +121,7 @@ class windowsHelper:
 
     """ Ajoute une l'image url à x, y (point ancrage haut gauche), colorkey de type colorHelper"""
 
-    def addImg(self, url, x, y, page=None, convert=True, alpha=False, colorkey=False, label=None):
+    def addImg(self, url, x, y, page=None, convert=True, alpha=False, colorkey=False, label=None, printElem=True):
         if page is None:
             page = self.page
         if page > self.lastPage:
@@ -137,10 +136,11 @@ class windowsHelper:
             bg = pg.image.load(url).convert()
         else:
             bg = pg.image.load(url)
-        if self.page == page:
-            self.window.blit(bg, (x, y))
-        if self.autoFlip:
-            pg.display.flip()
+        if printElem:
+            if self.page == page:
+                self.window.blit(bg, (x, y))
+            if self.autoFlip:
+                pg.display.flip()
         if label is None:
             label = self.elementsCounter
             self.elementsCounter += 1
@@ -236,7 +236,7 @@ class windowsHelper:
                         choix += 1
             choix %= len(menu)
             k = 0
-
+            
             self.reset(True, True)
             for m in menu:
                 if isinstance(m, list):
@@ -260,37 +260,55 @@ class windowsHelper:
                         callback(eval(params))
                 else:
                     text = m
-
-                if choix == k:
-                    if options["borderActive"] is not None:
-                        txt = self.fonts[options["fontActive"]][0].render(py_encode_font_txt(text),
-                                                                          self.fonts[options["fontActive"]][1],
-                                                                          self.colors[options["colorActive"]],
-                                                                          self.colors[options["borderActive"]])
+                if not done:
+                    if choix == k:
+                        if options["borderActive"] is not None:
+                            txt = self.fonts[options["fontActive"]][0].render(py_encode_font_txt(text),
+                                                                            self.fonts[options["fontActive"]][1],
+                                                                            self.colors[options["colorActive"]],
+                                                                            self.colors[options["borderActive"]])
+                        else:
+                            txt = self.fonts[options["fontActive"]][0].render(py_encode_font_txt(text),
+                                                                            self.fonts[options["fontActive"]][1],
+                                                                            self.colors[options["colorActive"]])
                     else:
-                        txt = self.fonts[options["fontActive"]][0].render(py_encode_font_txt(text),
-                                                                          self.fonts[options["fontActive"]][1],
-                                                                          self.colors[options["colorActive"]])
-                else:
-                    if options["border"] is not None:
-                        txt = self.fonts[options["font"]][0].render(py_encode_font_txt(text),
-                                                                    self.fonts[options["fontActive"]][1],
-                                                                    self.colors[options["color"]],
-                                                                    self.colors[options["border"]])
-                    else:
-                        txt = self.fonts[options["font"]][0].render(py_encode_font_txt(text),
-                                                                    self.fonts[options["fontActive"]][1],
-                                                                    self.colors[options["color"]])
-
-                if options["widthcentered"]:
-                    x = (width_win - txt.get_rect().width) / 2
-                self.window.blit(txt, (x, y))
-                y += txt.get_rect().height + options["margin"]
-
-                k += 1
+                        if options["border"] is not None:
+                            txt = self.fonts[options["font"]][0].render(py_encode_font_txt(text),
+                                                                        self.fonts[options["fontActive"]][1],
+                                                                        self.colors[options["color"]],
+                                                                        self.colors[options["border"]])
+                        else:
+                            txt = self.fonts[options["font"]][0].render(py_encode_font_txt(text),
+                                                                        self.fonts[options["fontActive"]][1],
+                                                                        self.colors[options["color"]])
+    
+                    if options["widthcentered"]:
+                        x = (width_win - txt.get_rect().width) / 2
+                    self.window.blit(txt, (x, y))
+                    y += txt.get_rect().height + options["margin"]
+    
+                    k += 1
 
             pg.display.flip()
         return choix
+        
+        
+    def event(self, fun_bef, fun_events, fun_after, opt = {}):
+        done = False
+        clock = pg.time.Clock()
+        while not done:
+            clock.tick(25)
+            done = fun_bef(pg, self, opt)
+            for event in pg.event.get():
+                if event.type == QUIT:
+                    done = True
+                done = fun_events(event, pg, self, opt)
+                
+            done = fun_after(pg, self, opt)
+            
+            pg.display.flip()
+        if self.toQuit:
+            self.quit()
 
 
     def delElement(self, i, page=None):
@@ -309,7 +327,9 @@ class windowsHelper:
     """ Remplie la fenêtre d'une couleur voulue """
 
     def fill(self, color, page=None):
-        if not isinstance(color, tuple):
+        if isinstance(color, str):
+            color = self.colors[color]
+        elif not isinstance(color, tuple):
             color = color.getTuple()
         if page is None:
             page = self.page
@@ -321,7 +341,7 @@ class windowsHelper:
             self.actions[page].append("self.fill(" + str(color) + ", " + str(page) + ")")
 
 
-    def printElem(self, i, page=None, autoFlip=False):
+    def printElem(self, i, x=None, y=None, page=None, autoFlip=False):
         if page is None:
             page = self.page
         if page > self.lastPage:
@@ -339,8 +359,12 @@ class windowsHelper:
             else:
                 pg.draw.line(self.window, color, [o_x, o_y], [e_x, e_y], border_width)
         else:
-            bg, convert, alpha, colorkey, x, y = self.elements[page][i]
-            self.window.blit(bg, (x, y))
+            bg, convert, alpha, colorkey, nx, ny = self.elements[page][i]
+            if x is not None:
+                nx = x
+            if y is not None:
+                ny = y
+            self.window.blit(bg, (nx, ny))
         if autoFlip:
             pg.display.flip()
 

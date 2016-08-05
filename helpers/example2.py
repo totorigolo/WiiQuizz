@@ -22,7 +22,7 @@ window.addText("Page 2", "titre", "menu_defaut", label = "page2", page = 2, opt=
 
 """ addMenu prend une liste de choix en paramètre, chaque choix est une liste ["text à afficher", callback, param1, param2, ...] 
 si callckack est une chaine, elle appelle une fonction propre à la classe windowsHelper, sinon elle execute la fonction """
-choix = [["Aller page 1", "goTo", 1], ["Aller page 2", "goTo", 2], ["Fermer la fenêtre", "quit", 0]]
+choix = [["Aller page 1", "goTo", 1], ["Aller page 2", "goTo", 2], ["Fermer la fenêtre", "quit"]]
 options = {
     "font": "menu",
     "color": "menu_defaut",
