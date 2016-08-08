@@ -107,6 +107,11 @@ time.sleep(1)
 
 window.moveElement("wiimote_info", 100, 100, page = 0)
 
+# Change titre
+window.changeTitle("Titre fenêtre changée", page = 0)
+window.changePpties(width=1000)
+
+
 time.sleep(2)
 
 

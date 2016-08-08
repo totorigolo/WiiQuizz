@@ -28,6 +28,8 @@ class GamesMgr:
             choix = (choix + 1) % (len(self.games) + 1) # Quitter correspond au choix 0
             if choix == 0:
                 break
+            
+
 
             game_module = self.games[choix - 1][1]
 

@@ -7,13 +7,7 @@ import time
 from windowsHelper import windowsHelper
 from colorHelper import colorHelper
 
-import pygame
-from pygame.locals import *
-
-from Buzzer import Buzzer
 from tools import py_encode_font_txt, py_encode_title
-
-if not pygame.font: print 'Warning, fonts disabled'
 
 
 # noinspection PyUnresolvedReferences
@@ -169,4 +163,3 @@ class BuzzerMgr:
             question = u'A combien de Wiimotes voulez-vous jouer ?'
             sous_texte = None
             return dialog.get_answer([i for i in range(1, 5)], question, sous_texte)
-

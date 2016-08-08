@@ -6,6 +6,8 @@ from colorHelper import colorHelper
 from tools import py_encode_font_txt, py_encode_title
 from inspect import isfunction
 
+if not pg.font: print 'Warning, fonts disabled'
+
 
 class windowsHelper:
     """ Lance une fenêtre de taille width x height """
@@ -18,7 +20,8 @@ class windowsHelper:
 
         if not isinstance(bg, tuple):
             bg = bg.getTuple()
-
+            
+        self.ppties = (width, height, resizable, autoFlip)
         self.bg = [bg]
         self.page = 0
         self.lastPage = 0
@@ -117,6 +120,8 @@ class windowsHelper:
             self.window.blit(text, (x, y))
             if self.autoFlip:
                 pg.display.flip()
+                
+        return text.get_rect()
 
 
     """ Ajoute une l'image url à x, y (point ancrage haut gauche), colorkey de type colorHelper"""
@@ -200,7 +205,7 @@ class windowsHelper:
         [["Menu 1", function, param1, param2], ["Menu 2", "addText", param1, param2, ...]]
     """
 
-    def addMenu(self, x=0, y=0, menu=[], opt={}):
+    def addMenu(self, x=0, y=0, menu=[], before_fun=None, after_fun=None, vars={}, opt={}):
         if len(menu) == 0:
             return False
         options = {
@@ -223,6 +228,8 @@ class windowsHelper:
         while not done:
             clock.tick(25)  # Ne boucle que 25 fois/sec
             x, y = ax, ay
+            if before_fun is not None:
+                vars.update(before_fun(pg, self, vars, menu))
             for event in pg.event.get():
                 if event.type == QUIT:
                     done = True
@@ -236,8 +243,12 @@ class windowsHelper:
                         choix += 1
             choix %= len(menu)
             k = 0
-            
+                
             self.reset(True, True)
+            
+            if after_fun is not None:
+                vars.update(after_fun(pg, self, vars, menu))
+                
             for m in menu:
                 if isinstance(m, list):
                     text = m[0]
@@ -250,7 +261,7 @@ class windowsHelper:
                                 callback += ", "
                         callback += ")"
                         eval(callback)
-                    if pressed and choix == k and isfunction(callback):
+                    elif pressed and choix == k and isfunction(callback):
                         params = "("
                         for i in range(2, len(m)):
                             params += str(m[i])
@@ -281,9 +292,15 @@ class windowsHelper:
                             txt = self.fonts[options["font"]][0].render(py_encode_font_txt(text),
                                                                         self.fonts[options["fontActive"]][1],
                                                                         self.colors[options["color"]])
-    
+     
                     if options["widthcentered"]:
                         x = (width_win - txt.get_rect().width) / 2
+                    if k == 0:
+                        if 'x' in vars.keys():
+                            x = vars['x']   
+                        if 'y' in vars.keys():
+                            y = vars['y']
+                    
                     self.window.blit(txt, (x, y))
                     y += txt.get_rect().height + options["margin"]
     
@@ -309,6 +326,39 @@ class windowsHelper:
             pg.display.flip()
         if self.toQuit:
             self.quit()
+            
+            
+            
+    def changeTitle(self, title, page=None):
+        if page is None:
+            page = self.page
+        self.titles[page] = title
+        if page == self.page:
+            pg.display.set_caption(py_encode_title(title))
+            
+    
+    def changePpties(self, width=None, height=None, resizable=None, autoFlip=None, bg=None):
+        a_width, a_height, a_resizable, a_autoFlip = self.ppties
+        a_bg = self.bg[self.page]
+        if width is not None:
+            a_width = width
+        if height is not None:
+            a_height = height
+        if resizable is not None:
+            a_resizable = resizable
+        if autoFlip is not None:
+            a_autoFlip = autoFlip
+        if bg is not None:
+            a_bg = bg
+        if a_resizable:
+            self.window = pg.display.set_mode((a_width, a_height), RESIZABLE)
+        else:
+            self.window = pg.display.set_mode((a_width, a_height))
+        self.autoFlip = a_autoFlip
+        self.bg[self.page] = bg
+        self.goTo(self.page)
+        
+        
 
 
     def delElement(self, i, page=None):
@@ -327,6 +377,8 @@ class windowsHelper:
     """ Remplie la fenêtre d'une couleur voulue """
 
     def fill(self, color, page=None):
+        if color is None:
+            return None
         if isinstance(color, str):
             color = self.colors[color]
         elif not isinstance(color, tuple):
@@ -384,6 +436,8 @@ class windowsHelper:
         if goTo:
             self.reset(keepElem=True)
             self.page = self.lastPage
+            if title is not None:
+                pg.display.set_caption(py_encode_title(title))
 
 
     """ Ouvre la page k """
@@ -393,8 +447,7 @@ class windowsHelper:
         self.reset(keepElem=True)
         title = self.titles[k]
         if title is not None:
-            py_encode_title(title)
-
+            pg.display.set_caption(py_encode_title(title))
         for cle, val in self.elements[k].items():
             self.printElem(cle, k)
         for action in self.actions[k]:
