@@ -378,7 +378,7 @@ class windowsHelper:
 
     def fill(self, color, page=None):
         if color is None:
-            return None
+            color = (0, 0, 0)
         if isinstance(color, str):
             color = self.colors[color]
         elif not isinstance(color, tuple):
@@ -393,7 +393,7 @@ class windowsHelper:
             self.actions[page].append("self.fill(" + str(color) + ", " + str(page) + ")")
 
 
-    def printElem(self, i, x=None, y=None, page=None, autoFlip=False):
+    def printElem(self, i, page=None, autoFlip=False, x=None, y=None):
         if page is None:
             page = self.page
         if page > self.lastPage:
@@ -514,6 +514,15 @@ class windowsHelper:
                 self.printElem(cle, page)
         if not keepElem:
             self.elements[page] = {}
+            
+    
+    """ Retourne si un élément existe déjà """
+    def exists(self, i, page=None):
+        if page is None:
+            page = self.page
+        if i in self.elements[page].keys():
+            return True
+        return False
 
 
     """ Met à jour la fenêtre """

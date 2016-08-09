@@ -7,7 +7,7 @@ import time
 from windowsHelper import windowsHelper
 from colorHelper import colorHelper
 
-from tools import py_encode_font_txt, py_encode_title
+from tools import py_encode_font_txt, py_encode_title, format_text
 
 
 # noinspection PyUnresolvedReferences
@@ -48,6 +48,15 @@ class BuzzerMgr:
 
         # Police de caractère (is watching you)
         window.addFont("Arial", 35, "font")
+        
+            
+        window.addRect('border', 
+            self.py_margin, 
+            self.py_margin, 
+            self.py_width - 2 * self.py_margin, 
+            self.py_height - 2 * self.py_margin,
+            self.py_border,
+            label='bordure')
 
         # Options d'execution
         options = {
@@ -63,6 +72,7 @@ class BuzzerMgr:
         fun_event = lambda event, pg, win, opt: ()
         def fun_after(pg, win, options):
             from Buzzer import Buzzer
+            win.reset(True)
             if options['init_state'] == 'aucun':
                 if options['self'].need_master:
                     options['current_buzzer'] = Buzzer('master', dummy=self.dummy)
@@ -102,16 +112,9 @@ class BuzzerMgr:
                         return True
                     options['init_state'] = options['transition_next'] * 10
                     options['texte_affiche'] = ''
+                    
 
             # Affichage
-            win.fill('bckg')
-            
-            win.addRect('border', 
-                options['self'].py_margin, 
-                options['self'].py_margin, 
-                options['self'].py_width - 2 * options['self'].py_margin, 
-                options['self'].py_height - 2 * options['self'].py_margin,
-                options['self'].py_border)
             if  options['init_state'] == 'transition':
                 green_top = green_left =  options['self'].py_margin +  options['self'].py_border
                 green_width =  options['self'].py_width - 2 * ( options['self'].py_margin +  options['self'].py_border)
@@ -119,8 +122,9 @@ class BuzzerMgr:
                 green_color = tuple(int(round(c * (100 -  options['transition_percent']) / 100.0)) for c in win.colors['success'])
                 win.addRect(green_color, green_top, green_left, green_width, green_height, 0)
             else:
-                win.addText(options['texte_affiche'], 'font', 'txt', y=110, opt={'widthcentered':True})
-                win.printElem('img_wiimote', 250, 250)
+                win.addText(options['texte_affiche'], 'font', 'txt', y=110, label=format_text(options['texte_affiche']), opt={'widthcentered':True})
+                win.printElem('img_wiimote', x=250, y=250)
+                win.printElem('bordure')
                 
             return False
         

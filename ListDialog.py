@@ -63,45 +63,41 @@ class ListDialog:
 
         # Police de caractère (is watching you)
         self.window.addFont('Arial', 35, 'title')
-        self.window.addFont('Arial', 30, 'txt')
+        self.window.addFont('Arial', 25, 'txt')
         self.window.addFont('Arial', 20, 'sous_txt')
         
-        vars = {
-            "self":self
-        }
-        
-        def print_titles(pg, win, vars, menu):
-            win.addRect("border", 
-                        vars['self'].py_margin, 
-                        vars['self'].py_margin, 
-                        vars['self'].py_width - 2 * vars['self'].py_margin,
-                        vars['self'].py_height - 2 * vars['self'].py_margin,
-                        vars['self'].py_border)
 
-            txt_pos_y = vars['self'].py_question_height
-            if vars['self'].question_txt is not None:
-                txt_pos_y = vars['self'].py_question_height
-                text = win.addText(vars['self'].question_txt, 'title', 'question', y=txt_pos_y, opt={'widthcentered':True})
-                txt_pos_y += text.height
+        self.window.addRect("border", 
+                    self.py_margin, 
+                    self.py_margin, 
+                    self.py_width - 2 * self.py_margin,
+                    self.py_height - 2 * self.py_margin,
+                    self.py_border)
 
-            if vars['self'].sous_texte is not None:
-                text = win.addText(vars['self'].sous_texte, 'sous_txt', 'question', y=txt_pos_y, opt={'widthcentered':True})
-                txt_pos_y += 10
-                txt_pos_y += text.height
-            return {'y':txt_pos_y}
-            
+        txt_pos_y = self.py_question_height
+        if self.question_txt is not None:
+            txt_pos_y = self.py_question_height
+            text = self.window.addText(self.question_txt, 'title', 'question', y=txt_pos_y, opt={'widthcentered':True})
+            txt_pos_y += text.height
+
+        if self.sous_texte is not None:
+            text = self.window.addText(self.sous_texte, 'sous_txt', 'question', y=txt_pos_y, opt={'widthcentered':True})
+            txt_pos_y += text.height
+
+        txt_pos_y += 20
+         
         opt = {
             "font": "txt",
             "color": "question",
             "border": None,
             "colorActive": "selected",
-            "borderActive": "bckg",
+            "borderActive": "selected_bckg",
             "fontActive": "txt",
             "widthcentered": True,
             "margin": 20
         }
         
-        return self.window.addMenu(menu=self.list, after_fun=print_titles, opt=opt, vars=vars)
+        return self.window.addMenu(y= txt_pos_y, menu=self.list, opt=opt, vars={})
 
     def button_pressed(self, which, btn):
         if which not in self.buzzers.keys() or self.buzzers[which].dummy:
