@@ -66,10 +66,15 @@ class BuzzerMgr:
             'texte_affiche': 'Chargement', 
             'transition_next': 0, 
             'transition_percent': 0,
-            'self': self
+            'self': self # instance de l'objet courant, appelable dans fun_after grace à options['self']
         }
-        fun_before = lambda pg, win, opt: ()
-        fun_event = lambda event, pg, win, opt: ()
+        fun_before = lambda pg, win, opt: () # Fonction s'executant avant la boucle d'event
+        fun_event = lambda event, pg, win, opt: () # Boucle s'executant pendant l'event
+        """ 
+            param: pg instance de pygame
+            param: win instance de windowsHelper courante
+            param: options, liste d'options envoyé en paramètre à la fonction event de windowsHelper (contient les variables)
+        """
         def fun_after(pg, win, options):
             from Buzzer import Buzzer
             win.reset(True)

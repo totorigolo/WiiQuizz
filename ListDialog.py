@@ -59,6 +59,7 @@ class ListDialog:
 
         # Initialise la fenêtre
         self.window.changeTitle(self.question_txt)
+        # Met à jour la taille de la fenêtre
         self.window.changePpties(self.py_width, self.py_height)
 
         # Police de caractère (is watching you)
@@ -75,11 +76,12 @@ class ListDialog:
                     self.py_border)
 
         txt_pos_y = self.py_question_height
+        # Affichage du titre de la page
         if self.question_txt is not None:
             txt_pos_y = self.py_question_height
             text = self.window.addText(self.question_txt, 'title', 'question', y=txt_pos_y, opt={'widthcentered':True})
             txt_pos_y += text.height
-
+        # Affichage du sous titre
         if self.sous_texte is not None:
             text = self.window.addText(self.sous_texte, 'sous_txt', 'question', y=txt_pos_y, opt={'widthcentered':True})
             txt_pos_y += text.height
@@ -97,7 +99,7 @@ class ListDialog:
             "margin": 20
         }
         
-        return self.window.addMenu(y= txt_pos_y, menu=self.list, opt=opt, vars={})
+        return self.window.addMenu(y= txt_pos_y, menu=self.list, opt=opt)
 
     def button_pressed(self, which, btn):
         if which not in self.buzzers.keys() or self.buzzers[which].dummy:
