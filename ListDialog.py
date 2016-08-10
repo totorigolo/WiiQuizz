@@ -22,7 +22,8 @@ class ListDialog:
         self.py_height = 600
         
         # Démarre Fenètre
-        self.window = windowsHelper(self.py_width, self.py_height, 'Initialisation des Buzzers')
+        self.window = windowsHelper.Instance()
+        self.window.open(self.py_width, self.py_height, 'Initialisation des Buzzers')
 
         # Texte
         self.question_txt = 'Sélectionnez une réponse :'
@@ -34,12 +35,12 @@ class ListDialog:
         self.py_question_height = 110
         self.py_list_elem_margin = 10
         
-        self.window.addColor('question', (165, 238, 255))
-        self.window.addColor('list_elem', (99, 127, 255))
-        self.window.addColor('selected', (20, 20, 20))
-        self.window.addColor('selected_bckg', (255, 255, 255))
-        self.window.addColor('border', (200, 200, 200))
-        self.window.addColor('bckg', colorHelper('black'))
+        self.window.add_color('question', (165, 238, 255))
+        self.window.add_color('list_elem', (99, 127, 255))
+        self.window.add_color('selected', (20, 20, 20))
+        self.window.add_color('selected_bckg', (255, 255, 255))
+        self.window.add_color('border', (200, 200, 200))
+        self.window.add_color('bckg', colorHelper('black'))
 
         # Initialisations
         self.py_screen = None
@@ -58,32 +59,32 @@ class ListDialog:
             self.sous_texte = sous_texte
 
         # Initialise la fenêtre
-        self.window.changeTitle(self.question_txt)
+        self.window.change_title(self.question_txt)
         # Met à jour la taille de la fenêtre
-        self.window.changePpties(self.py_width, self.py_height)
+        self.window.change_properties(self.py_width, self.py_height)
 
         # Police de caractère (is watching you)
-        self.window.addFont('Arial', 35, 'title')
-        self.window.addFont('Arial', 25, 'txt')
-        self.window.addFont('Arial', 20, 'sous_txt')
+        self.window.add_font('Arial', 35, 'title')
+        self.window.add_font('Arial', 25, 'txt')
+        self.window.add_font('Arial', 20, 'sous_txt')
         
 
-        self.window.addRect("border", 
-                    self.py_margin, 
-                    self.py_margin, 
-                    self.py_width - 2 * self.py_margin,
-                    self.py_height - 2 * self.py_margin,
-                    self.py_border)
+        self.window.add_rect("border",
+                             self.py_margin,
+                             self.py_margin,
+                             self.py_width - 2 * self.py_margin,
+                             self.py_height - 2 * self.py_margin,
+                             self.py_border)
 
         txt_pos_y = self.py_question_height
         # Affichage du titre de la page
         if self.question_txt is not None:
             txt_pos_y = self.py_question_height
-            text = self.window.addText(self.question_txt, 'title', 'question', y=txt_pos_y, opt={'widthcentered':True})
+            text = self.window.add_text(self.question_txt, 'title', 'question', y=txt_pos_y, opt={'widthcentered':True})
             txt_pos_y += text.height
         # Affichage du sous titre
         if self.sous_texte is not None:
-            text = self.window.addText(self.sous_texte, 'sous_txt', 'question', y=txt_pos_y, opt={'widthcentered':True})
+            text = self.window.add_text(self.sous_texte, 'sous_txt', 'question', y=txt_pos_y, opt={'widthcentered':True})
             txt_pos_y += text.height
 
         txt_pos_y += 20
@@ -99,7 +100,7 @@ class ListDialog:
             "margin": 20
         }
         
-        return self.window.addMenu(y= txt_pos_y, menu=self.list, opt=opt)
+        return self.window.add_menu(y= txt_pos_y, menu=self.list, opt=opt)
 
     def button_pressed(self, which, btn):
         if which not in self.buzzers.keys() or self.buzzers[which].dummy:

@@ -35,28 +35,29 @@ class BuzzerMgr:
         self.py_border = 5
 
         # Démarre Fenètre
-        window = windowsHelper(self.py_width, self.py_height, 'Initialisation des Buzzers')
+        window = windowsHelper.Instance()
+        window.open(self.py_width, self.py_height, 'Initialisation des Buzzers')
         
         # Couleurs
-        window.addColor("txt", (50, 150, 250))
-        window.addColor("border", (200, 200, 200))
-        window.addColor("success", (52, 207, 52))
-        window.addColor("bckg", colorHelper("black"))
+        window.add_color("txt", (50, 150, 250))
+        window.add_color("border", (200, 200, 200))
+        window.add_color("success", (52, 207, 52))
+        window.add_color("bckg", colorHelper("black"))
 
         # Images
-        window.addImg(os.path.abspath('./res/sync_buzzer.jpg'), 0, 0, printElem=False, label="img_wiimote")
+        window.add_img(os.path.abspath('./res/sync_buzzer.jpg'), 0, 0, printElem=False, label="img_wiimote")
 
         # Police de caractère (is watching you)
-        window.addFont("Arial", 35, "font")
+        window.add_font("Arial", 35, "font")
         
             
-        window.addRect('border', 
-            self.py_margin, 
-            self.py_margin, 
-            self.py_width - 2 * self.py_margin, 
-            self.py_height - 2 * self.py_margin,
-            self.py_border,
-            label='bordure')
+        window.add_rect('border',
+                        self.py_margin,
+                        self.py_margin,
+                        self.py_width - 2 * self.py_margin,
+                        self.py_height - 2 * self.py_margin,
+                        self.py_border,
+                        label='bordure')
 
         # Options d'execution
         options = {
@@ -125,11 +126,11 @@ class BuzzerMgr:
                 green_width =  options['self'].py_width - 2 * ( options['self'].py_margin +  options['self'].py_border)
                 green_height =  options['self'].py_height - 2 * ( options['self'].py_margin +  options['self'].py_border)
                 green_color = tuple(int(round(c * (100 -  options['transition_percent']) / 100.0)) for c in win.colors['success'])
-                win.addRect(green_color, green_top, green_left, green_width, green_height, 0)
+                win.add_rect(green_color, green_top, green_left, green_width, green_height, 0)
             else:
-                win.addText(options['texte_affiche'], 'font', 'txt', y=110, label=format_text(options['texte_affiche']), opt={'widthcentered':True})
-                win.printElem('img_wiimote', x=250, y=250)
-                win.printElem('bordure')
+                win.add_text(options['texte_affiche'], 'font', 'txt', y=110, label=format_text(options['texte_affiche']), opt={'widthcentered':True})
+                win.print_element('img_wiimote', x=250, y=250)
+                win.print_element('bordure')
                 
             return False
         

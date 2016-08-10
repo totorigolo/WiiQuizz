@@ -9,10 +9,34 @@ from inspect import isfunction
 if not pg.font: print 'Warning, fonts disabled'
 
 
+class Singleton:
+    def __init__(self, decorated):
+        self._decorated = decorated
+
+    def Instance(self):
+        try:
+            return self._instance
+        except AttributeError:
+            self._instance = self._decorated()
+            return self._instance
+
+    def __call__(self):
+        raise TypeError('Singletons must be accessed through `Instance()`.')
+
+    def __instancecheck__(self, inst):
+        return isinstance(inst, self._decorated)
+
+
+@Singleton
 class windowsHelper:
     """ Lance une fenêtre de taille width x height """
-    def __init__(self, width, height, title=None, resizable=True, autoFlip=True, bg=colorHelper("black")):
+
+    def __init__(self):
         pg.init()
+
+    def open(self, width, height, title=None, resizable=True, autoFlip=True, bg=None):
+        if bg is None:
+            bg = colorHelper("black")
         if resizable:
             self.window = pg.display.set_mode((width, height), RESIZABLE)
         else:
@@ -20,7 +44,7 @@ class windowsHelper:
 
         if not isinstance(bg, tuple):
             bg = bg.getTuple()
-            
+
         self.ppties = (width, height, resizable, autoFlip)
         self.bg = [bg]
         self.page = 0
@@ -37,27 +61,26 @@ class windowsHelper:
 
         self.reset(keepElem=True)
 
-        self.addFont("Arial", 10, "default")
-        self.addColor("white", colorHelper("white"))
-        self.addColor("black", colorHelper("black"))
-        self.goTo(0)
-
+        self.add_font("Arial", 10, "default")
+        self.add_color("white", colorHelper("white"))
+        self.add_color("black", colorHelper("black"))
+        self.go_to_page(0)
 
     def __del__(self):
         self.quit()
-
 
     def quit(self):
         pg.display.quit()
         pg.quit()
 
-
-    """ Ajoute une police 
+    """ Ajoute une police
         param: nom string police de caratère default : Arial
         param: size int taille de la police default : 10
         param: label string label de la police default: None """
 
-    def addFont(self, nom="Arial", size=10, label=None, opt={}):
+    def add_font(self, nom="Arial", size=10, label=None, opt=None):
+        if opt is None:
+            opt = {}
         options = {
             "bold": False,
             "italic": False,
@@ -75,17 +98,15 @@ class windowsHelper:
         if options["underline"]:
             self.fonts[label][0].set_underline()
 
-
     """ Ajoute une couleur
         param: nom string label de la couleur
         param: color tuple | colorHelper """
 
-    def addColor(self, nom, color):
+    def add_color(self, nom, color):
         if isinstance(color, tuple):
             self.colors[nom] = color
         else:
             self.colors[nom] = color.getTuple()
-
 
     """ Ajoute du texte
         param: text string texte à ajouter
@@ -96,7 +117,9 @@ class windowsHelper:
         param: label string label du texte default: le numéro de l'élément 
         param: opt dict options : widthcentered et heightcentered"""
 
-    def addText(self, text, font, color, x=0, y=0, page=None, label=None, opt={}):
+    def add_text(self, text, font, color, x=0, y=0, page=None, label=None, opt=None):
+        if opt is None:
+            opt = {}
         options = {
             "widthcentered": False,
             "heightcentered": False
@@ -120,13 +143,12 @@ class windowsHelper:
             self.window.blit(text, (x, y))
             if self.autoFlip:
                 pg.display.flip()
-                
-        return text.get_rect()
 
+        return text.get_rect()
 
     """ Ajoute une l'image url à x, y (point ancrage haut gauche), colorkey de type colorHelper"""
 
-    def addImg(self, url, x, y, page=None, convert=True, alpha=False, colorkey=False, label=None, printElem=True):
+    def add_img(self, url, x, y, page=None, convert=True, alpha=False, colorkey=False, label=None, printElem=True):
         if page is None:
             page = self.page
         if page > self.lastPage:
@@ -152,7 +174,16 @@ class windowsHelper:
         self.elements[page][label] = (bg, convert, alpha, colorkey, x, y)
 
 
-    def addRect(self, color, x1, y1, x2, y2, border_width, page=None, label=None):
+    def edit_img(self, label, page=None, x=None, y=None):
+        if page is None:
+            page = self.page
+        if x is not None:
+            self.elements[page][label][4] = x
+        if y is not None:
+            self.elements[page][label][5] = y
+
+
+    def add_rect(self, color, x1, y1, x2, y2, border_width, page=None, label=None):
         if page is None:
             page = self.page
         if isinstance(color, str):
@@ -164,10 +195,10 @@ class windowsHelper:
             self.elementsCounter += 1
         self.elements[page][label] = ("rect", color, x1, y1, x2, y2, border_width)
         if page == self.page:
-            self.printElem(label, page, autoFlip=self.autoFlip)
+            self.print_element(label, page, autoFlip=self.autoFlip)
 
 
-    def addCircle(self, color, c_x, c_y, radius, border_width, page=None, label=None):
+    def add_circle(self, color, c_x, c_y, radius, border_width, page=None, label=None):
         if page is None:
             page = self.page
         if isinstance(color, str):
@@ -179,14 +210,13 @@ class windowsHelper:
             self.elementsCounter += 1
         self.elements[page][label] = ("circle", color, c_x, c_y, radius, border_width)
         if page == self.page:
-            self.printElem(label, page, autoFlip=self.autoFlip)
-
+            self.print_element(label, page, autoFlip=self.autoFlip)
 
     """
     param: aa bool anti-aliasing
     """
 
-    def addLine(self, color, o_x, o_y, e_x, e_y, border_width, aa=True, page=None, label=None):
+    def add_line(self, color, o_x, o_y, e_x, e_y, border_width, aa=True, page=None, label=None):
         if page is None:
             page = self.page
         if isinstance(color, str):
@@ -198,14 +228,17 @@ class windowsHelper:
             self.elementsCounter += 1
         self.elements[page][label] = ("line", color, o_x, o_y, e_x, e_y, border_width, aa)
         if page == self.page:
-            self.printElem(label, page, autoFlip=self.autoFlip)
-
+            self.print_element(label, page, autoFlip=self.autoFlip)
 
     """
         [["Menu 1", function, param1, param2], ["Menu 2", "addText", param1, param2, ...]]
     """
 
-    def addMenu(self, x=0, y=0, menu=[], before_fun=None, after_fun=None, vars={}, opt={}):
+    def add_menu(self, x=0, y=0, menu=[], before_fun=None, after_fun=None, vars=None, opt=None):
+        if opt is None:
+            opt = {}
+        if vars is None:
+            vars = {}
         if len(menu) == 0:
             return False
         options = {
@@ -243,12 +276,12 @@ class windowsHelper:
                         choix += 1
             choix %= len(menu)
             k = 0
-                
+
             self.reset(True, True)
-            
+
             if after_fun is not None:
                 vars.update(after_fun(pg, self, vars, menu))
-                
+
             for m in menu:
                 if isinstance(m, list):
                     text = m[0]
@@ -275,13 +308,13 @@ class windowsHelper:
                     if choix == k:
                         if options["borderActive"] is not None:
                             txt = self.fonts[options["fontActive"]][0].render(py_encode_font_txt(text),
-                                                                            self.fonts[options["fontActive"]][1],
-                                                                            self.colors[options["colorActive"]],
-                                                                            self.colors[options["borderActive"]])
+                                                                              self.fonts[options["fontActive"]][1],
+                                                                              self.colors[options["colorActive"]],
+                                                                              self.colors[options["borderActive"]])
                         else:
                             txt = self.fonts[options["fontActive"]][0].render(py_encode_font_txt(text),
-                                                                            self.fonts[options["fontActive"]][1],
-                                                                            self.colors[options["colorActive"]])
+                                                                              self.fonts[options["fontActive"]][1],
+                                                                              self.colors[options["colorActive"]])
                     else:
                         if options["border"] is not None:
                             txt = self.fonts[options["font"]][0].render(py_encode_font_txt(text),
@@ -292,25 +325,26 @@ class windowsHelper:
                             txt = self.fonts[options["font"]][0].render(py_encode_font_txt(text),
                                                                         self.fonts[options["fontActive"]][1],
                                                                         self.colors[options["color"]])
-     
+
                     if options["widthcentered"]:
                         x = (width_win - txt.get_rect().width) / 2
                     if k == 0:
                         if 'x' in vars.keys():
-                            x = vars['x']   
+                            x = vars['x']
                         if 'y' in vars.keys():
                             y = vars['y']
-                    
+
                     self.window.blit(txt, (x, y))
                     y += txt.get_rect().height + options["margin"]
-    
+
                     k += 1
 
             pg.display.flip()
         return choix
-        
-        
-    def event(self, fun_bef, fun_events, fun_after, opt = {}):
+
+    def event(self, fun_bef, fun_events, fun_after, opt=None):
+        if opt is None:
+            opt = {}
         done = False
         clock = pg.time.Clock()
         while not done:
@@ -320,24 +354,21 @@ class windowsHelper:
                 if event.type == QUIT:
                     done = True
                 done = fun_events(event, pg, self, opt)
-                
+
             done = fun_after(pg, self, opt)
-            
+
             pg.display.flip()
         if self.toQuit:
             self.quit()
-            
-            
-            
-    def changeTitle(self, title, page=None):
+
+    def change_title(self, title, page=None):
         if page is None:
             page = self.page
         self.titles[page] = title
         if page == self.page:
             pg.display.set_caption(py_encode_title(title))
-            
-    
-    def changePpties(self, width=None, height=None, resizable=None, autoFlip=None, bg=None):
+
+    def change_properties(self, width=None, height=None, resizable=None, autoFlip=None, bg=None):
         a_width, a_height, a_resizable, a_autoFlip = self.ppties
         a_bg = self.bg[self.page]
         if width is not None:
@@ -356,12 +387,9 @@ class windowsHelper:
             self.window = pg.display.set_mode((a_width, a_height))
         self.autoFlip = a_autoFlip
         self.bg[self.page] = bg
-        self.goTo(self.page)
-        
-        
+        self.go_to_page(self.page)
 
-
-    def delElement(self, i, page=None):
+    def del_element(self, i, page=None):
         if page is None:
             page = self.page
         if page > self.lastPage:
@@ -369,10 +397,9 @@ class windowsHelper:
         self.reset(keepElem=True)
         del self.elements[page][i]
         for k in range(len(self.elements[page])):
-            self.printElem(k, page)
+            self.print_element(k, page)
         if self.autoFlip:
             pg.display.flip()
-
 
     """ Remplie la fenêtre d'une couleur voulue """
 
@@ -392,8 +419,7 @@ class windowsHelper:
         else:
             self.actions[page].append("self.fill(" + str(color) + ", " + str(page) + ")")
 
-
-    def printElem(self, i, page=None, autoFlip=False, x=None, y=None):
+    def print_element(self, i, page=None, autoFlip=False, x=None, y=None):
         if page is None:
             page = self.page
         if page > self.lastPage:
@@ -406,7 +432,7 @@ class windowsHelper:
             pg.draw.circle(self.window, color, [c_x, c_y], radius, border_width)
         elif self.elements[page][i][0] == "line":
             type, color, o_x, o_y, e_x, e_y, border_width, aa = self.elements[page][i]
-            if aa: # anti-aliasing
+            if aa:  # anti-aliasing
                 pg.draw.aaline(self.window, color, [o_x, o_y], [e_x, e_y], border_width)
             else:
                 pg.draw.line(self.window, color, [o_x, o_y], [e_x, e_y], border_width)
@@ -420,12 +446,11 @@ class windowsHelper:
         if autoFlip:
             pg.display.flip()
 
-
     """ Ajoute une nouvelle page
         param: title string titre de la page
         param: goTo boolean si True, la fenêtre ira vers cette page après appel default: True"""
 
-    def newPage(self, title=None, bg=None, goTo=True):
+    def new_page(self, title=None, bg=None, goTo=True):
         if bg is None:
             bg = self.bg[-1]
         self.lastPage += 1
@@ -439,17 +464,16 @@ class windowsHelper:
             if title is not None:
                 pg.display.set_caption(py_encode_title(title))
 
-
     """ Ouvre la page k """
 
-    def goTo(self, k):
+    def go_to_page(self, k):
         self.page = k
         self.reset(keepElem=True)
         title = self.titles[k]
         if title is not None:
             pg.display.set_caption(py_encode_title(title))
         for cle, val in self.elements[k].items():
-            self.printElem(cle, k)
+            self.print_element(cle, k)
         for action in self.actions[k]:
             eval(action)
         self.actions[k] = []
@@ -457,49 +481,45 @@ class windowsHelper:
 
     """ Renvoie l'élément demandé """
 
-    def getElement(self, i, page=None):
+    def get_element(self, i, page=None):
         if page is None:
             page = self.page
         if page > self.lastPage:
             page = 0
         return self.elements[page][i][0]
 
-
     """ Renvoie l'instance Rect de l'élément demandé """
 
-    def getInfoElement(self, i, page=None):
+    def get_element_rect(self, i, page=None):
         if page is None:
             page = self.page
         if page > self.lastPage:
             page = 0
         return self.elements[page][i][0].get_rect()
 
-
-    def moveElement(self, i, x, y, page=None):
+    def move_element(self, i, x, y, page=None):
         if page is None:
             page = self.page
         if page > self.lastPage:
             page = 0
-        rec = self.getInfoElement(i, page).move(x, y)
-        self.window.blit(self.getElement(i, page), rec)
+        rec = self.get_element_rect(i, page).move(x, y)
+        self.window.blit(self.get_element(i, page), rec)
         bg, convert, alpha, colorkey, ax, ay = self.elements[page][i]
         self.elements[page][i] = bg, convert, alpha, colorkey, x, y
         self.reset(True, page)
         for cle, val in self.elements[page].items():
-            self.printElem(cle, page)
+            self.print_element(cle, page)
         if self.autoFlip:
             pg.display.flip()
 
-
     """ Liste les éléments à l'écran de l'indice i à j ; liste tous les éléments si non renseignés """
 
-    def listElements(self, page=None):
+    def list_elements(self, page=None):
         if page is None:
             page = self.page
         if page > self.lastPage:
             page = 0
         return self.elements[page]
-
 
     """ Renvoie une fenêtre vide """
 
@@ -511,12 +531,12 @@ class windowsHelper:
         self.fill(self.bg[page], page)
         if printElem:
             for cle, val in self.elements[page].items():
-                self.printElem(cle, page)
+                self.print_element(cle, page)
         if not keepElem:
             self.elements[page] = {}
-            
-    
+
     """ Retourne si un élément existe déjà """
+
     def exists(self, i, page=None):
         if page is None:
             page = self.page
@@ -524,10 +544,7 @@ class windowsHelper:
             return True
         return False
 
-
     """ Met à jour la fenêtre """
 
     def flip(self):
         pg.display.flip()
-        
-        
