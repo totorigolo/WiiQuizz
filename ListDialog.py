@@ -35,12 +35,21 @@ class ListDialog:
         self.py_question_height = 110
         self.py_list_elem_margin = 10
         
+<<<<<<< Updated upstream
         self.window.add_color('question', (165, 238, 255))
         self.window.add_color('list_elem', (99, 127, 255))
         self.window.add_color('selected', (20, 20, 20))
         self.window.add_color('selected_bckg', (255, 255, 255))
         self.window.add_color('border', (200, 200, 200))
         self.window.add_color('bckg', colorHelper('black'))
+=======
+        self.window.new_color('question', (165, 238, 255))
+        self.window.new_color('list_elem', (99, 127, 255))
+        self.window.new_color('selected', (20, 20, 20))
+        self.window.new_color('selected_bckg', (255, 255, 255))
+        self.window.new_color('border', (200, 200, 200))
+        self.window.new_color('bckg', ColorHelper('black'))
+>>>>>>> Stashed changes
 
         # Initialisations
         self.py_screen = None
