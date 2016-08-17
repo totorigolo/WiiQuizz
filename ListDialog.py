@@ -6,8 +6,8 @@ import time
 import pygame
 from pygame.locals import *
 
-from windowsHelper import windowsHelper
-from colorHelper import colorHelper
+from WindowHelper import WindowHelper
+from ColorHelper import ColorHelper
 
 from tools import py_encode_font_txt, py_encode_title
 
@@ -20,10 +20,14 @@ class ListDialog:
         
         self.py_width = 800
         self.py_height = 600
-        
+
+        self.window = WindowHelper.Instance()
+
         # Démarre Fenètre
-        self.window = windowsHelper.Instance()
-        self.window.open(self.py_width, self.py_height, 'Initialisation des Buzzers')
+        if self.window.is_opened():
+            self.window.new_page('Initialisation des Buzzers', goTo=True)
+        else:
+            self.window.open(self.py_width, self.py_height, 'Initialisation des Buzzers')
 
         # Texte
         self.question_txt = 'Sélectionnez une réponse :'
@@ -40,7 +44,7 @@ class ListDialog:
         self.window.add_color('selected', (20, 20, 20))
         self.window.add_color('selected_bckg', (255, 255, 255))
         self.window.add_color('border', (200, 200, 200))
-        self.window.add_color('bckg', colorHelper('black'))
+        self.window.add_color('bckg', ColorHelper('black'))
 
         # Initialisations
         self.py_screen = None
@@ -100,7 +104,7 @@ class ListDialog:
             "margin": 20
         }
         
-        return self.window.add_menu(y= txt_pos_y, menu=self.list, opt=opt)
+        return self.window.add_menu(y=txt_pos_y, menu=self.list, opt=opt)
 
     def button_pressed(self, which, btn):
         if which not in self.buzzers.keys() or self.buzzers[which].dummy:

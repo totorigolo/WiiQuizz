@@ -1,12 +1,12 @@
 # coding: utf8
 
-from colorHelper import colorHelper
-from windowsHelper import windowsHelper
+from ColorHelper import ColorHelper
+from WindowHelper import WindowHelper
 import os
 import time
 
-window = windowsHelper(600, 600, title="Première fenêtre", bg=colorHelper("white"))
-window.add_color("rect", colorHelper("salmon"))
+window = WindowHelper(600, 600, title="Première fenêtre", bg=ColorHelper("white"))
+window.add_color("rect", ColorHelper("salmon"))
 
 # def addRect(self, color, x1, y1, x2, y2, border_width, page = None, label = None)
 window.add_rect("rect", 10, 10, 50, 50, 2, label="rectangle")

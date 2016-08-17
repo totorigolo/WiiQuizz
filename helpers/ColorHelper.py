@@ -1,25 +1,25 @@
 # coding: utf8
 
-class colorHelper:
+class ColorHelper:
     def __init__(self, c, a = 1):
         if isinstance(c, tuple):
             self.r, self.g, self.b = c
         elif isinstance(c, str):
-            (self.r, self.g, self.b) = self.getColors(c)
+            (self.r, self.g, self.b) = self.get_colors(c)
         self.a = a
         
     
-    def getTuple(self):
-        if self.isTransparent:
+    def get_rgb(self):
+        if self.is_transparent:
             return (self.r, self.g, self.b, self.a)
         return (self.r, self.g, self.b)
         
         
-    def getTransparency(self):
+    def get_transparency(self):
         return self.a 
         
     
-    def setTransparency(self, val):
+    def set_transparency(self, val):
         self.a = val
         
         
@@ -45,13 +45,13 @@ class colorHelper:
         self.lighten(-val)
         
         
-    def isTransparent(self):
+    def is_transparent(self):
         if 0 <= self.a < 1:
             return True
         return False
         
         
-    def getColors(self, color):
+    def get_colors(self, color):
         colors = {
             "red":(255, 0, 0), 
             "green":(0, 255, 0), 

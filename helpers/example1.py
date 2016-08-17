@@ -1,26 +1,26 @@
 # coding: utf8
 
-from colorHelper import colorHelper
-from windowsHelper import windowsHelper
+from ColorHelper import ColorHelper
+from WindowHelper import WindowHelper
 import os
 import time
 
 ## Initialiser une couleur - colorHelper -
 
 # Par rgb
-couleurNoir = colorHelper((0, 0, 0))
+couleurNoir = ColorHelper((0, 0, 0))
 # Par nom
-couleurNoirBis = colorHelper("black")
+couleurNoirBis = ColorHelper("black")
 # Récupérer le code rgb
-print couleurNoirBis.getTuple()
+print couleurNoirBis.get_rgb()
 
 # Initialiser une couleur avec une transparence de 50%
-couleurNoirPrime = colorHelper("black", 0.5)
+couleurNoirPrime = ColorHelper("black", 0.5)
 # Récupérer la transparence
-print couleurNoirPrime.getTransparency()
+print couleurNoirPrime.get_transparency()
 
 # savoir si une couleur utilise la transparence
-print couleurNoirPrime.isTransparent()
+print couleurNoirPrime.is_transparent()
 
 ## Manipuler des fenêtres - windowHelper -
 
@@ -32,7 +32,7 @@ height = 500
 """
 # def __init__(self, width, height, title = None, resizable = True, autoFlip = True)
 
-window = windowsHelper.Instance()
+window = WindowHelper.Instance()
 window.open(width, height, title="Première fenêtre")
 
 # Ajouter une image
@@ -60,7 +60,7 @@ window.add_font("Arial", 30, "txt")
 # Ajouter une couleur
 
 # def addColor(self, nom, color)
-couleur = colorHelper("white")
+couleur = ColorHelper("white")
 window.add_color("blanc", couleur)
 """ Accepte les objets de type couleurHelper ou un tuple (r, g, b) """
 
