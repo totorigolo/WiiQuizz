@@ -34,7 +34,6 @@ class WindowHelper:
     def __init__(self):
         self.elements = {}  # éléments (toute sorte !)
         self.colors = {}  # couleurs
-        self.musics = {}  # musiques
         self.fonts = {}  # liste des polices
         self.pages = {}  # liste des pages
         self.current_page = -1  # page active
@@ -68,9 +67,11 @@ class WindowHelper:
         self.resizable = resizable
 
         # Quelques ressources initialisées par défaut
-        self.new_font('Arial', 30, 'default')
-        self.new_color('black')
-        self.new_color('white')
+        if not self.opened:
+            self.new_font('Arial', 30, 'default')
+            self.new_color('black')
+            self.new_color('white')
+        self.opened = True
 
     def is_open(self):
         return self.opened
@@ -256,6 +257,29 @@ class WindowHelper:
             self.add(add_to_page)
         self.elements[label] = elem
         return label
+
+    """
+            Ajoute un son dans la liste des éléments
+        """
+
+    def new_sound(self, url, label=None, add_to_page=False):
+        if label is None:
+            label = len(self.elements)
+        sound = pg.mixer.Sound(url)
+        elem = {
+            'type': 'sound',
+            'url': url,
+            'obj': sound
+        }
+        if add_to_page == 'current':
+            self.add(self.current_page)
+        elif isinstance(add_to_page, int) or isinstance(add_to_page, str):
+            self.add(add_to_page)
+        self.elements[label] = elem
+        return label
+
+    def play_sound(self, label):
+        self.elements[label]['obj'].play()
 
     """
         Ajoute un menu dans la liste des éléments

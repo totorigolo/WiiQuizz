@@ -58,4 +58,3 @@ def clef(dict, val):
 
 def format_text(text):
     return text.lower().replace(' ', '_').replace('é', 'e').replace('à', 'a').replace('è', 'e')
-    
