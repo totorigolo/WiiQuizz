@@ -1,10 +1,12 @@
 # coding: utf8
 
+from inspect import isfunction
+
 import pygame as pg
 from pygame.locals import *
+
 from ColorHelper import ColorHelper
 from tools import py_encode_font_txt, py_encode_title
-from inspect import isfunction
 
 if not pg.font: print 'Warning, fonts disabled'
 if not pg.mixer: print 'Warning, sound disabled'
@@ -454,23 +456,23 @@ class WindowHelper:
 
             self.refresh()  # On raffréchit la page
 
-            for m in menu:
+            for i, m in enumerate(menu):
                 if isinstance(m, list):
                     text = m[0]
                     callback = m[1]
-                    if pressed and choix == k and isinstance(callback, str):
+                    if pressed and choix == i and isinstance(callback, str):
                         callback = "self." + callback + "("
-                        for i in range(2, len(m)):
-                            callback += str(m[i])
-                            if i != len(m) - 1:
+                        for j in range(2, len(m)):
+                            callback += str(m[j])
+                            if j != len(m) - 1:
                                 callback += ", "
                         callback += ")"
                         eval(callback)
-                    elif pressed and choix == k and isfunction(callback):
+                    elif pressed and choix == i and isfunction(callback):
                         params = "("
-                        for i in range(2, len(m)):
-                            params += str(m[i])
-                            if i != len(m) - 1:
+                        for j in range(2, len(m)):
+                            params += str(m[j])
+                            if j != len(m) - 1:
                                 params += ", "
                         params += ")"
                         callback(eval(params))
