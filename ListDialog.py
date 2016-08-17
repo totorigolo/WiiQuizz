@@ -1,15 +1,7 @@
 # coding=utf-8
 
 import random
-import time
-
-import pygame
-from pygame.locals import *
-
 from WindowHelper import WindowHelper
-from ColorHelper import ColorHelper
-
-from tools import py_encode_font_txt, py_encode_title
 
 
 # noinspection PyUnresolvedReferences
@@ -21,13 +13,11 @@ class ListDialog:
         self.py_width = 800
         self.py_height = 600
 
-        self.window = WindowHelper.Instance()
+        self.win = WindowHelper.Instance()
 
-        # Démarre Fenètre
-        if self.window.is_opened():
-            self.window.new_page('Initialisation des Buzzers', goTo=True)
-        else:
-            self.window.open(self.py_width, self.py_height, 'Initialisation des Buzzers')
+        # Démarre Fenêtre si pas ouverte
+        if not self.win.is_open():
+            self.win.open_window(self.py_width, self.py_height)
 
         # Texte
         self.question_txt = 'Sélectionnez une réponse :'
@@ -38,13 +28,14 @@ class ListDialog:
         self.py_border = 5
         self.py_question_height = 110
         self.py_list_elem_margin = 10
-        
-        self.window.add_color('question', (165, 238, 255))
-        self.window.add_color('list_elem', (99, 127, 255))
-        self.window.add_color('selected', (20, 20, 20))
-        self.window.add_color('selected_bckg', (255, 255, 255))
-        self.window.add_color('border', (200, 200, 200))
-        self.window.add_color('bckg', ColorHelper('black'))
+
+        # Couleurs
+        self.win.new_color((165, 238, 255), 'question')
+        self.win.new_color((99, 127, 255), 'list_elem')
+        self.win.new_color((20, 20, 20), 'selected')
+        self.win.new_color('white', 'selected_bckg')
+        self.win.new_color((200, 200, 200), 'border')
+        self.win.new_color('black', 'bckg')
 
         # Initialisations
         self.py_screen = None
@@ -62,49 +53,53 @@ class ListDialog:
         if sous_texte is not None:
             self.sous_texte = sous_texte
 
-        # Initialise la fenêtre
-        self.window.change_title(self.question_txt)
-        # Met à jour la taille de la fenêtre
-        self.window.change_properties(self.py_width, self.py_height)
+        # Préparation de la page
+        # Nouvelle page
+        label_page = self.win.new_page(self.question_txt)
 
         # Police de caractère (is watching you)
-        self.window.add_font('Arial', 35, 'title')
-        self.window.add_font('Arial', 25, 'txt')
-        self.window.add_font('Arial', 20, 'sous_txt')
+        self.win.new_font('Arial', 35, 'title')
+        self.win.new_font('Arial', 25, 'txt')
+        self.win.new_font('Arial', 20, 'sous_txt')
         
 
-        self.window.add_rect("border",
-                             self.py_margin,
-                             self.py_margin,
-                             self.py_width - 2 * self.py_margin,
-                             self.py_height - 2 * self.py_margin,
-                             self.py_border)
+        self.win.new_rect('border', self.py_border, label='rect_border')
+        self.win.add('rect_border',
+                     [self.py_margin, self.py_width - 2 * self.py_margin],
+                     [self.py_margin, self.py_height - 2 * self.py_margin],
+                     label_page)
 
         txt_pos_y = self.py_question_height
         # Affichage du titre de la page
         if self.question_txt is not None:
             txt_pos_y = self.py_question_height
-            text = self.window.add_text(self.question_txt, 'title', 'question', y=txt_pos_y, opt={'widthcentered':True})
-            txt_pos_y += text.height
+            self.win.new_text(self.question_txt, 'title', 'question', label='question_txt')
+            self.win.add('question_txt', 'centered', txt_pos_y, label_page)
+            text_height = self.win.get_element('question_txt')['obj'].get_rect().height # Hauteur du texte
+            txt_pos_y += text_height
         # Affichage du sous titre
         if self.sous_texte is not None:
-            text = self.window.add_text(self.sous_texte, 'sous_txt', 'question', y=txt_pos_y, opt={'widthcentered':True})
-            txt_pos_y += text.height
+            self.win.new_text(self.sous_texte, 'sous_txt', 'question', label='sous_txt')
+            self.win.add('sous_txt', 'centered', txt_pos_y, label_page)
+            text_height = self.win.get_element('sous_txt')['obj'].get_rect().height
+            txt_pos_y += text_height
 
         txt_pos_y += 20
-         
+
+        self.win.new_menu(self.list, label='menu')
         opt = {
             "font": "txt",
             "color": "question",
             "border": None,
-            "colorActive": "selected",
-            "borderActive": "selected_bckg",
-            "fontActive": "txt",
-            "widthcentered": True,
+            "color_active": "selected",
+            "border_active": "selected_bckg",
+            "font_active": "txt",
             "margin": 20
         }
-        
-        return self.window.add_menu(y=txt_pos_y, menu=self.list, opt=opt)
+        self.win.add_menu('menu', 'centered', txt_pos_y, opt=opt, page=label_page)
+        self.win.go_to(label_page)
+        return self.win.get_menu_result('menu') # récupération du résultat
+
 
     def button_pressed(self, which, btn):
         if which not in self.buzzers.keys() or self.buzzers[which].dummy:

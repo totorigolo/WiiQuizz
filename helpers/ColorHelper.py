@@ -10,7 +10,7 @@ class ColorHelper:
         
     
     def get_rgb(self):
-        if self.is_transparent:
+        if self.is_transparent():
             return (self.r, self.g, self.b, self.a)
         return (self.r, self.g, self.b)
         

@@ -17,7 +17,7 @@ win.new_page('Page 3', label='page_3', bg='sage')
 win.new_page('Page 4', label='page_menu', bg='white')
 
 # Ajout des ressources
-win.new_color('blue')
+win.new_color('blue')  # ColorHelper est directement implémenté
 win.new_color('green')
 win.new_font('Arial', 30, 'default')
 
@@ -35,7 +35,7 @@ win.add('test_text_2', page='index')
 win.add('test_text', page='page_1')
 win.add('test_circle', 60, 60, page='page_1')
 win.add('test_img', page='page_2')
-win.add('test_rect', [10, 50], [10, 50], page='page_3')
+win.add('test_rect', [10, 50], [10, 50], page='page_3')  # win.add(label, [x1, x2], [y1, y2], page)
 win.add('test_circle', 150, 150, page='page_3')
 
 

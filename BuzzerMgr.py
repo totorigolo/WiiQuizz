@@ -2,12 +2,10 @@
 
 import os
 import random
-import time
 
 from WindowHelper import WindowHelper
-from ColorHelper import ColorHelper
 
-from tools import py_encode_font_txt, py_encode_title, format_text
+from tools import format_text
 
 
 # noinspection PyUnresolvedReferences
@@ -35,32 +33,33 @@ class BuzzerMgr:
         self.py_border = 5
 
         # Démarre Fenètre
-        window = WindowHelper.Instance()
-        if window.is_opened():
-            window.new_page('Initialisation des Buzzers', goTo=True)
-        else:
-            window.open(self.py_width, self.py_height, 'Initialisation des Buzzers')
+        win = WindowHelper.Instance()
+        # Démarre Fenêtre si pas ouverte
+        if not win.is_open():
+            win.open_window(self.py_width, self.py_height)
+
+        page_label = win.new_page('Initialisation des Buzzers')
         
         # Couleurs
-        window.add_color("txt", (50, 150, 250))
-        window.add_color("border", (200, 200, 200))
-        window.add_color("success", (52, 207, 52))
-        window.add_color("bckg", ColorHelper("black"))
+        win.new_color((50, 150, 250), "txt")
+        win.new_color((200, 200, 200), "border")
+        win.new_color((52, 207, 52), "success")
+        win.new_color("black", "bckg")
 
         # Images
-        window.add_img(os.path.abspath('./res/sync_buzzer.jpg'), 0, 0, printElem=False, label="img_wiimote")
+        win.new_img(os.path.abspath('./res/sync_buzzer.jpg'), label='img_wiimote')
 
         # Police de caractère (is watching you)
-        window.add_font("Arial", 35, "font")
+        win.new_font("Arial", 35, "font")
         
             
-        window.add_rect('border',
-                        self.py_margin,
-                        self.py_margin,
-                        self.py_width - 2 * self.py_margin,
-                        self.py_height - 2 * self.py_margin,
-                        self.py_border,
-                        label='bordure')
+        win.new_rect('border', self.py_border, label='border_rect')
+        win.add('border_rect',
+                [self.py_margin, self.py_width - 2 * self.py_margin],
+                [self.py_margin, self.py_height - 2 * self.py_margin],
+                page_label)
+
+        win.go_to(page_label)
 
         # Options d'execution
         options = {
@@ -70,10 +69,10 @@ class BuzzerMgr:
             'texte_affiche': 'Chargement', 
             'transition_next': 0, 
             'transition_percent': 0,
+            'page_label': page_label,
             'self': self # instance de l'objet courant, appelable dans fun_after grace à options['self']
         }
-        fun_before = lambda pg, win, opt: () # Fonction s'executant avant la boucle d'event
-        fun_event = lambda event, pg, win, opt: () # Boucle s'executant pendant l'event
+
         """ 
             param: pg instance de pygame
             param: win instance de windowsHelper courante
@@ -81,7 +80,7 @@ class BuzzerMgr:
         """
         def fun_after(pg, win, options):
             from Buzzer import Buzzer
-            win.reset(True)
+            win.refresh()
             if options['init_state'] == 'aucun':
                 if options['self'].need_master:
                     options['current_buzzer'] = Buzzer('master', dummy=self.dummy)
@@ -117,7 +116,6 @@ class BuzzerMgr:
                 options['transition_percent'] += options['transition_percent'] / 2 + 1
                 if options['transition_percent'] >= 100:
                     if options['transition_next'] > options['self'].nb_wiimote:
-                        win.toQuit = True
                         return True
                     options['init_state'] = options['transition_next'] * 10
                     options['texte_affiche'] = ''
@@ -125,19 +123,22 @@ class BuzzerMgr:
 
             # Affichage
             if  options['init_state'] == 'transition':
+                win.dump_elements(options['page_label'])
                 green_top = green_left =  options['self'].py_margin +  options['self'].py_border
-                green_width =  options['self'].py_width - 2 * ( options['self'].py_margin +  options['self'].py_border)
-                green_height =  options['self'].py_height - 2 * ( options['self'].py_margin +  options['self'].py_border)
-                green_color = tuple(int(round(c * (100 -  options['transition_percent']) / 100.0)) for c in win.colors['success'])
-                win.add_rect(green_color, green_top, green_left, green_width, green_height, 0)
+                green_width = options['self'].py_width - 2 * (options['self'].py_margin +  options['self'].py_border)
+                green_height = options['self'].py_height - 2 * (options['self'].py_margin +  options['self'].py_border)
+                color_tuple = win.colors['success'].get_rgb()
+                green_color = tuple(int(round(c * (100 - options['transition_percent']) / 100.0)) for c in color_tuple)
+                rect_label = win.new_rect(green_color, 0)
+                win.add(rect_label, [green_top, green_width], [green_left, green_height], options['page_label'])
             else:
-                win.add_text(options['texte_affiche'], 'font', 'txt', y=110, label=format_text(options['texte_affiche']), opt={'widthcentered':True})
-                win.print_element('img_wiimote', x=250, y=250)
-                win.print_element('bordure')
-                
+                win.dump_elements(options['page_label'])
+                label_new_text = win.new_text(options['texte_affiche'], 'font', 'txt')  # On créé le texte
+                win.add(label_new_text, 'centered', 110, options['page_label'])  # On l'affiche
+                win.add('img_wiimote', 250, 250, options['page_label'])  # image wiimote
             return False
         
-        window.event(fun_before, fun_event, fun_after, options)
+        win.event(after_fun=fun_after, vars=options, page=page_label)
 
     def button_pressed(self, which, btn):
         if which not in self.buzzers.keys() or self.buzzers[which].dummy:

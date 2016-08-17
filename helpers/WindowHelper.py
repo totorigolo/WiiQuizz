@@ -72,6 +72,9 @@ class WindowHelper:
         self.new_color('black')
         self.new_color('white')
 
+    def is_open(self):
+        return self.opened
+
     """
         Ferme la fenêtre
     """
@@ -277,7 +280,14 @@ class WindowHelper:
         Récupère le résultat du menu demandé, renvoit None si pas de résultat
     """
     def get_menu_result(self, label):
-        return  self.elements[label]['result']
+        return self.elements[label]['result']
+
+    """
+        Retourne un élément
+    """
+
+    def get_element(self, label):
+        return self.elements[label]
 
     """
         Ajoute l'élément à la page donnée
@@ -364,7 +374,7 @@ class WindowHelper:
                         y = (p_height - elem['obj'].get_rect().height) / 2
                     self.win.blit(elem['obj'], (x, y))
                     pg.display.flip()
-                if elem_info['nb_recursion'] is not None:
+                if elem_info['nb_recursion'] > 0:
                     self.pages[page]['elements'][num]['nb_recursion'] += 1
 
     """
@@ -381,7 +391,10 @@ class WindowHelper:
             y = elem_info['y']
             if not isinstance(x, list) or not isinstance(x, list):
                 raise
-            color = self.colors[elem['color']].get_rgb()
+            if isinstance(elem['color'], tuple):
+                color = elem['color']
+            else:
+                color = self.colors[elem['color']].get_rgb()
             pg.draw.rect(self.win, color, [x[0], y[0], x[1], y[1]], elem['border'])
             pg.display.flip()
 
@@ -436,10 +449,10 @@ class WindowHelper:
             choix %= len(menu)
             k = 0
 
-            self.refresh()  # On raffréchit la page
-
             if after_fun is not None:
                 vars.update(after_fun(pg, self, vars, menu))
+
+            self.refresh()  # On raffréchit la page
 
             for m in menu:
                 if isinstance(m, list):
@@ -463,6 +476,7 @@ class WindowHelper:
                         callback(eval(params))
                 else:
                     text = m
+
                 if not done:
                     if choix == k:
                         if options["border_active"] is not None:
@@ -534,13 +548,15 @@ class WindowHelper:
         clock = pg.time.Clock()
         while not done:
             clock.tick(25)  # 25 img/sec
-            done = before_fun(pg, self, vars)
+            if before_fun is not None:
+                done = before_fun(pg, self, vars)
             for event in pg.event.get():
                 if event.type == QUIT:
                     done = True
-                done = event_fun(pg, self, vars, event)
-
-            done = after_fun(pg, self, vars)
+                if event_fun is not None:
+                    done = event_fun(pg, self, vars, event)
+            if after_fun is not None:
+                done = after_fun(pg, self, vars)
             pg.display.flip()
 
     """
@@ -558,3 +574,10 @@ class WindowHelper:
     def refresh(self):
         self.reset()
         self.print_page()
+
+    def dump_elements(self, page=None):
+        if page is None:
+            page = self.current_page
+        self.pages[page]['elements'] = []
+
+win = WindowHelper.Instance()
