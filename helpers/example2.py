@@ -1,18 +1,18 @@
 # coding: utf8
 
-from colorHelper import colorHelper
-from windowsHelper import windowsHelper
+from ColorHelper import ColorHelper
+from WindowHelper import WindowHelper
 import os
 import time
 
 
-window = windowsHelper(800, 800, title="Accueil", bg = colorHelper("white"))
+window = WindowHelper(800, 800, title="Accueil", bg = ColorHelper("white"))
 
 window.add_font("Arial", 20, "menu")
 window.add_font("Arial", 30, "titre")
-window.add_color("menu_defaut", colorHelper("burlywood"))
-window.add_color("menu_act", colorHelper("snow"))
-window.add_color("menu_bordure_act", colorHelper("indianred"))
+window.add_color("menu_defaut", ColorHelper("burlywood"))
+window.add_color("menu_act", ColorHelper("snow"))
+window.add_color("menu_bordure_act", ColorHelper("indianred"))
 # def addMenu(self, x=0, y=0, menu = [], opt = {})
 
 window.new_page("page 1", goTo= False)

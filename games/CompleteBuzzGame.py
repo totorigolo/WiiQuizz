@@ -6,6 +6,7 @@ from os.path import isfile, join, abspath
 
 import pygame
 from pygame.locals import *
+from WindowHelper import WindowHelper
 
 from ListDialog import ListDialog
 from tools import py_encode_font_txt, py_encode_title
@@ -32,12 +33,26 @@ class CompleteBuzzGame:
         self.score_win = 500
         self.score_loose = 100
 
+        self.window = WindowHelper.Instance()
+
         # Constantes pour PyGame
         self.py_width = 800
         self.py_height = 600
         self.py_margin = 55
         self.py_border = 5
         self.py_frame_top = self.py_frame_left = self.py_margin + self.py_border
+
+        #Colors
+        self.window.add_color('black', 'black')
+        self.window.add_color('txt', (50, 150, 250))
+        self.window.add_color('border', (200, 200, 200))
+        self.window.add_color('waiting', (200, 200, 200))
+        self.window.add_color('master', (60, 60, 60))
+        self.window.add_color('team1', (207, 52, 52))
+        self.window.add_color('team2', (207, 250, 30))
+        self.window.add_color('team3', (230, 150, 20))
+        self.window.add_color('team4', (30, 208, 20))
+
         self.py_color_BLACK = (0, 0, 0)
         self.py_color_txt = (50, 150, 250)
         self.py_color_border = (200, 200, 200)
@@ -99,9 +114,7 @@ class CompleteBuzzGame:
                 return
 
         # Démarre PyGame
-        pygame.init()
-        pygame.display.set_caption(py_encode_title(self.window_title))
-        self.py_screen = pygame.display.set_mode((self.py_width, self.py_height), pygame.RESIZABLE)
+        self.window.new_page(self.window_title, goTo=True)
 
         # Mode image activé : Chargement des images
         if self.image_mode:

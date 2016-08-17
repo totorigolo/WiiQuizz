@@ -4,8 +4,8 @@ import os
 import random
 import time
 
-from windowsHelper import windowsHelper
-from colorHelper import colorHelper
+from WindowHelper import WindowHelper
+from ColorHelper import ColorHelper
 
 from tools import py_encode_font_txt, py_encode_title, format_text
 
@@ -35,14 +35,17 @@ class BuzzerMgr:
         self.py_border = 5
 
         # Démarre Fenètre
-        window = windowsHelper.Instance()
-        window.open(self.py_width, self.py_height, 'Initialisation des Buzzers')
+        window = WindowHelper.Instance()
+        if window.is_opened():
+            window.new_page('Initialisation des Buzzers', goTo=True)
+        else:
+            window.open(self.py_width, self.py_height, 'Initialisation des Buzzers')
         
         # Couleurs
         window.add_color("txt", (50, 150, 250))
         window.add_color("border", (200, 200, 200))
         window.add_color("success", (52, 207, 52))
-        window.add_color("bckg", colorHelper("black"))
+        window.add_color("bckg", ColorHelper("black"))
 
         # Images
         window.add_img(os.path.abspath('./res/sync_buzzer.jpg'), 0, 0, printElem=False, label="img_wiimote")
