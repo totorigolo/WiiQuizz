@@ -1,10 +1,12 @@
 # coding: utf8
 
+from inspect import isfunction
+
 import pygame as pg
 from pygame.locals import *
+
 from ColorHelper import ColorHelper
 from tools import py_encode_font_txt, py_encode_title
-from inspect import isfunction
 
 if not pg.font: print 'Warning, fonts disabled'
 if not pg.mixer: print 'Warning, sound disabled'
@@ -449,6 +451,8 @@ class WindowHelper:
         if page is None:
             page = self.current_page
         elem_info = self.pages[page]['elements'][num]
+        if not self.exists(elem_info['label']):
+            return num + 1
         elem = self.elements[elem_info['label']]
         if elem_info['visible'] and elem['nb_usable'] != 0:  # Si l'élément est visible
             if elem['nb_usable'] != -1:
@@ -560,25 +564,25 @@ class WindowHelper:
 
             self.refresh()  # On raffréchit la page
 
-            for m in menu:
-                if isinstance(m, list) and len(m) > 1:
+            for i, m in enumerate(menu):
+                if isinstance(m, list):
                     text = m[0]
                     callback = m[1]
-                    if pressed and choix == k and isinstance(callback, str):
+                    if pressed and choix == i and isinstance(callback, str):
                         if callback.lower() == 'close':
                             callback = 'callback_close'
                         callback = "self." + callback + "("
-                        for i in range(2, len(m)):
-                            callback += str(m[i])
-                            if i != len(m) - 1:
+                        for j in range(2, len(m)):
+                            callback += str(m[j])
+                            if j != len(m) - 1:
                                 callback += ", "
                         callback += ")"
                         eval(callback)
-                    elif pressed and choix == k and isfunction(callback):
+                    elif pressed and choix == i and isfunction(callback):
                         params = "("
-                        for i in range(2, len(m)):
-                            params += str(m[i])
-                            if i != len(m) - 1:
+                        for j in range(2, len(m)):
+                            params += str(m[j])
+                            if j != len(m) - 1:
                                 params += ", "
                         params += ")"
                         callback(eval(params))
@@ -704,5 +708,12 @@ class WindowHelper:
 
     def fill(self, color):
         self.win.fill(self.colors[color].get_rgb())
+
+    """
+        Retourne si un élément existe
+    """
+
+    def exists(self, label):
+        return label in self.elements.keys()
 
 win = WindowHelper.Instance()

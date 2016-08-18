@@ -390,7 +390,6 @@ class CompleteBuzzGame:
                         vars['self'].py_width - win.get_element(label_txt)['obj'].get_rect().width - 10,
                         vars['self'].py_height - 30,
                         label_page)
-            print win.elements
             win.refresh()
 
         self.win.event(event_fun=event_fun, after_fun=after_fun, vars=vars)
