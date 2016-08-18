@@ -24,8 +24,12 @@ win.new_font('Arial', 30, 'default')
 win.new_text('Hello World!', 'default', 'blue', 'test_text')
 win.new_text('Hello World!', 'default', 'green', 'test_text_2')
 win.new_img(os.path.abspath('../res/sync_buzzer.jpg'), 'test_img')
-win.new_rect('blue', 1, 'test_rect')
 win.new_circle('blue', 50, 1, 'test_circle')
+win.new_text('Texte éphémère', 'default', 'blue', 'txt_eph')
+win.nb_use('txt_eph', 1)
+
+# txt_eph n'est utilisable (affichable) qu'une fois
+print len(win.elements)
 
 choices = ['Option 1', 'Option 2', ['Quitter', 'close']]
 win.new_menu(choices, 'menu_1')  # On ajoute un menu de façon générale !
@@ -35,8 +39,13 @@ win.add('test_text_2', page='index')
 win.add('test_text', page='page_1')
 win.add('test_circle', 60, 60, page='page_1')
 win.add('test_img', page='page_2')
-win.add('test_rect', [10, 50], [10, 50], page='page_3')  # win.add(label, [x1, x2], [y1, y2], page)
 win.add('test_circle', 150, 150, page='page_3')
+win.add('txt_eph', page='page_3')
+
+# Ajouter un élément d'un coup
+win.add(win.new_rect('blue', 1, 'test_rect'), [10, 50], [10, 50], page='page_3')
+# win.add(label, [x1, x2], [y1, y2], page)
+
 
 
 # Pour les menus, utiliser add_menu
@@ -65,6 +74,7 @@ win.go_to('page_2')
 time.sleep(2)
 
 win.go_to('page_3')
+print len(win.elements)
 
 time.sleep(2)
 

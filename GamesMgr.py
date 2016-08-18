@@ -24,12 +24,10 @@ class GamesMgr:
     def run(self):
         while True:
             dialog = ListDialog()
-            choix = dialog.get_answer([g[0] for g in self.games] + ['Quitter'], 'Quel jeu désirez-vous lancer ?', None)
-            choix = (choix + 1) % (len(self.games) + 1) # Quitter correspond au choix 0
+            choix = dialog.get_answer([g[0] for g in self.games] + [['Quitter', 'close']], 'Quel jeu désirez-vous lancer ?', None)
+            choix = (choix + 1) % (len(self.games) + 1)  # Quitter correspond au choix 0
             if choix == 0:
                 break
-            
-
 
             game_module = self.games[choix - 1][1]
 

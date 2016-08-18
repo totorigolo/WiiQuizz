@@ -3,16 +3,10 @@
 import time
 from os import listdir
 from os.path import isfile, join, abspath
-
-import pygame
-from pygame.locals import *
 from WindowHelper import WindowHelper
 
 from ListDialog import ListDialog
-from tools import py_encode_font_txt, py_encode_title
-
-if not pygame.font: print 'Warning, fonts disabled'
-if not pygame.mixer: print 'Warning, sound disabled'
+from tools import py_encode_font_txt
 
 
 # noinspection PyUnresolvedReferences
@@ -46,7 +40,7 @@ class CompleteBuzzGame:
         if not self.win.is_open():
             self.win.open_window(self.py_width, self.py_height)
 
-        #Colors
+        # Colors
         self.win.new_color('black')
         self.win.new_color((50, 150, 250), 'txt')
         self.win.new_color((200, 200, 200), 'border')
@@ -133,7 +127,7 @@ class CompleteBuzzGame:
                 for image_filename in self.music_list:
                     self.py_musics.append(
                         self.win.new_sound(abspath('/'.join((self.music_path, image_filename))))
-                    ) # On enregistre les labels des sons
+                    )  # On enregistre les labels des sons
             else:
                 # TODO: Afficher une erreur avec MessageDialog
                 return
@@ -147,6 +141,17 @@ class CompleteBuzzGame:
         self.win.new_font('Arial', 35, 'font')
         self.win.new_font('Arial', 24, 'scores')
         self.win.new_font('Arial', 20, 'sous_txt')
+
+        # Bordure de l'écran
+        self.win.new_rect('border', self.py_border, label='win_border')
+
+        # Fonds d'écrans
+        self.win.new_rect('waiting', 0, label='bg_waiting')
+        self.win.new_rect('master', 0, label='bg_master')
+        self.win.new_rect('team1', 0, label='bg_team1')
+        self.win.new_rect('team2', 0, label='bg_team2')
+        self.win.new_rect('team3', 0, label='bg_team3')
+        self.win.new_rect('team4', 0, label='bg_team4')
 
         # Variable d'execution
         vars = {
@@ -162,7 +167,8 @@ class CompleteBuzzGame:
             'rising_edge_which': False,
             'rising_edge_btn': False,
             'scores': [0] * 4,
-            'self': self
+            'self': self,
+            'label_page': label_page
         }
 
         """
@@ -170,9 +176,9 @@ class CompleteBuzzGame:
         """
 
         def event_fun(pg, win, vars, event):
-            if event.type == KEYDOWN and event.key == K_ESCAPE:
+            if event.type == pg.locals.KEYDOWN and event.key == pg.locals.K_ESCAPE:
                 return True
-            if event.type == VIDEORESIZE:
+            if event.type == pg.locals.VIDEORESIZE:
                 vars['self'].py_height = event.h
                 vars['self'].py_width = event.w
                 vars['self'].py_screen = win.open_window(event.w, event.h)
@@ -195,6 +201,7 @@ class CompleteBuzzGame:
             rising_edge_which = vars['rising_edge_which']
             rising_edge_btn = vars['rising_edge_btn']
             scores = vars['scores']
+            label_page = vars['label_page']
 
             # Evénements Wiimote
             new_edge, new_which, new_btn = False, None, None
@@ -240,7 +247,7 @@ class CompleteBuzzGame:
                                 state = 'blocked_'
                                 new_edge, new_which, new_btn = 'rising', 'master', 'any'
                             else:
-                                vars['self'].py_snd_buzzer.play()
+                                win.play_sound('snd_buzzer')
                                 state = 'buzz_team_{}_'.format(buzzer_any.team)
                                 music_mode_playing, music_mode_changed = False, True
                 elif state == 'blocked' or state[0:10] == 'buzz_team_':
@@ -267,30 +274,34 @@ class CompleteBuzzGame:
                 rising_edge = True
                 rising_edge_which, rising_edge_btn = new_which, new_btn
 
-            # Gestion de l'état
+            # Gestion de l'état : Préparation du texte (label : txt_affiche)
+            color_bckg = 'waiting'
             if state == 'waiting_':
-                color_bckg = vars['self'].py_color_waiting
-                texte_affiche = vars['self'].default_text
+                color_bckg = 'waiting'
+                win.nb_use(win.new_text(vars['self'].default_text, 'font', 'waiting', label='txt_affiche'), 1)
                 state = state[:-1]
             elif state == 'blocked_':
-                color_bckg = vars['self'].py_color_master
-                texte_affiche = ''
+                color_bckg = 'master'
+                win.nb_use(win.new_text('', 'font', 'master', label='txt_affiche'), 1)
                 state = state[:-1]
             elif state[0:10] == 'buzz_team_' and state[-1] == '_':
                 team = int(state[-2])
-                color_bckg = getattr(vars['self'], 'py_color_team{}'.format(team))
+                color_bckg = 'team{}'.format(team)
                 texte_affiche = vars['self'].team_names[team]
+                win.nb_use(win.new_text(texte_affiche, 'font', color_bckg, label='txt_affiche'), 1)
                 state = state[:-1]
             elif state[0:9] == 'win_team_' and state[-1] == '_':
                 team = int(state[-2])
-                color_bckg = getattr(vars['self'], 'py_color_team{}'.format(team))
-                texte_affiche = 'Gagné !'
+                color_bckg = 'team{}'.format(team)
+                win.nb_use(win.new_text('Gagné !', 'font', color_bckg, label='txt_affiche'), 1)
                 state = 'blocked'
             elif state[0:11] == 'loose_team_' and state[-1] == '_':
                 team = int(state[-2])
-                color_bckg = getattr(vars['self'], 'py_color_team{}'.format(team))
-                texte_affiche = 'FAUX !'
+                color_bckg = 'team{}'.format(team)
+                win.nb_use(win.new_text('FAUX !', 'font', color_bckg, label='txt_affiche'), 1)
                 state = 'blocked'
+            else:
+                win.nb_use(win.new_text('', 'font', 'waiting', label='txt_affiche'), 1)
 
             # Mode musique activé : Gestion de la lecture
             if vars['self'].music_mode:
@@ -299,85 +310,88 @@ class CompleteBuzzGame:
                 if music_mode_changed:  # Au changement de lecture, on démarre ou arrête la musique
                     music_mode_changed = False
                     for m in vars['self'].py_musics:
-                        m.stop()
+                        win.stop_sound(m)
                     if music_mode_playing:
-                        vars['self'].py_musics[music_cursor].play()
+                        win.play_sound(music_cursor)
                 if music_mode_playing:  # Détecte la fin de la lecture
-                    if not pygame.mixer.get_busy():
+                    if not win.is_mixer_busy():
                         music_mode_playing = False
 
             # Affichage
-            vars['self'].py_screen.fill(vars['self'].py_color_BLACK)
+            win.fill('black')
 
-            """ Bordures """
-            pygame.draw.rect(vars['self'].py_screen, vars['self'].py_color_border, pygame.Rect((vars['self'].py_margin, vars['self'].py_margin),
-                                                                               (vars['self'].py_width - 2 * vars['self'].py_margin,
-                                                                                vars['self'].py_height - 2 * vars['self'].py_margin)),
-                             vars['self'].py_border)
+            # Bordures
+            win.add('win_border',
+                     [vars['self'].py_margin, vars['self'].py_width - 2 * vars['self'].py_margin],
+                     [vars['self'].py_margin, vars['self'].py_height - 2 * vars['self'].py_margin],
+                     label_page)
 
-            """ Fond """
-            pygame.draw.rect(vars['self'].py_screen, color_bckg,
-                             pygame.Rect((vars['self'].py_frame_top, vars['self'].py_frame_left),
-                                         (vars['self'].frame_width(), vars['self'].frame_height())), 0)
+            # Fond
+            label_bg = 'bg_' + color_bckg
+            win.add(label_bg,
+                    [vars['self'].py_frame_top, vars['self'].frame_width()],
+                    [vars['self'].py_frame_left, vars['self'].frame_height()],
+                    label_page)
 
-            """ Mode image activé : Affiche l'image """
+            # Mode image activé : Affiche l'image
             if vars['self'].image_mode:
                 if image_mode_displayed:  # Affiche l'image
                     img = vars['self'].py_images[image_cursor]
                     img_x = (vars['self'].py_width - img.get_rect().width) / 2
                     img_y = (vars['self'].py_height - img.get_rect().height) / 2
-                    vars['self'].py_screen.blit(img, (img_x, img_y))
-                else:  # Affiche quelle image n'est pas affichée
-                    py_txt = vars['self'].font_sous_txt.render(
-                        py_encode_font_txt('{} / {}'.format(image_cursor + 1, len(vars['self'].image_list))),
-                        True, vars['self'].py_color_txt
-                    )
+                    win.add(img, img_x, img_y, label_page)
+                else:  # Affiche l'image non affichée
+                    text = '{} / {}'.format(image_cursor + 1, len(vars['self'].image_list))
+                    # L'objet sera utilisé qu'une fois avant d'être supprimé
+                    label_txt = win.nb_use(win.new_text(text, 'sous_txt', 'txt'), 1)
+
                     txt_pos_x = vars['self'].py_margin + vars['self'].py_border + 5
                     txt_pos_y = vars['self'].py_margin + vars['self'].py_border + 5
-                    vars['self'].py_screen.blit(py_txt, (txt_pos_x, txt_pos_y))
+                    win.add(label_txt, txt_pos_x, txt_pos_y, label_page)
 
-            """ Mode musique activé : Infos sur la musique en cours """
+            # Mode musique activé : Infos sur la musique en cours
             if vars['self'].music_mode:
                 timer_sec = time.time() - music_timer_sec if music_mode_playing else 0
-                py_txt = vars['self'].font_sous_txt.render(
-                    py_encode_font_txt(
-                        "{} / {} : {} - {:.2f} / {:.2f} sec".format(music_cursor + 1, len(vars['self'].music_list),
+                text = "{} / {} : {} - {:.2f} / {:.2f} sec".format(music_cursor + 1, len(vars['self'].music_list),
                                                                     'Playing' if music_mode_playing else 'Stop',
                                                                     timer_sec,
-                                                                    float(vars['self'].py_musics[music_cursor].get_length()))),
-                    True, vars['self'].py_color_txt
-                )
+                                                                    float(vars['self'].py_musics[music_cursor].get_length()))
+                label_txt = win.nb_use(win.new_text(text, 'font', 'txt'), 1)
+
                 txt_pos_x = vars['self'].py_margin + vars['self'].py_border + 5
-                txt_pos_y = vars['self'].py_height - vars['self'].py_margin - vars['self'].py_border - 5 - py_txt.get_rect().height
-                vars['self'].py_screen.blit(py_txt, (txt_pos_x, txt_pos_y))
+                txt_pos_y = vars['self'].py_height - vars['self'].py_margin - vars['self'].py_border - \
+                            5 - win.get_element(label_txt)['obj'].get_rect().height
+                win.add(label_txt, txt_pos_x, txt_pos_y, label_page)
 
-            """ Texte affiché """
+            # Texte affiché
             if state != 'waiting' or not (vars['self'].image_mode and image_mode_displayed):
-                py_txt = vars['self'].font.render(py_encode_font_txt(texte_affiche), True, vars['self'].py_color_txt)
-                txt_pos_x = (vars['self'].py_width - py_txt.get_rect().width) / 2
-                vars['self'].py_screen.blit(py_txt, (txt_pos_x, 110))
+                txt_pos_x = (vars['self'].py_width - win.get_element('txt_affiche')['obj'].get_rect().width) / 2
+                win.add('txt_affiche', txt_pos_x, 110, label_page)
 
-            """ Affiche les scores """
+            # Affiche les scores
             if vars['self'].nb_buzzers >= 1:
-                vars['self'].py_screen.blit(
-                    vars['self'].font_scores.render(py_encode_font_txt('{} : {}'.format(vars['self'].team_names[1], scores[0])), True,
-                                            vars['self'].py_color_team1), (10, 10))
+                win.add(
+                    win.nb_use(
+                        win.new_text('{} : {}'.format(vars['self'].team_names[1], scores[0]), 'scores', 'team1'),
+                        1),
+                    10, 10, label_page)
             if vars['self'].nb_buzzers >= 2:
-                score_2_txt = vars['self'].font_scores.render(
-                    py_encode_font_txt('{} : {}'.format(vars['self'].team_names[2], scores[1])),
-                    True, vars['self'].py_color_team2)
-                vars['self'].py_screen.blit(score_2_txt, (vars['self'].py_width - score_2_txt.get_rect().width - 10, 10))
+                label_txt = win.nb_use(win.new_text('{} : {}'.format(vars['self'].team_names[2], scores[1]), 'scores', 'team2'), 1)
+                win.add(label_txt, vars['self'].py_width - win.get_element(label_txt)['obj'].get_rect().width, 10, label_page)
             if vars['self'].nb_buzzers >= 3:
-                vars['self'].py_screen.blit(
-                    vars['self'].font_scores.render(py_encode_font_txt('{} : {}'.format(vars['self'].team_names[3], scores[2])), True,
-                                            vars['self'].py_color_team3), (10, vars['self'].py_height - 30))
-                score_4_txt = vars['self'].font_scores.render(
-                    py_encode_font_txt('{} : {}'.format(vars['self'].team_names[4], scores[3])),
-                    True, vars['self'].py_color_team4)
+                win.add(
+                    win.nb_use(win.new_text('{} : {}'.format(vars['self'].team_names[3], scores[2]), 'scores', 'team3'), 1),
+                    10, vars['self'].py_height - 30, label_page
+                )
             if vars['self'].nb_buzzers >= 4:
-                vars['self'].py_screen.blit(score_4_txt,
-                                    (vars['self'].py_width - score_4_txt.get_rect().width - 10, vars['self'].py_height - 30))
-
+                label_txt = win.nb_use(win.new_text('{} : {}'.format(vars['self'].team_names[4], scores[3]), 'scores', 'team4'),
+                           1)
+                win.add(label_txt,
+                        vars['self'].py_width - win.get_element(label_txt)['obj'].get_rect().width - 10,
+                        vars['self'].py_height - 30,
+                        label_page)
+            print win.elements
+            win.refresh()
 
         self.win.event(event_fun=event_fun, after_fun=after_fun, vars=vars)
 

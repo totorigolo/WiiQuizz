@@ -51,8 +51,7 @@ class BuzzerMgr:
 
         # Police de caractère (is watching you)
         win.new_font("Arial", 35, "font")
-        
-            
+
         win.new_rect('border', self.py_border, label='border_rect')
         win.add('border_rect',
                 [self.py_margin, self.py_width - 2 * self.py_margin],
@@ -80,7 +79,6 @@ class BuzzerMgr:
         """
         def fun_after(pg, win, options):
             from Buzzer import Buzzer
-            win.refresh()
             if options['init_state'] == 'aucun':
                 if options['self'].need_master:
                     options['current_buzzer'] = Buzzer('master', dummy=self.dummy)
@@ -123,19 +121,18 @@ class BuzzerMgr:
 
             # Affichage
             if  options['init_state'] == 'transition':
-                win.dump_elements(options['page_label'])
-                green_top = green_left =  options['self'].py_margin +  options['self'].py_border
+                green_top = green_left = options['self'].py_margin +  options['self'].py_border
                 green_width = options['self'].py_width - 2 * (options['self'].py_margin +  options['self'].py_border)
                 green_height = options['self'].py_height - 2 * (options['self'].py_margin +  options['self'].py_border)
                 color_tuple = win.colors['success'].get_rgb()
                 green_color = tuple(int(round(c * (100 - options['transition_percent']) / 100.0)) for c in color_tuple)
-                rect_label = win.new_rect(green_color, 0)
+                rect_label = win.nb_use(win.new_rect(green_color, 0), 1)
                 win.add(rect_label, [green_top, green_width], [green_left, green_height], options['page_label'])
             else:
-                win.dump_elements(options['page_label'])
-                label_new_text = win.new_text(options['texte_affiche'], 'font', 'txt')  # On créé le texte
+                label_new_text = win.nb_use(win.new_text(options['texte_affiche'], 'font', 'txt'), 1)  # On créé le texte
                 win.add(label_new_text, 'centered', 110, options['page_label'])  # On l'affiche
                 win.add('img_wiimote', 250, 250, options['page_label'])  # image wiimote
+            win.refresh()
             return False
         
         win.event(after_fun=fun_after, vars=options, page=page_label)

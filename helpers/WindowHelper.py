@@ -50,7 +50,12 @@ class WindowHelper:
             pg.init()
 
     def __del__(self):
-        self.quit()
+        try:
+            self.opened = False
+            self.close()
+            pg.quit()
+        except AttributeError:
+            pass
 
     """
         Ouvre une nouvelle fenêtre de taille width * height
@@ -80,16 +85,19 @@ class WindowHelper:
         Ferme la fenêtre
     """
     def close(self):
-        pg.display.quit()
+        try:
+            pg.display.quit()
+        except AttributeError:
+            self.opened = False
+
+    def callback_close(self):
+        self.opened = False
 
     """
         Ferme la session pygame
     """
     def quit(self):
-        self.close()
-        pg.quit()
-        self.opened = False
-
+        self.__del__()
     """
         Ajoute une page
         param: title titre de la page
@@ -132,6 +140,17 @@ class WindowHelper:
         pg.display.set_caption(py_encode_title(self.pages[label]['title']))
         self.reset()
         self.print_page(label)
+
+    """
+        Définit le nombre de fois qu'un élément peut être affiché avant d'être automatiquement supprimé
+        param: label de l'élément
+        param: num de fois que l'élément peut être utilisé
+        return: label
+    """
+
+    def nb_use(self, label, num=1):
+        self.elements[label]['nb_usable'] = num
+        return label
 
     """
         Ajoute une couleur dans la liste des couleurs
@@ -190,7 +209,8 @@ class WindowHelper:
         elem = {
             'type': 'text',
             'content': text,
-            'obj': self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'], self.colors[color].get_rgb())
+            'obj': self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'], self.colors[color].get_rgb()),
+            'nb_usable': -1
         }
         if add_to_page == 'current':
             self.add(self.current_page)
@@ -210,7 +230,8 @@ class WindowHelper:
         elem = {
             'type': 'img',
             'content': url,
-            'obj': bg
+            'obj': bg,
+            'nb_usable': -1
         }
         if add_to_page == 'current':
             self.add(self.current_page)
@@ -229,7 +250,8 @@ class WindowHelper:
         elem = {
             'type': 'rect',
             'color': color,
-            'border': border
+            'border': border,
+            'nb_usable': -1
         }
         if add_to_page == 'current':
             self.add(self.current_page)
@@ -249,7 +271,8 @@ class WindowHelper:
             'type': 'circle',
             'color': color,
             'radius': radius,
-            'border': border
+            'border': border,
+            'nb_usable': -1
         }
         if add_to_page == 'current':
             self.add(self.current_page)
@@ -259,17 +282,20 @@ class WindowHelper:
         return label
 
     """
-            Ajoute un son dans la liste des éléments
-        """
+        Ajoute un remplissage
+        param: color couleur à remplir
+        param: label de l'élément
+        param: add_to_page (défaut False)
+        returns: label donné
+    """
 
-    def new_sound(self, url, label=None, add_to_page=False):
+    def new_fill(self, color, label=None, add_to_page=False):
         if label is None:
             label = len(self.elements)
-        sound = pg.mixer.Sound(url)
         elem = {
-            'type': 'sound',
-            'url': url,
-            'obj': sound
+            'type': 'fill',
+            'color': color,
+            'nb_usable': -1
         }
         if add_to_page == 'current':
             self.add(self.current_page)
@@ -278,8 +304,52 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
+    """
+        Ajoute un son dans la liste des éléments
+    """
+
+    def new_sound(self, url, label=None, add_to_page=False):
+        if label is None:
+            label = len(self.elements)
+        sound = pg.mixer.Sound(url)
+        elem = {
+            'type': 'sound',
+            'url': url,
+            'obj': sound,
+            'playing': False,
+            'nb_usable': -1
+        }
+        if add_to_page == 'current':
+            self.add(self.current_page)
+        elif isinstance(add_to_page, int) or isinstance(add_to_page, str):
+            self.add(add_to_page)
+        self.elements[label] = elem
+        return label
+
+    """
+        Joue un son
+    """
+
     def play_sound(self, label):
-        self.elements[label]['obj'].play()
+        if not self.elements[label]['playing']:
+            self.elements[label]['obj'].play()
+            self.elements[label]['playing'] = True
+
+    """
+        Arrête un son
+    """
+
+    def stop_sound(self, label):
+        if self.elements[label]['playing']:
+            self.elements[label]['obj'].stop()
+            self.elements[label]['playing'] = False
+
+    """
+        Retourne True si le mixer est occupé, False sinon
+    """
+
+    def is_mixer_busy(self):
+        return pg.mixer.get_busy()
 
     """
         Ajoute un menu dans la liste des éléments
@@ -291,7 +361,8 @@ class WindowHelper:
         elem = {
             'type': 'menu',
             'choices': choices,
-            'result': None
+            'result': None,
+            'nb_usable': -1
         }
         if add_to_page == 'current':
             self.add(self.current_page)
@@ -366,8 +437,9 @@ class WindowHelper:
     def print_page(self, page=None):
         if page is None:
             page = self.current_page
-        for num in range(len(self.pages[page]['elements'])):
-            self.print_elem(num, page)
+        num = 0
+        while num < len(self.pages[page]['elements']):
+            num = self.print_elem(num, page)
 
     """
         Affiche un élément d'une page
@@ -377,15 +449,19 @@ class WindowHelper:
         if page is None:
             page = self.current_page
         elem_info = self.pages[page]['elements'][num]
-        if elem_info['visible']:  # Si l'élément est visible
+        elem = self.elements[elem_info['label']]
+        if elem_info['visible'] and elem['nb_usable'] != 0:  # Si l'élément est visible
+            if elem['nb_usable'] != -1:
+                elem['nb_usable'] -= 1
             if elem_info['nb_recursion'] != 0:  # nb de récursion déterminé et infinie (-1)
                 if elem_info['nb_recursion'] > 0:
                     self.pages[page]['elements'][num]['nb_recursion'] -= 1
-                elem = self.elements[elem_info['label']]
                 if elem['type'] == 'rect':  # Si rectangle à afficher
                     self._print_rect(num, page)
                 elif elem['type'] == 'circle':  # Si cercle à afficher
                     self._print_circle(num, page)
+                elif elem['type'] == 'fill':
+                    self.fill(elem['color'])
                 elif elem['type'] == 'menu':  # Si menu à afficher
                     self._print_menu(num, page)
                 else:  # Tout autre ressource à afficher
@@ -400,6 +476,11 @@ class WindowHelper:
                     pg.display.flip()
                 if elem_info['nb_recursion'] > 0:
                     self.pages[page]['elements'][num]['nb_recursion'] += 1
+                if elem['nb_usable'] == 0:
+                    del self.elements[elem_info['label']]
+                    del self.pages[page]['elements'][num]
+                    num += 1
+        return num + 1
 
     """
         Affichage d'un rectangle
@@ -462,6 +543,7 @@ class WindowHelper:
             for event in pg.event.get():
                 if event.type == QUIT:
                     done = True
+                    self.callback_close()
                 if event.type == KEYDOWN:
                     if event.key == K_RETURN or event.key == K_KP_ENTER:
                         done = True
@@ -479,10 +561,12 @@ class WindowHelper:
             self.refresh()  # On raffréchit la page
 
             for m in menu:
-                if isinstance(m, list):
+                if isinstance(m, list) and len(m) > 1:
                     text = m[0]
                     callback = m[1]
                     if pressed and choix == k and isinstance(callback, str):
+                        if callback.lower() == 'close':
+                            callback = 'callback_close'
                         callback = "self." + callback + "("
                         for i in range(2, len(m)):
                             callback += str(m[i])
@@ -498,10 +582,11 @@ class WindowHelper:
                                 params += ", "
                         params += ")"
                         callback(eval(params))
+                elif isinstance(m, list):
+                    text = m[0]
                 else:
                     text = m
-
-                if not done:
+                if not done and self.is_open():
                     if choix == k:
                         if options["border_active"] is not None:
                             txt = self.fonts[options["font_active"]]['font'].render(py_encode_font_txt(text),
@@ -536,7 +621,10 @@ class WindowHelper:
                     y += txt.get_rect().height + options["margin"]
 
                     k += 1
-            pg.display.flip()
+            if self.is_open():
+                pg.display.flip()
+        if not self.is_open():
+            self.close()
         self.elements[elem_info['label']]['result'] = choix
 
     """
@@ -599,9 +687,22 @@ class WindowHelper:
         self.reset()
         self.print_page()
 
+    """
+        Supprime tous les éléments d'une page
+        param: page
+    """
+
     def dump_elements(self, page=None):
         if page is None:
             page = self.current_page
         self.pages[page]['elements'] = []
+
+    """
+        Remplie la page courante d'une couleur donnée
+        param: color str couleur à remplir
+    """
+
+    def fill(self, color):
+        self.win.fill(self.colors[color].get_rgb())
 
 win = WindowHelper.Instance()
