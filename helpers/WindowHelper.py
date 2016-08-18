@@ -433,6 +433,20 @@ class WindowHelper:
         return True
 
     """
+        Supprime le premier élément de label label demandé sur la fenêtre
+    """
+
+    def delete(self, label, page=None):
+        if page is None:
+            page = self.current_page
+        for k in range(len(self.pages[page]['elements'])):
+            elem_info = self.pages[page]['elements'][k]
+            if elem_info['label'] == label:
+                del self.pages[page]['elements'][k]
+                return True
+        return False
+
+    """
         Affiche tous les éléments d'une page donnée
     """
 
@@ -539,7 +553,7 @@ class WindowHelper:
         clock = pg.time.Clock()
         while not done:
             x, y = elem_x, elem_y
-            clock.tick(25)  # Ne boucle que 25 fois/sec
+            clock.tick(10)  # Ne boucle que 25 fois/sec
             if before_fun is not None:
                 vars.update(before_fun(pg, self, vars, menu))
 
@@ -663,7 +677,7 @@ class WindowHelper:
         done = False
         clock = pg.time.Clock()
         while not done:
-            clock.tick(25)  # 25 img/sec
+            clock.tick(10)  # 25 img/sec
             if before_fun is not None:
                 done = before_fun(pg, self, vars)
             for event in pg.event.get():
