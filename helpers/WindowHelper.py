@@ -564,8 +564,8 @@ class WindowHelper:
 
             self.refresh()  # On raffréchit la page
 
-                if isinstance(m, list):
             for i, m in enumerate(menu):
+                if isinstance(m, list):
                     text = m[0]
                     callback = m[1]
                     if pressed and choix == i and isinstance(callback, str):
