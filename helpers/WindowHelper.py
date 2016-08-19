@@ -480,7 +480,9 @@ class WindowHelper:
                         'right': str(p_width),
                         'bottom': str(p_height),
                         'x_center': str(p_width / 2),
-                        'y_center': str(p_height / 2)
+                        'y_center': str(p_height / 2),
+                        'self_width': str(elem['obj'].get_rect().width),
+                        'self_height': str(elem['obj'].get_rect().height)
                     }
                     x = str(elem_info['x'])
                     y = str(elem_info['y'])
@@ -764,6 +766,139 @@ class WindowHelper:
         return label in self.elements.keys()
 
     """
+        Exécute une ligne du langage skt
+    """
+
+    def execute(self, line, mode='def'):
+        mode = '#' + mode
+        lines = [mode, line]
+        self.parse_template_lang(lines)
+
+    """
+        Parser de skt
+    """
+
+    def parse_template_lang(self, lines):
+        mode = None
+        page = {
+            'title': None,
+            'label': None,
+            'width': None,
+            'height': None,
+            'bg': None
+        }
+        elements = {'def': {}, 'placing': []}
+        """ Récupération des éléments du fichier """
+        for line in lines:
+            line = line.strip()
+            line = line.replace('\n', '')
+            if len(line) >= 2 and line[0] != '/' and line[1] != '/':
+                if re.match(r'#def', line) is not None:
+                    mode = 'def'
+                elif re.match(r'#placing', line) is not None:
+                    mode = 'placing'
+                else:
+                    possible_bg = re.findall("#bg\s*\:\s*(\w+)", line)  # Récupère le bg
+                    possible_page = re.findall("#page\s*\:\s*(\w+)\(?(\d*)?x?(\d*)?\)?", line)  # Récupère la page
+                    possible_titre = re.findall("#title\s*\:\s*([\w\s]+)", line)  # Récupère le titre
+                    possible_def = re.findall("(text|rect|img|circle)\s*:\s*(\w+)\((.*)\)\s*(\"([\w\d\s]*)\")?\s*",
+                                              line)  # récupère les définitions
+                    possible_placing = re.findall("(\w+)\((.*)\)", line)  # Récupère les placements d'éléments
+                    # Paramètre de la page #page
+                    if mode is None and len(possible_page) == 1:
+                        if isinstance(possible_page[0], tuple):
+                            page['label'], page['width'], page['height'] = possible_page[0]
+                            page['width'] = int(page['width'])
+                            page['height'] = int(page['height'])
+                        else:
+                            page['label'] = possible_page[0]
+                            page['label'].replace(' ', '')
+                    # #bg
+                    elif mode is None and len(possible_bg) == 1:
+                        page['bg'] = possible_bg[0]
+                    # #title
+                    elif mode is None and len(possible_titre) == 1:
+                        page['title'] = possible_titre[0].replace('\n', '')
+                    # #def
+                    elif mode == 'def' and len(possible_def) > 0:
+                        if len(possible_def[0]) == 3:
+                            type, label, params = possible_def[0]
+                            content = None
+                        elif len(possible_def[0]) == 5:
+                            type, label, params, c, content = possible_def[0]
+                        # Récupère les éléments entre guillements
+                        first_comma = None
+                        last_comma = None
+                        after_comma = None
+                        for k in range(len(params)):
+                            if params[k] == '"' and first_comma is None:
+                                first_comma = k
+                            elif params[k] == '"':
+                                last_comma = k
+                            if after_comma is None and last_comma is not None and params[k] == ',':
+                                after_comma = k
+                        if first_comma is not None:
+                            content = params[first_comma + 1:last_comma]
+                            params = params[0:first_comma] + params[after_comma + 1:]
+                        params.replace(' ', '')  # Enlève les espaces
+                        params = params.split(',')  # Sépare par la ','
+                        for k in range(len(params)):
+                            params[k] = params[k].strip()
+                        elements[mode][label] = {
+                            'type': type,
+                            'params': params,
+                            'content': content
+                        }
+                    # #placing
+                    elif mode == 'placing' and len(possible_placing) > 0:
+                        label, params = possible_placing[0]
+                        params.replace(' ', '')
+                        params = params.split(',')
+                        for k in range(len(params)):
+                            params[k] = params[k].strip()
+                        elements[mode].append({
+                            'label': label,
+                            'params': params
+                        })
+        """ Parcourt des éléments et création de la page """
+        if page['label'] is None:
+            label_page = self.current_page
+        else:
+            label_page = self.new_page(page['title'], page['width'], page['height'], label=page['label'], bg=page['bg'])
+        # On ajoute les éléments
+        for label, elem in elements['def'].items():
+            if elem['type'] == 'text':
+                self.new_text(elem['content'], elem['params'][0].replace(' ', ''), elem['params'][1].replace(' ', ''),
+                              label)
+            elif elem['type'] == 'rect':
+                self.new_rect(elem['params'][0].replace(' ', ''), int(elem['params'][1]), label)
+            elif elem['type'] == 'circle':
+                self.new_circle(elem['params'][0].replace(' ', ''), int(elem['params'][1]), int(elem['params'][2]),
+                                label)
+            elif elem['type'] == 'img':
+                elem['params'][0] = elem['params'][0].replace('IMG_FOLDER', options['IMG_FOLDER']).replace('/', '\\')
+                self.new_img(elem['params'][0], label)
+        # On ajoute à la page
+        for info in elements['placing']:
+            label = info['label']
+            if self.elements[label]['type'] == 'rect':
+                if info['params'][0].isdigit():
+                    info['params'][0] = int(info['params'][0])
+                if info['params'][1].isdigit():
+                    info['params'][1] = int(info['params'][1])
+                if info['params'][2].isdigit():
+                    info['params'][2] = int(info['params'][2])
+                if info['params'][3].isdigit():
+                    info['params'][3] = int(info['params'][3])
+                self.add(label, [info['params'][0], info['params'][2]],
+                         [info['params'][1], info['params'][3]], label_page)
+            else:
+                if info['params'][0].isdigit():
+                    info['params'][0] = int(info['params'][0])
+                if info['params'][1].isdigit():
+                    info['params'][1] = int(info['params'][1])
+                self.add(label, info['params'][0], info['params'][1], label_page)
+    """
         Importe un fichier .skt
     """
     def import_template(self, filename, opt=None):
@@ -778,121 +913,7 @@ class WindowHelper:
             filename = options['SKT_FOLDER'] + '\\' + filename + '.skt'
         with open(filename, 'r') as file:
             lines = file.readlines()
-            mode = None
-            page = {
-                'title': None,
-                'label': None,
-                'width': None,
-                'height': None,
-                'bg': None
-            }
-            elements = {'def': {}, 'placing': []}
-            """ Récupération des éléments du fichier """
-            for line in lines:
-                line.replace('\n', '')
-                if len(line) >= 2 and line[0] != '/' and line[1] != '/':
-                    if re.match(r'#def', line) is not None:
-                        mode = 'def'
-                    elif re.match(r'#placing', line) is not None:
-                        mode = 'placing'
-                    else:
-                        possible_bg = re.findall("#bg\s*\:\s*(\w+)", line)  # Récupère le bg
-                        possible_page = re.findall("#page\s*\:\s*(\w+)\(?(\d*)?x?(\d*)?\)?", line)  # Récupère la page
-                        possible_titre = re.findall("#title\s*\:\s*([\w\s]+)", line)  # Récupère le titre
-                        possible_def = re.findall("(text|rect|img|circle)\s*:\s*(\w+)\((.*)\)\s*(\"([\w\d\s]*)\")?\s*", line)  # récupère les définitions
-                        possible_placing = re.findall("(\w+)\((.*)\)", line)  # Récupère les placements d'éléments
-                        # Paramètre de la page #page
-                        if mode is None and len(possible_page) == 1:
-                            if isinstance(possible_page[0], tuple):
-                                page['label'], page['width'], page['height'] = possible_page[0]
-                                page['width'] = int(page['width'])
-                                page['height'] = int(page['height'])
-                            else:
-                                page['label'] = possible_page[0]
-                                page['label'].replace(' ', '')
-                        # #bg
-                        elif mode is None and len(possible_bg) == 1:
-                            page['bg'] = possible_bg[0]
-                        # #title
-                        elif mode is None and len(possible_titre) == 1:
-                            page['title'] = possible_titre[0].replace('\n', '')
-                        # #def
-                        elif mode == 'def' and len(possible_def) > 0:
-                            if len(possible_def[0]) == 3:
-                                type, label, params = possible_def[0]
-                                content = None
-                            elif len(possible_def[0]) == 5:
-                                type, label, params, c, content = possible_def[0]
-                            # Récupère les éléments entre guillements
-                            first_comma = None
-                            last_comma = None
-                            after_comma = None
-                            for k in range(len(params)):
-                                if params[k] == '"' and first_comma is None:
-                                    first_comma = k
-                                elif params[k] == '"':
-                                    last_comma = k
-                                if after_comma is None and last_comma is not None and params[k] == ',':
-                                    after_comma = k
-                            if first_comma is not None:
-                                content = params[first_comma+1:last_comma]
-                                params = params[0:first_comma] + params[after_comma+1:]
-                            params.replace(' ', '')  # Enlève les espaces
-                            params = params.split(',')  # Sépare par la ','
-                            for k in range(len(params)):
-                                params[k] = params[k].strip()
-                            elements[mode][label] = {
-                                'type': type,
-                                'params': params,
-                                'content': content
-                            }
-                        # #placing
-                        elif mode == 'placing' and len(possible_placing) > 0:
-                            label, params = possible_placing[0]
-                            params.replace(' ', '')
-                            params = params.split(',')
-                            for k in range(len(params)):
-                                params[k] = params[k].strip()
-                            elements[mode].append({
-                                'label': label,
-                                'params': params
-                            })
-            """ Parcourt des éléments et création de la page """
-            if page['label'] is None:
-                label_page = self.current_page
-            else:
-                label_page = self.new_page(page['title'], page['width'], page['height'], label=page['label'], bg=page['bg'])
-            # On ajoute les éléments
-            for label, elem in elements['def'].items():
-                if elem['type'] == 'text':
-                    self.new_text(elem['content'], elem['params'][0].replace(' ', ''), elem['params'][1].replace(' ', ''), label)
-                elif elem['type'] == 'rect':
-                    self.new_rect(elem['params'][0].replace(' ', ''), int(elem['params'][1]), label)
-                elif elem['type'] == 'circle':
-                    self.new_circle(elem['params'][0].replace(' ', ''), int(elem['params'][1]), int(elem['params'][2]), label)
-                elif elem['type'] == 'img':
-                    elem['params'][0] =  elem['params'][0].replace('IMG_FOLDER', options['IMG_FOLDER']).replace('/', '\\')
-                    self.new_img(elem['params'][0], label)
-            # On ajoute à la page
-            for info in elements['placing']:
-                label = info['label']
-                if self.elements[label]['type'] == 'rect':
-                    if info['params'][0].isdigit():
-                        info['params'][0] = int(info['params'][0])
-                    if info['params'][1].isdigit():
-                        info['params'][1] = int(info['params'][1])
-                    if info['params'][2].isdigit():
-                        info['params'][2] = int(info['params'][2])
-                    if info['params'][3].isdigit():
-                        info['params'][3] = int(info['params'][3])
-                    self.add(label, [info['params'][0], info['params'][2]],
-                             [info['params'][1], info['params'][3]], label_page)
-                else:
-                    if info['params'][0].isdigit():
-                        info['params'][0] = int(info['params'][0])
-                    if info['params'][1].isdigit():
-                        info['params'][1] = int(info['params'][1])
-                    self.add(label, info['params'][0], info['params'][1], label_page)
+            self.parse_template_lang(lines)
 
 
 win = WindowHelper.Instance()

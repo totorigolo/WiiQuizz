@@ -23,7 +23,6 @@ win.new_color('white')
 win.new_color('black')
 win.new_text('150', 'title', 'black', label='team4_result')
 
-#
 win.import_template('four_players')
 
 win.refresh()
