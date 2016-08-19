@@ -2,6 +2,8 @@
 
 from inspect import isfunction
 
+from Singleton import Singleton
+
 import pygame as pg
 from pygame.locals import *
 
@@ -11,25 +13,6 @@ import re
 
 if not pg.font: print 'Warning, fonts disabled'
 if not pg.mixer: print 'Warning, sound disabled'
-
-
-class Singleton:
-    def __init__(self, decorated):
-        self._decorated = decorated
-
-    def Instance(self):
-        try:
-            return self._instance
-        except AttributeError:
-            self._instance = self._decorated()
-            return self._instance
-
-    def __call__(self):
-        raise TypeError('Singletons must be accessed through `Instance()`.')
-
-    def __instancecheck__(self, inst):
-        return isinstance(inst, self._decorated)
-
 
 @Singleton
 class WindowHelper:
@@ -109,7 +92,9 @@ class WindowHelper:
         returns: label donné
     """
 
-    def new_page(self, title, width=None, height=None, label=None, bg=None):
+    def new_page(self, title, width=500, height=500, label=None, bg=None):
+        if not self.is_open():
+            self.open_window(width, height)
         if label is None:
             label = len(self.pages)
         if bg is None:
@@ -768,7 +753,7 @@ class WindowHelper:
                             page['label'] = possible_page[0]
                             page['label'].replace(' ', '')
                     elif mode is None and len(possible_bg) == 1:
-                        page['bg'] = possible_bg[0].replace('\n', '')
+                        page['bg'] = possible_bg[0]
                     elif mode is None and len(possible_titre) == 1:
                         page['title'] = possible_titre[0].replace('\n', '')
                     elif mode == 'def' and len(possible_def) > 0:
@@ -791,33 +776,37 @@ class WindowHelper:
                         elements[mode][label] = {
                             'params': params
                         }
-                """ Parcourt des éléments et création de la page """
+            """ Parcourt des éléments et création de la page """
+            if page['label'] is None:
+                label_page = self.current_page
+            else:
                 label_page = self.new_page(page['title'], page['width'], page['height'], label=page['label'], bg=page['bg'])
-                # On ajoute les éléments
-                for label, elem in elements['def'].items():
-                    if elem['type'] == 'text':
-                        self.new_text(elem['content'], elem['params'][0].replace(' ', ''), elem['params'][1].replace(' ', ''), label)
-                    elif elem['type'] == 'rect':
-                        self.new_rect(elem['params'][0].replace(' ', ''), int(elem['params'][1]), label)
-                # On ajoute à la page
-                for label, info in elements['placing'].items():
-                    if self.elements[label]['type'] == 'rect':
-                        if info['params'][0] != 'centered':
-                            info['params'][0] = int(info['params'][0])
-                        if info['params'][1] != 'centered':
-                            info['params'][1] = int(info['params'][1])
-                        if info['params'][2] != 'centered':
-                            info['params'][2] = int(info['params'][2])
-                        if info['params'][3] != 'centered':
-                            info['params'][3] = int(info['params'][3])
-                        self.add(label, [info['params'][0], info['params'][2]],
-                                 [info['params'][1], info['params'][3]], label_page)
-                    else:
-                        if info['params'][0] != 'centered':
-                            info['params'][0] = int(info['params'][0])
-                        if info['params'][1] != 'centered':
-                            info['params'][1] = int(info['params'][1])
-                        self.add(label, info['params'][0], info['params'][0], label_page)
+            # On ajoute les éléments
+            for label, elem in elements['def'].items():
+                if elem['type'] == 'text':
+                    self.new_text(elem['content'], elem['params'][0].replace(' ', ''), elem['params'][1].replace(' ', ''), label)
+                elif elem['type'] == 'rect':
+                    self.new_rect(elem['params'][0].replace(' ', ''), int(elem['params'][1]), label)
+            # On ajoute à la page
+            for label, info in elements['placing'].items():
+                if self.elements[label]['type'] == 'rect':
+                    if info['params'][0] != 'centered':
+                        info['params'][0] = int(info['params'][0])
+                    if info['params'][1] != 'centered':
+                        info['params'][1] = int(info['params'][1])
+                    if info['params'][2] != 'centered':
+                        info['params'][2] = int(info['params'][2])
+                    if info['params'][3] != 'centered':
+                        info['params'][3] = int(info['params'][3])
+                    self.add(label, [info['params'][0], info['params'][2]],
+                             [info['params'][1], info['params'][3]], label_page)
+                else:
+                    if info['params'][0] != 'centered':
+                        info['params'][0] = int(info['params'][0])
+                    if info['params'][1] != 'centered':
+                        info['params'][1] = int(info['params'][1])
+                    self.add(label, info['params'][0], info['params'][0], label_page)
+        self.refresh()
 
 
 
