@@ -23,7 +23,7 @@ win.new_font('Arial', 30, 'default')
 
 win.new_text('Hello World!', 'default', 'blue', 'test_text')
 win.new_text('Hello World!', 'default', 'green', 'test_text_2')
-win.new_img(os.path.abspath('../res/sync_buzzer.jpg'), 'test_img')
+win.new_img(os.path.abspath('../res/sync_buzzer.jpg'), label='test_img')
 win.new_circle('blue', 50, 1, 'test_circle')
 win.new_text('Texte éphémère', 'default', 'blue', 'txt_eph')
 win.nb_use('txt_eph', 1)

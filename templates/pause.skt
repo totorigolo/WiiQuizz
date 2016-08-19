@@ -1,0 +1,7 @@
+#def
+img: bg_pause(IMG_FOLDER/black_bg.png, True)
+img: text_pause_img(IMG_FOLDER/pause.png, True)
+
+#placing
+bg_pause(0, 0)
+text_pause_img(centered, centered)

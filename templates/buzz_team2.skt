@@ -1,0 +1,6 @@
+#def
+rect: buzz_team2(team2, 0)
+
+#placing
+buzz_team2(0, 60, right, bottom-120)
+text_buzz_team2(centered, centered)

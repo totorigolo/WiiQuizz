@@ -212,13 +212,17 @@ class WindowHelper:
         Ajoute une image dans la liste des éléments
     """
 
-    def new_img(self, url, label=None, add_to_page=False):
+    def new_img(self, url, alpha=False, label=None, add_to_page=False):
         if label is None:
             label = len(self.elements)
-        bg = pg.image.load(url).convert()
+        if alpha:
+            bg = pg.image.load(url).convert_alpha()
+        else:
+            bg = pg.image.load(url).convert()
         elem = {
             'type': 'img',
             'content': url,
+            'alpha': alpha,
             'obj': bg,
             'nb_usable': -1
         }
@@ -772,13 +776,20 @@ class WindowHelper:
     def execute(self, line, mode='def'):
         mode = '#' + mode
         lines = [mode, line]
-        self.parse_template_lang(lines)
+        self.parse_template(lines)
 
     """
         Parser de skt
     """
 
-    def parse_template_lang(self, lines):
+    def parse_template(self, lines, opt=None):
+        if opt is None:
+            opt = {}
+        options = {
+            'IMG_FOLDER': os.path.abspath('../res'),
+            'SKT_FOLDER': os.path.abspath('../templates')
+        }
+        options.update(opt)
         mode = None
         page = {
             'title': None,
@@ -877,7 +888,10 @@ class WindowHelper:
                                 label)
             elif elem['type'] == 'img':
                 elem['params'][0] = elem['params'][0].replace('IMG_FOLDER', options['IMG_FOLDER']).replace('/', '\\')
-                self.new_img(elem['params'][0], label)
+                if len(elem['params']) == 2 and elem['params'][1] == 'True':
+                    self.new_img(elem['params'][0], alpha=elem['params'][1], label=label)
+                else:
+                    self.new_img(elem['params'][0], label=label)
         # On ajoute à la page
         for info in elements['placing']:
             label = info['label']
@@ -913,7 +927,7 @@ class WindowHelper:
             filename = options['SKT_FOLDER'] + '\\' + filename + '.skt'
         with open(filename, 'r') as file:
             lines = file.readlines()
-            self.parse_template_lang(lines)
+            self.parse_template(lines, options)
 
 
 win = WindowHelper.Instance()
