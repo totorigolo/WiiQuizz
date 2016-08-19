@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import sys
 from random import randint
 
 
@@ -11,6 +12,7 @@ def py_encode_font_txt(txt):
     else:
         return unicode(txt, 'utf-8')
 
+
 def py_encode_title(txt):
     if not isinstance(txt, str) or not isinstance(txt, unicode):
         txt = str(txt)
@@ -18,6 +20,11 @@ def py_encode_title(txt):
         return txt.encode('utf-8')
     else:
         return txt
+
+
+def print_noln(str):
+    sys.stdout.write(str)
+
 
 def prompt_int(min=None, max=None):
     def condition_bad_prompt(choix, min, max):
@@ -32,6 +39,7 @@ def prompt_int(min=None, max=None):
                 return not isinstance(choix, int)
         except:
             return False
+
     choix = None
     while condition_bad_prompt(choix, min, max):
         try:
@@ -39,6 +47,7 @@ def prompt_int(min=None, max=None):
         except ValueError:
             pass
     return choix
+
 
 def permutation(nb):
     print "Should consider using itertools..."
@@ -55,6 +64,7 @@ def clef(dict, val):
         if v == val:
             return k
     return False
+
 
 def format_text(text):
     return text.lower().replace(' ', '_').replace('é', 'e').replace('à', 'a').replace('è', 'e')
