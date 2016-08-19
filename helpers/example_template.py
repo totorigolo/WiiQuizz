@@ -19,8 +19,12 @@ win.new_color((255, 0, 96), 'team1')
 win.new_color((252, 255, 0), 'team2')
 win.new_color((33, 199, 11), 'team3')
 win.new_color((255, 162, 0), 'team4')
+win.new_color('white')
+win.new_color('black')
+win.new_text('150', 'title', 'black', label='team4_result')
 
-win.import_template('two_players')
+#
+win.import_template('four_players')
 
 win.refresh()
 

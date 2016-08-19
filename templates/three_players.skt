@@ -1,0 +1,15 @@
+#def
+rect: team1_bg(team1, 0)
+rect: team2_bg(team2, 0)
+rect: team3_bg(team3, 0)
+text: team1_result("200", title, team2)
+text: team2_result("100", title, team1)
+text: team3_result("500", title, white)
+
+#placing
+team1_bg(left, top, x_center, 60)
+team2_bg(left, bottom-60, right, bottom)
+team3_bg(x_center, top, right, 60)
+team1_result((x_center-left)/2 - 20, 8)
+team3_result(x_center - 20 + (right-x_center)/2, 8)
+team2_result(centered, bottom-53)

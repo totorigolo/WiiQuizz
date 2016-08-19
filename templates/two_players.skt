@@ -1,11 +1,11 @@
 #def
 rect: team1_bg(team1, 0)
 rect: team2_bg(team2, 0)
-text: team1_result("200", sub_title, team2)
-text: team2_result("100", sub_title, team1)
+text: team1_result("200", title, team2)
+text: team2_result("100", title, team1)
 
 #placing
 team1_bg(left, top, right, 60)
 team2_bg(left, bottom-60, right, bottom)
-team1_result(centered, 10)
-team2_result(centered, bottom-10)
+team1_result(centered, 8)
+team2_result(centered, bottom-53)
