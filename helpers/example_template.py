@@ -7,13 +7,13 @@ import time
 
 win = WindowHelper.Instance()
 
-win.new_page
+win.new_page('Test fichier template', 800, 500, 'page_1', bg='white')
+win.go_to('page_1')
 
 win.new_font('Arial', 30, 'font')
-win.new_color('blue', 'blue_color')
+win.new_color('blue')
 
 win.import_template(os.path.abspath('../templates/test.skt'))
 
-win.go_to('page_1')
 
 time.sleep(2)
