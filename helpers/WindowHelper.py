@@ -10,6 +10,7 @@ from pygame.locals import *
 from ColorHelper import ColorHelper
 from tools import py_encode_font_txt, py_encode_title
 import re
+import os
 
 if not pg.font: print 'Warning, fonts disabled'
 if not pg.mixer: print 'Warning, sound disabled'
@@ -443,6 +444,9 @@ class WindowHelper:
         while num < len(self.pages[page]['elements']):
             num = self.print_elem(num, page)
 
+        if self.is_open():
+            pg.display.flip()
+
     """
         Affiche un élément d'une page
     """
@@ -477,7 +481,6 @@ class WindowHelper:
                     if y == 'centered':
                         y = (p_height - elem['obj'].get_rect().height) / 2
                     self.win.blit(elem['obj'], (x, y))
-                    pg.display.flip()
                 if elem_info['nb_recursion'] > 0:
                     self.pages[page]['elements'][num]['nb_recursion'] += 1
                 if elem['nb_usable'] == 0:
@@ -505,7 +508,6 @@ class WindowHelper:
             else:
                 color = self.colors[elem['color']].get_rgb()
             pg.draw.rect(self.win, color, [x[0], y[0], x[1], y[1]], elem['border'])
-            pg.display.flip()
 
     """
         Affichage un menu
@@ -651,7 +653,6 @@ class WindowHelper:
                 y = p_height - elem['radius']
             color = self.colors[elem['color']].get_rgb()
             pg.draw.circle(self.win, color, [x, y], radius, elem['border'])
-            pg.display.flip()
 
     """
         Créé un événement
@@ -673,7 +674,8 @@ class WindowHelper:
                     done = event_fun(pg, self, vars, event)
             if after_fun is not None:
                 done = after_fun(pg, self, vars)
-            pg.display.flip()
+            if self.is_open():
+                pg.display.flip()
 
     """
         Enlève les éléments de la page
@@ -719,7 +721,16 @@ class WindowHelper:
     """
 
     """
-    def import_template(self, filename):
+    def import_template(self, filename, opt=None):
+        if opt is None:
+            opt = {}
+        options = {
+            'IMG_FOLDER': os.path.abspath('../res'),
+            'SKT_FOLDER': os.path.abspath('../templates')
+        }
+        options.update(opt)
+        if re.match('.*\.skt', filename) is None:
+            filename = options['SKT_FOLDER'] + '\\' + filename + '.skt'
         with open(filename, 'r') as file:
             lines = file.readlines()
             mode = None
@@ -742,8 +753,9 @@ class WindowHelper:
                     possible_bg = re.findall("#bg\s*\:\s*(\w+)", line)  # Récupère le bg
                     possible_page = re.findall("#page\s*\:\s*(\w+)\(?(\d*)?x?(\d*)?\)?", line)  # Récupère la page
                     possible_titre = re.findall("#title\s*\:\s*([\w\s]+)", line)  # Récupère le titre
-                    possible_def = re.findall("(text|rect|img|circle)\s*:\s*(\w+)\((.*)\)\s*\"?([\w\d\s]*)\"?\s*", line)  # récupère les définitions
+                    possible_def = re.findall("(text|rect|img|circle)\s*:\s*(\w+)\((.*)\)\s*(\"([\w\d\s]*)\")?\s*", line)  # récupère les définitions
                     possible_placing = re.findall("(\w+)\((.*)\)", line)  # Récupère les placements d'éléments
+                    # Paramètre de la page #page
                     if mode is None and len(possible_page) == 1:
                         if isinstance(possible_page[0], tuple):
                             page['label'], page['width'], page['height'] = possible_page[0]
@@ -752,27 +764,35 @@ class WindowHelper:
                         else:
                             page['label'] = possible_page[0]
                             page['label'].replace(' ', '')
+                    # #bg
                     elif mode is None and len(possible_bg) == 1:
                         page['bg'] = possible_bg[0]
+                    # #title
                     elif mode is None and len(possible_titre) == 1:
                         page['title'] = possible_titre[0].replace('\n', '')
+                    # #def
                     elif mode == 'def' and len(possible_def) > 0:
                         if len(possible_def[0]) == 3:
                             type, label, params = possible_def[0]
                             content = None
-                        elif len(possible_def[0]) == 4:
-                            type, label, params, content = possible_def[0]
+                        elif len(possible_def[0]) == 5:
+                            type, label, params, c, content = possible_def[0]
                         params.replace(' ', '')  # Enlève les espaces
                         params = params.split(',')  # Sépare par la ','
+                        for k in range(len(params)):
+                            params[k] = params[k].strip()
                         elements[mode][label] = {
                             'type': type,
                             'params': params,
                             'content': content
                         }
+                    # #placing
                     elif mode == 'placing' and len(possible_placing) > 0:
                         label, params = possible_placing[0]
                         params.replace(' ', '')
                         params = params.split(',')
+                        for k in range(len(params)):
+                            params[k] = params[k].strip()
                         elements[mode][label] = {
                             'params': params
                         }
@@ -787,6 +807,11 @@ class WindowHelper:
                     self.new_text(elem['content'], elem['params'][0].replace(' ', ''), elem['params'][1].replace(' ', ''), label)
                 elif elem['type'] == 'rect':
                     self.new_rect(elem['params'][0].replace(' ', ''), int(elem['params'][1]), label)
+                elif elem['type'] == 'circle':
+                    self.new_circle(elem['params'][0].replace(' ', ''), int(elem['params'][1]), int(elem['params'][2]), label)
+                elif elem['type'] == 'img':
+                    elem['params'][0] =  elem['params'][0].replace('IMG_FOLDER', options['IMG_FOLDER']).replace('/', '\\')
+                    self.new_img(elem['params'][0], label)
             # On ajoute à la page
             for label, info in elements['placing'].items():
                 if self.elements[label]['type'] == 'rect':
@@ -805,16 +830,8 @@ class WindowHelper:
                         info['params'][0] = int(info['params'][0])
                     if info['params'][1] != 'centered':
                         info['params'][1] = int(info['params'][1])
-                    self.add(label, info['params'][0], info['params'][0], label_page)
+                    self.add(label, info['params'][0], info['params'][1], label_page)
         self.refresh()
-
-
-
-
-
-
-
-
 
 
 win = WindowHelper.Instance()

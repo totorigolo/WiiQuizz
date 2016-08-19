@@ -13,7 +13,7 @@ win.go_to('page_1')
 win.new_font('Arial', 30, 'font')
 win.new_color('blue')
 
-win.import_template(os.path.abspath('../templates/test.skt'))
+win.import_template('test')
 
 
 time.sleep(2)
