@@ -7,7 +7,7 @@ import time
 
 win = WindowHelper.Instance()
 
-win.open_window()  # ouvre la fenêtre
+win.new_page
 
 win.new_font('Arial', 30, 'font')
 win.new_color('blue', 'blue_color')

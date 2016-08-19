@@ -2,6 +2,8 @@
 
 from inspect import isfunction
 
+from Singleton import Singleton
+
 import pygame as pg
 from pygame.locals import *
 
@@ -11,25 +13,6 @@ import re
 
 if not pg.font: print 'Warning, fonts disabled'
 if not pg.mixer: print 'Warning, sound disabled'
-
-
-class Singleton:
-    def __init__(self, decorated):
-        self._decorated = decorated
-
-    def Instance(self):
-        try:
-            return self._instance
-        except AttributeError:
-            self._instance = self._decorated()
-            return self._instance
-
-    def __call__(self):
-        raise TypeError('Singletons must be accessed through `Instance()`.')
-
-    def __instancecheck__(self, inst):
-        return isinstance(inst, self._decorated)
-
 
 @Singleton
 class WindowHelper:
@@ -109,7 +92,9 @@ class WindowHelper:
         returns: label donné
     """
 
-    def new_page(self, title, width=None, height=None, label=None, bg=None):
+    def new_page(self, title, width=500, height=500, label=None, bg=None):
+        if not self.is_open():
+            self.open_window(width, height)
         if label is None:
             label = len(self.pages)
         if bg is None:
@@ -792,7 +777,10 @@ class WindowHelper:
                             'params': params
                         }
                 """ Parcourt des éléments et création de la page """
-                label_page = self.new_page(page['title'], page['width'], page['height'], label=page['label'], bg=page['bg'])
+                if page['label'] is None:
+                    label_page = self.current_page
+                else:
+                    label_page = self.new_page(page['title'], page['width'], page['height'], label=page['label'], bg=page['bg'])
                 # On ajoute les éléments
                 for label, elem in elements['def'].items():
                     if elem['type'] == 'text':

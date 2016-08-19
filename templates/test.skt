@@ -1,5 +1,6 @@
 #page: page_1(800x500)
 #bg: sage
+#fill: sage
 #title: Ceci est un titre
 #def
 text: id_text(font, blue_color) "Ceci est le contenu"
