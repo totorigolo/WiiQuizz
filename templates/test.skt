@@ -1,0 +1,10 @@
+#page: page_1(800x500)
+#bg: sage
+#title: Ceci est un titre
+#def
+text: id_text(font, blue_color) "Ceci est le contenu"
+rect: id_rect(blue_color, 1)
+
+#placing
+id_text(centered, 150)
+id_rect(20, 20, 50, 50)

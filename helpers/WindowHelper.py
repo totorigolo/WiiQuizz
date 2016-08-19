@@ -7,6 +7,7 @@ from pygame.locals import *
 
 from ColorHelper import ColorHelper
 from tools import py_encode_font_txt, py_encode_title
+import re
 
 if not pg.font: print 'Warning, fonts disabled'
 if not pg.mixer: print 'Warning, sound disabled'
@@ -729,5 +730,102 @@ class WindowHelper:
 
     def exists(self, label):
         return label in self.elements.keys()
+
+    """
+
+    """
+    def import_template(self, filename):
+        with open(filename, 'r') as file:
+            lines = file.readlines()
+            mode = None
+            page = {
+                'title': None,
+                'label': None,
+                'width': None,
+                'height': None,
+                'bg': None
+            }
+            elements = {'def': {}, 'placing': {}}
+            """ Récupération des éléments du fichier """
+            for line in lines:
+                line.replace('\n', '')
+                if re.match(r'#def', line) is not None:
+                    mode = 'def'
+                elif re.match(r'#placing', line) is not None:
+                    mode = 'placing'
+                else:
+                    possible_bg = re.findall("#bg\s*\:\s*(\w+)", line)  # Récupère le bg
+                    possible_page = re.findall("#page\s*\:\s*(\w+)\(?(\d*)?x?(\d*)?\)?", line)  # Récupère la page
+                    possible_titre = re.findall("#title\s*\:\s*([\w\s]+)", line)  # Récupère le titre
+                    possible_def = re.findall("(text|rect|img|circle)\s*:\s*(\w+)\((.*)\)\s*\"?([\w\d\s]*)\"?\s*", line)  # récupère les définitions
+                    possible_placing = re.findall("(\w+)\((.*)\)", line)  # Récupère les placements d'éléments
+                    if mode is None and len(possible_page) == 1:
+                        if isinstance(possible_page[0], tuple):
+                            page['label'], page['width'], page['height'] = possible_page[0]
+                            page['width'] = int(page['width'])
+                            page['height'] = int(page['height'])
+                        else:
+                            page['label'] = possible_page[0]
+                            page['label'].replace(' ', '')
+                    elif mode is None and len(possible_bg) == 1:
+                        page['bg'] = possible_bg[0].replace('\n', '')
+                    elif mode is None and len(possible_titre) == 1:
+                        page['title'] = possible_titre[0].replace('\n', '')
+                    elif mode == 'def' and len(possible_def) > 0:
+                        if len(possible_def[0]) == 3:
+                            type, label, params = possible_def[0]
+                            content = None
+                        elif len(possible_def[0]) == 4:
+                            type, label, params, content = possible_def[0]
+                        params.replace(' ', '')  # Enlève les espaces
+                        params = params.split(',')  # Sépare par la ','
+                        elements[mode][label] = {
+                            'type': type,
+                            'params': params,
+                            'content': content
+                        }
+                    elif mode == 'placing' and len(possible_placing) > 0:
+                        label, params = possible_placing[0]
+                        params.replace(' ', '')
+                        params = params.split(',')
+                        elements[mode][label] = {
+                            'params': params
+                        }
+                """ Parcourt des éléments et création de la page """
+                label_page = self.new_page(page['title'], page['width'], page['height'], label=page['label'], bg=page['bg'])
+                # On ajoute les éléments
+                for label, elem in elements['def'].items():
+                    if elem['type'] == 'text':
+                        self.new_text(elem['content'], elem['params'][0].replace(' ', ''), elem['params'][1].replace(' ', ''), label)
+                    elif elem['type'] == 'rect':
+                        self.new_rect(elem['params'][0].replace(' ', ''), int(elem['params'][1]), label)
+                # On ajoute à la page
+                for label, info in elements['placing'].items():
+                    if self.elements[label]['type'] == 'rect':
+                        if info['params'][0] != 'centered':
+                            info['params'][0] = int(info['params'][0])
+                        if info['params'][1] != 'centered':
+                            info['params'][1] = int(info['params'][1])
+                        if info['params'][2] != 'centered':
+                            info['params'][2] = int(info['params'][2])
+                        if info['params'][3] != 'centered':
+                            info['params'][3] = int(info['params'][3])
+                        self.add(label, [info['params'][0], info['params'][2]],
+                                 [info['params'][1], info['params'][3]], label_page)
+                    else:
+                        if info['params'][0] != 'centered':
+                            info['params'][0] = int(info['params'][0])
+                        if info['params'][1] != 'centered':
+                            info['params'][1] = int(info['params'][1])
+                        self.add(label, info['params'][0], info['params'][0], label_page)
+
+
+
+
+
+
+
+
+
 
 win = WindowHelper.Instance()
