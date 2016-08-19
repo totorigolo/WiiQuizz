@@ -1,21 +1,20 @@
 # coding=utf-8
 
 import importlib
-import sys
 
 from BuzzerMgr import BuzzerMgr
 from ListDialog import ListDialog
 from games import game_list
+from tools import print_noln
 
 
 class GamesMgr:
     def __init__(self):
+        print_noln('Recherche de jeux... ')
         self.games = []
         for name, file in game_list.iteritems():
-            sys.stdout.write('Chargement du jeu : {}...'.format(name))
-            current = importlib.import_module('games.{}'.format(file))
-            self.games.append((name, current))
-            print ' chargé !'
+            self.games.append((name, file))
+        print '%d jeux trouvés.' % len(self.games)
 
         # Buzzers
         # TODO: Faire quelque chose du need_master qui est devenu inutile
@@ -24,24 +23,16 @@ class GamesMgr:
     def run(self):
         while True:
             dialog = ListDialog()
-            choix = dialog.get_answer([g[0] for g in self.games] + [['Quitter', 'close']], 'Quel jeu désirez-vous lancer ?', None)
+            choix = dialog.get_answer([g[0] for g in self.games] + [['Quitter', 'close']],
+                                      'Quel jeu désirez-vous lancer ?', None)
             choix = (choix + 1) % (len(self.games) + 1)  # Quitter correspond au choix 0
             if choix == 0:
                 break
 
-            game_module = self.games[choix - 1][1]
-
+            print_noln('Chargement du jeu %s... ' % self.games[choix - 1][0])
+            game_module = importlib.import_module('games.{}'.format(self.games[choix - 1][1]))
             game_class = getattr(game_module, game_module.__name__.split('.')[1])
             game = game_class(self.buzzerMgr)
-            game.run()
+            print 'jeu chargé !'
 
-    def list_games(self, numbers=False):
-        """ Cette fonction affiche les jeux chargés """
-        print 'Jeux chargés :'
-        i = 0
-        for m in self.games:
-            if numbers:
-                print "   - {}. {}".format(i + 1, m[0])
-            else:
-                print "   - {}".format(m[0])
-            i += 1
+            game.run()

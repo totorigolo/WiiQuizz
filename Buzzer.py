@@ -81,7 +81,7 @@ class Buzzer:
                 self.dummy = True
 
         if self.dummy:
-            time.sleep(2)
+            time.sleep(0.2)
             self.connected = True
             print "Manette connectée (dummy mode) !"
             return
