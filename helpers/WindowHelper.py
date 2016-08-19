@@ -180,11 +180,11 @@ class WindowHelper:
         elem.update(opt)
         # Mise à jour des options visuelles
         if elem['bold']:
-            elem['font'].set_bold()
+            elem['font'].set_bold(True)
         if elem['italic']:
-            elem['font'].set_italic()
+            elem['font'].set_italic(True)
         if elem['underline']:
-            elem['font'].set_underline()
+            elem['font'].set_underline(True)
         self.fonts[label] = elem
         return label
 
@@ -474,12 +474,25 @@ class WindowHelper:
                     self._print_menu(num, page)
                 else:  # Tout autre ressource à afficher
                     p_width, p_height = pg.display.get_surface().get_size()
-                    x = elem_info['x']
-                    y = elem_info['y']
+                    changes = {
+                        'top': "0",
+                        'left': "0",
+                        'right': str(p_width),
+                        'bottom': str(p_height),
+                        'x-center': str(p_width / 2),
+                        'y-center': str(p_height / 2)
+                    }
+                    x = str(elem_info['x'])
+                    y = str(elem_info['y'])
                     if x == 'centered':
-                        x = (p_width - elem['obj'].get_rect().width) / 2
+                        x = str((p_width - elem['obj'].get_rect().width) / 2)
                     if y == 'centered':
-                        y = (p_height - elem['obj'].get_rect().height) / 2
+                        y = str((p_height - elem['obj'].get_rect().height) / 2)
+                    for k, v in changes.items():
+                        x = x.replace(k, v)
+                        y = y.replace(k, v)
+                    x = eval(x)
+                    y = eval(y)
                     self.win.blit(elem['obj'], (x, y))
                 if elem_info['nb_recursion'] > 0:
                     self.pages[page]['elements'][num]['nb_recursion'] += 1
@@ -499,15 +512,34 @@ class WindowHelper:
         elem_info = self.pages[page]['elements'][num]
         if elem_info['visible']:  # Si l'élément est visible
             elem = self.elements[elem_info['label']]
+            p_width, p_height = pg.display.get_surface().get_size()
             x = elem_info['x']
             y = elem_info['y']
             if not isinstance(x, list) or not isinstance(x, list):
                 raise
+            x1, x2, y1, y2 = str(x[0]), str(x[1]), str(y[0]), str(y[1])
+            changes = {
+                'top': "0",
+                'left': "0",
+                'right': str(p_width),
+                'bottom': str(p_height),
+                'x-center': str(p_width/2),
+                'y-center': str(p_height/2)
+            }
+            for k, v in changes.items():
+                x1 = x1.replace(k, v)
+                x2 = x2.replace(k, v)
+                y1 = y1.replace(k, v)
+                y2 = y2.replace(k, v)
+            x1 = eval(x1)
+            x2 = eval(x2)
+            y1 = eval(y1)
+            y2 = eval(y2)
             if isinstance(elem['color'], tuple):
                 color = elem['color']
             else:
                 color = self.colors[elem['color']].get_rgb()
-            pg.draw.rect(self.win, color, [x[0], y[0], x[1], y[1]], elem['border'])
+            pg.draw.rect(self.win, color, [x1, y1, x2, y2], elem['border'])
 
     """
         Affichage un menu
@@ -644,13 +676,26 @@ class WindowHelper:
         if elem_info['visible']:  # Si l'élément est visible
             elem = self.elements[elem_info['label']]
             p_width, p_height = pg.display.get_surface().get_size()
-            x = elem_info['x']
-            y = elem_info['y']
+            x = str(elem_info['x'])
+            y = str(elem_info['y'])
+            changes = {
+                'top': "0",
+                'left': "0",
+                'right': str(p_width),
+                'bottom': str(p_height),
+                'x-center': str(p_width / 2),
+                'y-center': str(p_height / 2)
+            }
             radius = elem['radius']
             if x == 'centered':
-                x = p_width - elem['radius']
+                x = str(p_width - elem['radius'])
             if y == 'centered':
-                y = p_height - elem['radius']
+                y = str(p_height - elem['radius'])
+            for k, v in changes.items():
+                x = x.replace(k, v)
+                y = y.replace(k, v)
+            x = eval(x)
+            y = eval(y)
             color = self.colors[elem['color']].get_rgb()
             pg.draw.circle(self.win, color, [x, y], radius, elem['border'])
 
@@ -777,6 +822,20 @@ class WindowHelper:
                             content = None
                         elif len(possible_def[0]) == 5:
                             type, label, params, c, content = possible_def[0]
+                        # Récupère les éléments entre guillements
+                        first_comma = None
+                        last_comma = None
+                        after_comma = None
+                        for k in range(len(params)):
+                            if params[k] == '"' and first_comma is None:
+                                first_comma = k
+                            elif params[k] == '"':
+                                last_comma = k
+                            if after_comma is None and last_comma is not None and params[k] == ',':
+                                after_comma = k
+                        if first_comma is not None:
+                            content = params[first_comma+1:last_comma]
+                            params = params[0:first_comma] + params[after_comma+1:]
                         params.replace(' ', '')  # Enlève les espaces
                         params = params.split(',')  # Sépare par la ','
                         for k in range(len(params)):
@@ -815,23 +874,23 @@ class WindowHelper:
             # On ajoute à la page
             for label, info in elements['placing'].items():
                 if self.elements[label]['type'] == 'rect':
-                    if info['params'][0] != 'centered':
+                    if info['params'][0].isdigit():
                         info['params'][0] = int(info['params'][0])
-                    if info['params'][1] != 'centered':
+                    if info['params'][1].isdigit():
                         info['params'][1] = int(info['params'][1])
-                    if info['params'][2] != 'centered':
+                    if info['params'][2].isdigit():
                         info['params'][2] = int(info['params'][2])
-                    if info['params'][3] != 'centered':
+                    if info['params'][3].isdigit():
                         info['params'][3] = int(info['params'][3])
                     self.add(label, [info['params'][0], info['params'][2]],
                              [info['params'][1], info['params'][3]], label_page)
                 else:
-                    if info['params'][0] != 'centered':
+                    if info['params'][0].isdigit():
                         info['params'][0] = int(info['params'][0])
-                    if info['params'][1] != 'centered':
+                    if info['params'][1].isdigit():
                         info['params'][1] = int(info['params'][1])
                     self.add(label, info['params'][0], info['params'][1], label_page)
-        self.refresh()
+            print elements
 
 
 win = WindowHelper.Instance()
