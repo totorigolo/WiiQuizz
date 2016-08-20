@@ -3,10 +3,10 @@ rect: option_1(blue_options, 0)
 rect: option_2(blue_options, 0)
 rect: option_3(blue_options, 0)
 rect: option_4(blue_options, 0)
-img: arrow_up(IMG_FOLDER/arrow_up.png, TRUE)
-img: arrow_down(IMG_FOLDER/arrow_down.png, TRUE)
-img: arrow_left(IMG_FOLDER/arrow_left.png, TRUE)
-img: arrow_right(IMG_FOLDER/arrow_right.png, TRUE)
+img: arrow_up(IMG_FOLDER/arrow_up.png, True)
+img: arrow_down(IMG_FOLDER/arrow_down.png, True)
+img: arrow_left(IMG_FOLDER/arrow_left.png, True)
+img: arrow_right(IMG_FOLDER/arrow_right.png, True)
 
 
 #placing
