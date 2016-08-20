@@ -7,7 +7,7 @@ import time
 
 win = WindowHelper.Instance()
 
-win.new_page('Test fichier template', 800, 600, 'page_1', bg='white')
+win.new_page('Test fichier template', 1200, 500, 'page_1', bg='white')
 win.go_to('page_1')
 
 # Font importantes
@@ -18,6 +18,7 @@ win.new_font('Arial', 70, 'very_big')
 
 # Couleurs utilisées
 win.new_color((5, 51, 90), 'dark_blue')
+win.new_color((176, 194, 238), 'blue_options')
 win.new_color((210, 4, 5), 'red_error')
 win.new_color((60, 154, 80), 'green_victory')
 win.new_color((255, 0, 96), 'team1')
@@ -39,12 +40,10 @@ win.new_text('Ananas', 'very_big', 'team1', label='text_buzz_team2')
 win.new_text('Kiwi', 'very_big', 'team4', label='text_buzz_team3')
 win.new_text('Melon', 'very_big', 'team3', label='text_buzz_team4')
 
-win.import_template('four_players')
-win.import_template('buzz_team3')
-win.import_template('good_answer')
+win.import_template('options_game')
 
+win.edit_color('option_2', 'team1')
 
 win.refresh()
-
 
 time.sleep(2)

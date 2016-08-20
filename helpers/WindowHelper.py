@@ -197,6 +197,8 @@ class WindowHelper:
             label = len(self.elements)
         elem = {
             'type': 'text',
+            'color': color,
+            'font': font,
             'content': text,
             'obj': self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'], self.colors[color].get_rgb()),
             'nb_usable': -1
@@ -376,6 +378,45 @@ class WindowHelper:
 
     def get_element(self, label):
         return self.elements[label]
+
+    """
+        Modifie la couleur d'un élément
+    """
+
+    def edit_color(self, label, color):
+        if 'color' in self.elements[label].keys():
+            if self.elements[label]['type'] == 'text':
+                font = self.elements[label]['font']
+                text = self.elements[label]['content']
+                self.elements[label]['obj'] = self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'], self.colors[color].get_rgb())
+            self.elements[label]['color'] = color
+            return True
+        return False
+
+    """
+        Modifie le contenu d'un élément
+    """
+
+    def edit_text(self, label, text):
+        if self.elements[label]['type'] == 'text':
+            font = self.elements[label]['font']
+            color = self.elements[label]['color']
+            self.elements[label]['content'] = text
+            self.elements[label]['obj'] = self.fonts[font]['font'].render(py_encode_font_txt(text),
+                                                                          self.fonts[font]['anti_aliasing'],
+                                                                          self.colors[color].get_rgb())
+            return True
+        return False
+
+    """
+        Modifie la bordure d'un élément
+    """
+
+    def edit_border(self, label, border):
+        if 'border' in self.elements[label].keys():
+            self.elements[label]['border'] = border
+            return True
+        return False
 
     """
         Ajoute l'élément à la page donnée

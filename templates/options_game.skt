@@ -1,0 +1,21 @@
+#def
+rect: option_1(blue_options, 0)
+rect: option_2(blue_options, 0)
+rect: option_3(blue_options, 0)
+rect: option_4(blue_options, 0)
+img: arrow_up(IMG_FOLDER/arrow_up.png, TRUE)
+img: arrow_down(IMG_FOLDER/arrow_down.png, TRUE)
+img: arrow_left(IMG_FOLDER/arrow_left.png, TRUE)
+img: arrow_right(IMG_FOLDER/arrow_right.png, TRUE)
+
+
+#placing
+option_1(50, y_center - 75, x_center - 80, 50)
+option_2(50, y_center + 25, x_center - 80, 50)
+option_3(x_center + 20, y_center - 75, x_center - 80, 50)
+option_4(x_center + 20, y_center + 25, x_center - 80, 50)
+
+arrow_up(60, y_center - 60)
+arrow_left(60, y_center + 40)
+arrow_down(x_center + 30, y_center + 40)
+arrow_right(x_center + 30, y_center - 60)

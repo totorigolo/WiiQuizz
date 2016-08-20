@@ -1,9 +1,0 @@
-#def
-text: id_text(font, blue) "Ceci est le contenu"
-rect: id_rect(blue, 1)
-img: id_img(IMG_FOLDER/arrow_down.png)
-
-#placing
-id_text(centered, 150)
-id_rect(20, 20, 50, 50)
-id_img(centered, centered)
