@@ -5,12 +5,11 @@ import importlib
 from BuzzerMgr import BuzzerMgr
 from ListDialog import ListDialog
 from games import game_list
-from tools import print_noln
 
 
 class GamesMgr:
     def __init__(self):
-        print_noln('Recherche de jeux... ')
+        print 'Recherche de jeux... ',
         self.games = []
         for name, file in game_list.iteritems():
             self.games.append((name, file))
