@@ -17,8 +17,7 @@ class GamesMgr:
         print '%d jeux trouvés.' % len(self.games)
 
         # Buzzers
-        # TODO: Faire quelque chose du need_master qui est devenu inutile
-        self.buzzerMgr = BuzzerMgr('ask', True, dummy=True)
+        self.buzzerMgr = BuzzerMgr('ask', dummy=True)
 
     def run(self):
         while True:

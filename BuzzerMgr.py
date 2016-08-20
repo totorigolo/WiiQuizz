@@ -7,7 +7,7 @@ from WindowHelper import WindowHelper
 
 # noinspection PyUnresolvedReferences
 class BuzzerMgr:
-    def __init__(self, nb_wiimote, need_master, dummy=False):
+    def __init__(self, nb_wiimote, dummy=False):
         """ Initialise les Wiimote dans une GUI """
 
         # TODO: S'arranger pour ne demander qu'une seule fois la connexion des manettes durant une session
