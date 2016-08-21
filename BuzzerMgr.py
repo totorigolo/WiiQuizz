@@ -15,7 +15,7 @@ class BuzzerMgr:
      - les évènements
     """
 
-    def __init__(self):
+    def __init__(self, dummy=False):
         """
         Initialise le BuzzerMgr
         """
@@ -24,11 +24,11 @@ class BuzzerMgr:
         self.unused_buzzers = []  # liste de tuple : (ancienne fonction [1-4,'master], Buzzer)
         self.nb_wiimote = 0
         self.need_master = None
-        self.dummy = None
+        self.dummy = dummy
 
     def __reinit(self):
         """ Supprime les manettes et réinitialise les connexions. NE RECONNECTE PAS les wiimotes. """
-        for poop, b in self.buzzers.iteritems():
+        for __, b in self.buzzers.iteritems():
             b.close()
         self.buzzers = dict()
 
@@ -112,7 +112,7 @@ class BuzzerMgr:
         if key in self.buzzers:
             buzzer_en_attente = self.buzzers[key]
         else:
-            buzzer_en_attente = Buzzer(key)
+            buzzer_en_attente = Buzzer(key, dummy=self.dummy)
 
         # Démarre la connexion de façon asynchrone
         buzzer_en_attente.async_wait()
@@ -166,7 +166,7 @@ class BuzzerMgr:
         :return: Un array contenant les wiimotes qui ont btn pressé. Il peut contenir 1 à 4 et / ou 'master'
         """
         list_which = []
-        for poop, b in self.buzzers.iteritems():
+        for __, b in self.buzzers.iteritems():
             if b.is_down(btn):
                 list_which.append(b)
         return list_which
