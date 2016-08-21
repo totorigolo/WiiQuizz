@@ -145,7 +145,7 @@ class BuzzerMgr:
             self.unused_buzzers.append((key, self.buzzers[key]))
             self.buzzers.pop(key)
         else:
-            raise KeyError('Le buzzer "{}" n\'est actuellement pas connecté !')
+            raise KeyError('Le buzzer "{}" n\'est actuellement pas connecté !'.format(key))
 
     def button_down(self, which, btn):
         """
