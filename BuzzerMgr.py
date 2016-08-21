@@ -118,11 +118,12 @@ class BuzzerMgr:
         # Ouvre une fenêtre
         win = WindowHelper.Instance()
         win.new_page('Page de connexion', label='connect_buzzer', bg='white')
-        win.new_font('Arial', 40, 'title')
-        win.new_color((5, 51, 90), 'dark_blue')
-        win.new_text('Appuyez sur 1 et 2', 'default', 'dark_blue', 'text_connexion')
-        win.add('text_connexion', page='connect_buzzer')
         win.go_to('connect_buzzer')
+
+        win.import_template('wiimote_connexion')
+
+        win.edit_text('text_connexion_team', 'Joueur 2')  # à modifier
+
         win.refresh()
 
         # Attend que la manette soit connectée

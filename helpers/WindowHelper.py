@@ -38,11 +38,10 @@ class WindowHelper:
         except AttributeError:
             pass
 
-    """
-        Ouvre une nouvelle fenêtre de taille width * height
-    """
-
     def open_window(self, width=None, height=None, resizable=None):
+        """
+            Ouvre une nouvelle fenêtre de taille width * height
+        """
         if width is None:
             width = 500
         if height is None:
@@ -65,10 +64,10 @@ class WindowHelper:
     def is_open(self):
         return self.opened
 
-    """
-        Ferme la fenêtre
-    """
     def close(self):
+        """
+            Ferme la fenêtre
+        """
         try:
             pg.display.quit()
         except AttributeError:
@@ -77,20 +76,20 @@ class WindowHelper:
     def callback_close(self):
         self.opened = False
 
-    """
-        Ferme la session pygame
-    """
     def quit(self):
+        """
+            Ferme la session pygame
+        """
         self.__del__()
-    """
-        Ajoute une page
-        param: title titre de la page
-        param: label optional (default: num)
-        param: bg optional couleur de fond (default: black)
-        returns: label donné
-    """
 
     def new_page(self, title, width=None, height=None, label=None, bg=None):
+        """
+            Ajoute une page
+            param: title titre de la page
+            param: label optional (default: num)
+            param: bg optional couleur de fond (default: black)
+            returns: label donné
+        """
         if not self.is_open():
             self.open_window(width, height)
         if label is None:
@@ -117,36 +116,33 @@ class WindowHelper:
         }
         return label
 
-    """
-        Change de page
-    """
-
     def go_to(self, label):
+        """
+            Change de page
+        """
         self.current_page = label
         pg.display.set_caption(py_encode_title(self.pages[label]['title']))
         self.reset()
         self.print_page(label)
         return label
 
-    """
-        Définit le nombre de fois qu'un élément peut être affiché avant d'être automatiquement supprimé
-        param: label de l'élément
-        param: num de fois que l'élément peut être utilisé
-        return: label
-    """
-
     def nb_use(self, label, num=1):
+        """
+            Définit le nombre de fois qu'un élément peut être affiché avant d'être automatiquement supprimé
+            param: label de l'élément
+            param: num de fois que l'élément peut être utilisé
+            return: label
+        """
         self.elements[label]['nb_usable'] = num
         return label
 
-    """
-        Ajoute une couleur dans la liste des couleurs
-        param: color type str | ColorHelper | tuple
-        param: label optional (default: num)
-        returns: label
-    """
-
     def new_color(self, color, label=None):
+        """
+            Ajoute une couleur dans la liste des couleurs
+            param: color type str | ColorHelper | tuple
+            param: label optional (default: num)
+            returns: label
+        """
         if label is None:
             if isinstance(color, str) and (color, color) not in self.colors.items():
                 label = color
@@ -157,11 +153,10 @@ class WindowHelper:
         self.colors[label] = color
         return label
 
-    """
-        Ajoute une police de caractère
-    """
-
     def new_font(self, family, size, label=None, opt=None):
+        """
+            Ajoute une police de caractère
+        """
         if label is None:
             label = family + str(size)
         if opt is None:
@@ -186,11 +181,10 @@ class WindowHelper:
         self.fonts[label] = elem
         return label
 
-    """
-        Ajoute un texte dans la liste des éléments
-    """
-
     def new_text(self, text, font, color, label=None, add_to_page=None):
+        """
+            Ajoute un texte dans la liste des éléments
+        """
         if label is None:
             label = len(self.elements)
         try:
@@ -212,11 +206,10 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    """
-        Ajoute une image dans la liste des éléments
-    """
-
     def new_img(self, url, alpha=False, label=None, add_to_page=None):
+        """
+            Ajoute une image dans la liste des éléments
+        """
         if label is None:
             label = len(self.elements)
         if alpha:
@@ -243,11 +236,10 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    """
-        Ajoute un rectangle dans la liste des éléments
-    """
-
     def new_rect(self, color, border, label=None, add_to_page=None):
+        """
+            Ajoute un rectangle dans la liste des éléments
+        """
         if label is None:
             label = len(self.elements)
         elem = {
@@ -263,11 +255,10 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    """
-        Ajoute un cercle dans la liste des éléments
-    """
-
     def new_circle(self, color, radius, border, label=None, add_to_page=None):
+        """
+            Ajoute un cercle dans la liste des éléments
+        """
         if label is None:
             label = len(self.elements)
         elem = {
@@ -284,15 +275,14 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    """
-        Ajoute un remplissage
-        param: color couleur à remplir
-        param: label de l'élément
-        param: add_to_page (défaut False)
-        returns: label donné
-    """
-
     def new_fill(self, color, label=None, add_to_page=None):
+        """
+            Ajoute un remplissage
+            param: color couleur à remplir
+            param: label de l'élément
+            param: add_to_page (défaut False)
+            returns: label donné
+        """
         if label is None:
             label = len(self.elements)
         elem = {
@@ -307,11 +297,10 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    """
-        Ajoute un son dans la liste des éléments
-    """
-
     def new_sound(self, url, label=None, add_to_page=None):
+        """
+            Ajoute un son dans la liste des éléments
+        """
         if label is None:
             label = len(self.elements)
         try:
@@ -332,36 +321,32 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    """
-        Joue un son
-    """
-
     def play_sound(self, label):
+        """
+            Joue un son
+        """
         if not self.elements[label]['playing']:
             self.elements[label]['obj'].play()
             self.elements[label]['playing'] = True
 
-    """
-        Arrête un son
-    """
-
     def stop_sound(self, label):
+        """
+            Arrête un son
+        """
         if self.elements[label]['playing']:
             self.elements[label]['obj'].stop()
             self.elements[label]['playing'] = False
 
-    """
-        Retourne True si le mixer est occupé, False sinon
-    """
-
     def is_mixer_busy(self):
+        """
+            Retourne True si le mixer est occupé, False sinon
+        """
         return pg.mixer.get_busy()
 
-    """
-        Ajoute un menu dans la liste des éléments
-    """
-
     def new_menu(self, choices, label=None, add_to_page=None):
+        """
+            Ajoute un menu dans la liste des éléments
+        """
         if label is None:
             label = len(self.elements)
         elem = {
@@ -377,24 +362,22 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    """
-        Récupère le résultat du menu demandé, renvoit None si pas de résultat
-    """
     def get_menu_result(self, label):
+        """
+            Récupère le résultat du menu demandé, renvoit None si pas de résultat
+        """
         return self.elements[label]['result']
 
-    """
-        Retourne un élément
-    """
-
     def get_element(self, label):
+        """
+            Retourne un élément
+        """
         return self.elements[label]
 
-    """
-        Modifie la couleur d'un élément
-    """
-
     def edit_color(self, label, color):
+        """
+            Modifie la couleur d'un élément
+        """
         if 'color' in self.elements[label].keys():
             if self.elements[label]['type'] == 'text':
                 font = self.elements[label]['font']
@@ -407,11 +390,11 @@ class WindowHelper:
             return True
         return False
 
-    """
-        Modifie le contenu d'un élément
-    """
 
     def edit_text(self, label, text):
+        """
+            Modifie le contenu d'un élément
+        """
         if self.elements[label]['type'] == 'text':
             font = self.elements[label]['font']
             color = self.elements[label]['color']
@@ -425,21 +408,19 @@ class WindowHelper:
             return True
         return False
 
-    """
-        Modifie la bordure d'un élément
-    """
-
     def edit_border(self, label, border):
+        """
+            Modifie la bordure d'un élément
+        """
         if 'border' in self.elements[label].keys():
             self.elements[label]['border'] = border
             return True
         return False
 
-    """
-        Ajoute l'élément à la page donnée
-    """
-
     def add(self, label, x='centered', y='centered', page=None):
+        """
+            Ajoute l'élément à la page donnée
+        """
         if page is None:
             page = self.current_page
         if label not in self.elements.keys():
@@ -454,11 +435,10 @@ class WindowHelper:
         self.pages[page]['elements'].append(elem)
         return True
 
-    """
-        Ajoute un menu à la page donnée
-    """
-
     def add_menu(self, label, x='centered', y='centered', before_fun=None, after_fun=None, opt=None, vars=None, page=None):
+        """
+            Ajoute un menu à la page donnée
+        """
         if page is None:
             page = self.current_page
         if label not in self.elements.keys():
@@ -481,11 +461,10 @@ class WindowHelper:
         self.pages[page]['elements'].append(elem)
         return True
 
-    """
-        Supprime le premier élément de label label demandé sur la fenêtre
-    """
-
     def delete(self, label, page=None):
+        """
+            Supprime le premier élément de label label demandé sur la fenêtre
+        """
         if page is None:
             page = self.current_page
         for k in range(len(self.pages[page]['elements'])):
@@ -495,11 +474,10 @@ class WindowHelper:
                 return True
         return False
 
-    """
-        Affiche tous les éléments d'une page donnée
-    """
-
     def print_page(self, page=None):
+        """
+            Affiche tous les éléments d'une page donnée
+        """
         if page is None:
             page = self.current_page
         num = 0
@@ -509,11 +487,10 @@ class WindowHelper:
         if self.is_open():
             pg.display.flip()
 
-    """
-        Affiche un élément d'une page
-    """
-
     def print_elem(self, num, page=None):
+        """
+            Affiche un élément d'une page
+        """
         if page is None:
             page = self.current_page
         elem_info = self.pages[page]['elements'][num]
@@ -566,11 +543,11 @@ class WindowHelper:
                     num += 1
         return num + 1
 
-    """
-        Affichage d'un rectangle
-    """
 
     def _print_rect(self, num, page=None):
+        """
+            Affichage d'un rectangle
+        """
         if page is None:
             page = self.current_page
         elem_info = self.pages[page]['elements'][num]
@@ -605,11 +582,10 @@ class WindowHelper:
                 color = self.colors[elem['color']].get_rgb()
             pg.draw.rect(self.win, color, [x1, y1, x2, y2], elem['border'])
 
-    """
-        Affichage un menu
-    """
-
     def _print_menu(self, num, page=None):
+        """
+            Affichage un menu
+        """
         if page is None:
             page = self.current_page
         elem_info = self.pages[page]['elements'][num]
@@ -732,11 +708,10 @@ class WindowHelper:
             self.close()
         self.elements[elem_info['label']]['result'] = choix
 
-    """
-        Affichage d'un cercle
-    """
-
     def _print_circle(self, num, page=None):
+        """
+            Affichage d'un cercle
+        """
         if page is None:
             page = self.current_page
         elem_info = self.pages[page]['elements'][num]
@@ -766,11 +741,10 @@ class WindowHelper:
             color = self.colors[elem['color']].get_rgb()
             pg.draw.circle(self.win, color, [x, y], radius, elem['border'])
 
-    """
-        Créé un événement
-    """
-
     def event(self, before_fun=None, event_fun=None, after_fun=None, vars=None, page=None):
+        """
+            Créé un événement
+        """
         if vars is None:
             vars = {}
         done = False
@@ -789,61 +763,54 @@ class WindowHelper:
             if self.is_open():
                 pg.display.flip()
 
-    """
-        Enlève les éléments de la page
-    """
-
     def reset(self):
+        """
+            Enlève les éléments de la page
+        """
         color = self.colors[self.pages[self.current_page]['bg']].get_rgb()
         self.win.fill(color)
 
-    """
-        Rafréchit la page courante
-    """
-
     def refresh(self):
+        """
+            Rafréchit la page courante
+        """
         self.reset()
         self.print_page()
 
-    """
-        Supprime tous les éléments d'une page
-        param: page
-    """
-
     def dump_elements(self, page=None):
+        """
+            Supprime tous les éléments d'une page
+            param: page
+        """
         if page is None:
             page = self.current_page
         self.pages[page]['elements'] = []
 
-    """
-        Remplie la page courante d'une couleur donnée
-        param: color str couleur à remplir
-    """
-
     def fill(self, color):
+        """
+            Remplie la page courante d'une couleur donnée
+            param: color str couleur à remplir
+        """
         self.win.fill(self.colors[color].get_rgb())
 
-    """
-        Retourne si un élément existe
-    """
-
     def exists(self, label):
+        """
+            Retourne si un élément existe
+        """
         return label in self.elements.keys()
 
-    """
-        Exécute une ligne du langage skt
-    """
-
     def execute(self, line, mode='def'):
+        """
+            Exécute une ligne du langage skt
+        """
         mode = '#' + mode
         lines = [mode, line]
         self.parse_template(lines)
 
-    """
-        Parser de skt
-    """
-
     def parse_template(self, lines, file=None, opt=None):
+        """
+            Parser de skt
+        """
         if opt is None:
             opt = {}
         options = {
@@ -859,7 +826,7 @@ class WindowHelper:
             'height': None,
             'bg': None
         }
-        elements = {'def': {}, 'placing': []}
+        elements = {'colors_and_fonts': {}, 'def': {}, 'placing': []}
         """ Récupération des éléments du fichier """
         for line in lines:
             line = line.strip()
@@ -916,7 +883,11 @@ class WindowHelper:
                         params = params.split(',')  # Sépare par la ','
                         for k in range(len(params)):
                             params[k] = params[k].strip()
-                        elements[mode][label] = {
+                        if type == 'color' or type == 'font':
+                            sub_mode = 'colors_and_fonts'
+                        else:
+                            sub_mode = mode
+                        elements[sub_mode][label] = {
                             'type': type,
                             'params': params,
                             'content': content
@@ -934,9 +905,32 @@ class WindowHelper:
                         })
         """ Parcourt des éléments et création de la page """
         if page['label'] is None:
+            if self.current_page == -1:
+                raise ValueError('No active page found. Use the go_to method before importing the template file.')
             label_page = self.current_page
         else:
             label_page = self.new_page(page['title'], page['width'], page['height'], label=page['label'], bg=page['bg'])
+        # On ajoute les couleurs et fonts
+        for label, elem in elements['colors_and_fonts'].items():
+            if elem['type'] == 'color':
+                try:
+                    if len(elem['params']) == 3 and elem['params'][0].isdigit() and elem['params'][1].isdigit() and elem['params'][2].isdigit():
+                        self.new_color((int(elem['params'][0]), int(elem['params'][1]), int(elem['params'][2])), label)
+                    elif len(elem['params']) == 1:
+                        self.new_color(int(elem['params'][0]), label)
+                except:
+                    if file is not None:
+                        raise ValueError('The options for '+label+' in the file '+file+' are incorrect.')
+                    else:
+                        raise ValueError('The options for ' + label +' are incorrect.')
+            elif elem['type'] == 'font':
+                try:
+                    self.new_font(elem['params'][0], int(elem['params'][1]), label)
+                except:
+                    if file is not None:
+                        raise ValueError('The options for ' + label + ' in the file '+file+' are incorrect.')
+                    else:
+                        raise ValueError('The options for ' + label + ' are incorrect.')
         # On ajoute les éléments
         for label, elem in elements['def'].items():
             if elem['type'] == 'text':
@@ -953,25 +947,6 @@ class WindowHelper:
                     self.new_img(elem['params'][0], alpha=elem['params'][1], label=label)
                 else:
                     self.new_img(elem['params'][0], label=label)
-            elif elem['type'] == 'color':
-                try:
-                    if len(elem['params']) == 3 and elem['params'][0].isdigit() and elem['params'][1].isdigit() and elem['params'][2].isdigit():
-                        self.new_color((int(elem['params'][0]), int(elem['params'][1]), int(elem['params'][2])), label)
-                    elif len(elem['params']) == 1:
-                        self.new_color(int(elem['params'][0]), label)
-                except:
-                    if file is not None:
-                        raise ValueError('The options for '+label+' in the file '+file+' are incorrect.')
-                    else:
-                        raise ValueError('The options for ' + label +' are incorrect.')
-            elif elem['type'] == 'font':
-                try:
-                    self.new_font(elem['params'][0], int(elem['params'][1]), label)
-                except:
-                    if file is not None:
-                        raise ValueError('The options for '+label+' in the file '+file+' are incorrect.')
-                    else:
-                        raise ValueError('The options for ' + label +' are incorrect.')
 
         # On ajoute à la page
         for info in elements['placing']:
@@ -993,10 +968,11 @@ class WindowHelper:
                 if info['params'][1].isdigit():
                     info['params'][1] = int(info['params'][1])
                 self.add(label, info['params'][0], info['params'][1], label_page)
-    """
-        Importe un fichier .skt
-    """
+
     def import_template(self, filename, opt=None):
+        """
+            Importe un fichier .skt
+        """
         if opt is None:
             opt = {}
         options = {

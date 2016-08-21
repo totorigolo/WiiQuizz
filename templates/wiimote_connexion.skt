@@ -1,0 +1,12 @@
+#def
+font: title(Arial, 40)
+font: sub_title(Arial, 20)
+color: dark_blue(5, 51, 90)
+img: img_wiimote(IMG_FOLDER/sync_buzzer.png, True)
+text: text_connexion_team("Joueur 0", title, dark_blue)
+text: text_connexion("Appuyez sur 1 et 2 pour synchroniser la wiimote", sub_title, dark_blue)
+
+#placing
+text_connexion_team(centered, 120)
+text_connexion(centered, bottom - 150)
+img_wiimote(centered, centered)
