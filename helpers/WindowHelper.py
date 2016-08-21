@@ -646,14 +646,17 @@ class WindowHelper:
                 if event.type == QUIT:
                     done = True
                     self.callback_close()
-                if event.type == KEYDOWN:
+                elif event.type == KEYDOWN:
                     if event.key == K_RETURN or event.key == K_KP_ENTER:
                         done = True
                         pressed = True
-                    if event.key == K_UP:
+                    elif event.key == K_UP:
                         choix -= 1
-                    if event.key == K_DOWN:
+                    elif event.key == K_DOWN:
                         choix += 1
+                elif event.type == VIDEORESIZE:
+                    width_win, height_win = event.w, event.h
+                    self.open_window(width_win, height_win)  # On re-taille la fenêtre
             choix %= len(menu)
             k = 0
 
