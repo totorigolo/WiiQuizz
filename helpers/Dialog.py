@@ -1,7 +1,7 @@
 # coding: utf8
 
-from Singleton import Singleton
 from WindowHelper import WindowHelper
+from Singleton import Singleton
 import time
 
 
@@ -20,7 +20,7 @@ class Dialog:
             'neutral': 'black'
         }
 
-        self.win.new_font('Arial', 30, 'dialog_font')
+        #self.win.new_font('Arial', 30, 'dialog_font')
 
         self.win.new_color('white')
         self.win.new_color('black')
@@ -61,7 +61,7 @@ class Dialog:
     def _print_intrusive_msg(self, type, message):
         self.win.new_rect('dialog_color_shadow_'+type, 0, label='dialog_shadow')
         self.win.new_rect('dialog_color_'+type, 0, label='dialog_holder')
-        self.win.new_text(message, 'dialog_font', self.correspondence_type_text_color[type], label='dialog_msg')
+        self.win.new_text(message, 'default', self.correspondence_type_text_color[type], label='dialog_msg')
 
         self.win.add('dialog_shadow', [0, 'right'], ['y_center - 75', 150])
         self.win.add('dialog_holder', [0, 'right'], ['y_center - 70', 140])
@@ -75,4 +75,8 @@ class Dialog:
             return False
 
         self.win.event(event_fun=event_fun)  # On attend que quelqu'un appuie sur un bouton
+
+        self.win.delete('dialog_shadow')
+        self.win.delete('dialog_holder')
+        self.win.delete('dialog_msg')
 
