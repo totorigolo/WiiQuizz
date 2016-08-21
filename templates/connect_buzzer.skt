@@ -1,0 +1,7 @@
+#def
+text: id_text("Veuillez appuyer sur 1 et 2", police_de_test, blue)
+rect: id_rect(blue, 0)
+
+#placing
+id_text(centered, centered)
+id_rect(left, top, right, bottom)

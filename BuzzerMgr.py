@@ -2,7 +2,12 @@
 
 import random
 
+from Buzzer import Buzzer
+from Singleton import Singleton
+from WindowHelper import WindowHelper
 
+
+@Singleton
 class BuzzerMgr:
     """
     Cette classe s'occupe de la gestion des Wiimotes. C'est elle qui gère :
@@ -109,8 +114,23 @@ class BuzzerMgr:
         :param key: avec quelle key sera stockée le buzzer dans self.buzzers
         :param name: le nom qui sera affiché à l'écran
         """
-        # TODO: Utiliser Dialog
-        pass
+
+        buzzer_en_attente = Buzzer(key)
+        buzzer_en_attente.async_wait()
+
+        win = WindowHelper.Instance()
+        win.import_template('connect_buzzer')
+        win.refresh()
+
+        def waiting_connection(pg, win, vars, event):
+            return buzzer_en_attente.connected
+
+        self.win.event(event_fun=waiting_connection)  # On attend que quelqu'un appuie sur un bouton
+
+        while not buzzer_en_attente.connected:
+            pass
+
+        self.buzzers[key] = buzzer_en_attente
 
     def __idle_buzzer(self, key):
         """

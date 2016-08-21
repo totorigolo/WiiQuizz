@@ -16,7 +16,7 @@ class GamesMgr:
         print '%d jeux trouvés.' % len(self.games)
 
         # Buzzers
-        self.buzzerMgr = BuzzerMgr('ask', dummy=True)
+        self.buzzerMgr = BuzzerMgr()
 
     def run(self):
         while True:
