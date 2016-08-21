@@ -1,0 +1,5 @@
+#placing
+dialog_shadow(0, y_center - 75, right, 150)
+dialog_holder(0, y_center - 70, right, 140)
+dialog_msg(centered, centered)
+dialog_msg_info(centered, y_center + 40)

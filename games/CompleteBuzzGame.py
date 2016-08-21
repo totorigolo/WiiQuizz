@@ -5,7 +5,8 @@ from os import listdir
 from os.path import isfile, join, abspath
 
 from WindowHelper import WindowHelper
-from ListDialog_old import ListDialog
+
+from ListDialog import ListDialog
 from tools import py_encode_font_txt
 
 

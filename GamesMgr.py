@@ -3,7 +3,7 @@
 import importlib
 
 from BuzzerMgr import BuzzerMgr
-from ListDialog_old import ListDialog
+from ListDialog import ListDialog
 from games import game_list
 
 

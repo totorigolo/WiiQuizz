@@ -3,6 +3,7 @@
 from WindowHelper import WindowHelper
 from Singleton import Singleton
 import time
+import os
 
 
 @Singleton
@@ -10,6 +11,11 @@ class Dialog:
     def __init__(self):
         self.messages = []
         self.win = WindowHelper.Instance()
+
+        self.templates_options = {
+            'IMG_FOLDER': os.path.abspath('../res'),
+            'SKT_FOLDER': os.path.abspath('../templates')
+        }
 
         self.types = ['error', 'success', 'warning', 'neutral']
 
@@ -49,7 +55,7 @@ class Dialog:
             'type' : type,
             'message': message,
             'mode': mode,
-            'time': time.time(),
+            'time': time.time(),  # TODO: Ajouter des messages temporels
             'active': True
         }
         if mode == 'intrusive':
@@ -67,10 +73,7 @@ class Dialog:
         self.win.new_text(message, 'dialog_font', self.correspondence_type_text_color[type], label='dialog_msg')
         self.win.new_text('Appuyez sur une touche pour continuer...', 'dialog_font_small', self.correspondence_type_text_color[type], label='dialog_msg_info')
 
-        self.win.add('dialog_shadow', [0, 'right'], ['y_center - 75', 150])
-        self.win.add('dialog_holder', [0, 'right'], ['y_center - 70', 140])
-        self.win.add('dialog_msg', 'centered', 'centered')
-        self.win.add('dialog_msg_info', 'centered', 'y_center + 40')
+        self.win.import_template('dialog_messages', opt=self.templates_options)
 
         self.win.refresh()
 

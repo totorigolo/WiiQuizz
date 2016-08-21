@@ -126,6 +126,7 @@ class WindowHelper:
         pg.display.set_caption(py_encode_title(self.pages[label]['title']))
         self.reset()
         self.print_page(label)
+        return label
 
     """
         Définit le nombre de fois qu'un élément peut être affiché avant d'être automatiquement supprimé
@@ -957,11 +958,12 @@ class WindowHelper:
         if opt is None:
             opt = {}
         options = {
-            'IMG_FOLDER': os.path.abspath('../res'),
-            'SKT_FOLDER': os.path.abspath('../templates')
+            'IMG_FOLDER': os.path.abspath('./res'),
+            'SKT_FOLDER': os.path.abspath('./templates')
         }
         options.update(opt)
         if re.match('.*\.skt', filename) is None:
+            options['SKT_FOLDER'] =  options['SKT_FOLDER'].replace('\\', '/')
             filename = options['SKT_FOLDER'] + '/' + filename + '.skt'
         with open(filename, 'r') as file:
             lines = file.readlines()

@@ -4,8 +4,8 @@
 Constantes WiiQuizz
 """
 
-WIN_WIDTH = 900
-WIN_HEIGHT = 500
+WIN_WIDTH = 960
+WIN_HEIGHT = 600
 
 WIN_MARGIN = 20
 

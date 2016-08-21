@@ -191,7 +191,7 @@ class BuzzerMgr:
         :param need_master: Pour afficher un message au joueurs comme quoi il faut une wiimote de plus
         :return: un int correspondant au nombre TOTAL (dont master) de wiimotes
         """
-        from ListDialog_old import ListDialog
+        from ListDialog import ListDialog
         dialog = ListDialog()
 
         question = u'Combien de Wiimotes joueuses ?'
