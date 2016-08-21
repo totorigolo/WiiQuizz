@@ -122,7 +122,7 @@ class BuzzerMgr:
 
         win.import_template('wiimote_connexion')
 
-        win.edit_text('text_connexion_team', 'Joueur 2')  # à modifier
+        win.edit_text('text_connexion_team', 'Télécommande {}'.format(name))  # à modifier
 
         win.refresh()
 
