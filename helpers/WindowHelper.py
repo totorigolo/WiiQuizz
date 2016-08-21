@@ -48,8 +48,12 @@ class WindowHelper:
         Ouvre une nouvelle fenêtre de taille width * height
     """
 
-    def open_window(self, width=500, height=500, resizable=None):
+    def open_window(self, width=None, height=None, resizable=None):
         self.init()
+        if width is None:
+            width = 500
+        if height is None:
+            height = 500
         if resizable is None:
             resizable = self.resizable
         if resizable:
@@ -93,7 +97,7 @@ class WindowHelper:
         returns: label donné
     """
 
-    def new_page(self, title, width=500, height=500, label=None, bg=None):
+    def new_page(self, title, width=None, height=None, label=None, bg=None):
         if not self.is_open():
             self.open_window(width, height)
         if label is None:
@@ -928,7 +932,7 @@ class WindowHelper:
                 self.new_circle(elem['params'][0].replace(' ', ''), int(elem['params'][1]), int(elem['params'][2]),
                                 label)
             elif elem['type'] == 'img':
-                elem['params'][0] = elem['params'][0].replace('IMG_FOLDER', options['IMG_FOLDER']).replace('/', '\\')
+                elem['params'][0] = elem['params'][0].replace('IMG_FOLDER', options['IMG_FOLDER']).replace('\\', '/')
                 if len(elem['params']) == 2 and elem['params'][1] == 'True':
                     self.new_img(elem['params'][0], alpha=elem['params'][1], label=label)
                 else:
@@ -965,7 +969,7 @@ class WindowHelper:
         }
         options.update(opt)
         if re.match('.*\.skt', filename) is None:
-            filename = options['SKT_FOLDER'] + '\\' + filename + '.skt'
+            filename = options['SKT_FOLDER'] + '/' + filename + '.skt'
         with open(filename, 'r') as file:
             lines = file.readlines()
             self.parse_template(lines, options)
