@@ -40,6 +40,7 @@ win.new_text('Ananas', 'very_big', 'team1', label='text_buzz_team2')
 win.new_text('Kiwi', 'very_big', 'team4', label='text_buzz_team3')
 win.new_text('Melon', 'very_big', 'team3', label='text_buzz_team4')
 
+win.import_template('four_players')
 win.import_template('options_game')
 
 win.edit_color('option_2', 'team1')

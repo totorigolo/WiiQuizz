@@ -27,7 +27,7 @@ class GamesMgr:
             if choix == 0:
                 break
 
-            print_noln('Chargement du jeu %s... ' % self.games[choix - 1][0])
+            print ('Chargement du jeu %s... ' % self.games[choix - 1][0]),
             game_module = importlib.import_module('games.{}'.format(self.games[choix - 1][1]))
             game_class = getattr(game_module, game_module.__name__.split('.')[1])
             game = game_class(self.buzzerMgr)
