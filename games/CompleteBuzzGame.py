@@ -4,8 +4,9 @@ import time
 from os import listdir
 from os.path import isfile, join, abspath
 
-from ListDialog import ListDialog
 from WindowHelper import WindowHelper
+from ListDialog_old import ListDialog
+from tools import py_encode_font_txt
 
 
 # noinspection PyUnresolvedReferences
