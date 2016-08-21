@@ -22,10 +22,9 @@ class BuzzerMgr:
         ''' Déclaration et initialisation des attributs '''
         self.buzzers = dict()
         self.unused_buzzers = []  # liste de tuple : (ancienne fonction [1-4,'master], Buzzer)
-        self.nb_wiimote = None
+        self.nb_wiimote = 0
         self.need_master = None
         self.dummy = None
-        self.initialized = False
 
     def __reinit(self):
         """ Supprime les manettes et réinitialise les connexions. NE RECONNECTE PAS les wiimotes. """
@@ -38,7 +37,6 @@ class BuzzerMgr:
         self.unused_buzzers = []
 
         self.nb_wiimote = 0
-        self.initialized = False
 
     def connect_master(self):
         """
@@ -64,36 +62,30 @@ class BuzzerMgr:
 
         # Nombre de wiimotes
         if nb_wiimote == 'ask':
-            nb_wiimote = BuzzerMgr._prompt_nb_wiimotes(need_master)
+            nb_wiimote = self._prompt_nb_wiimotes(need_master)
 
         nb_joueuses_requises = nb_wiimote - (1 if need_master else 0)
 
-        # Si on est déjà initialisé, on regarde combien de wiimotes on a de trop
-        if self.initialized:
-            nb_new_wiimotes_needed = nb_wiimote - self.nb_wiimote
+        # Si on est déjà initialisé, on regarde combien de wiimotes on a de trop pour les désactiver
+        if nb_wiimote - self.nb_wiimote < 0:
+            # Désactive les wiimotes joueuses dont on a plus besoin
+            for b in self.buzzers:
+                if b not in range(1, nb_joueuses_requises):
+                    self.__idle_buzzer(b)
 
-            # On désactive les wiimotes que l'on aurait en trop, puis on a fini
-            if nb_new_wiimotes_needed < 0:
-                ''' La difficulté ici est que les buzzers sont stockés dans un dict '''
+            # Désactive le master
+            if not need_master and 'master' in self.buzzers:
+                self.__idle_buzzer('master')
 
-                # Désactive les wiimotes joueuses dont on a plus besoin
-                for b in self.buzzers:
-                    if b not in range(1, nb_joueuses_requises):
-                        self.__idle_buzzer(b)
+            # Vérifie que l'on dispose des bonnes manettes
+            erreur_d_attribution = False
+            for i in range(1, nb_joueuses_requises):
+                if i not in self.buzzers or not self.buzzers[i].connected:
+                    erreur_d_attribution = True
+                    break
 
-                # Désactive le master
-                if not need_master and 'master' in self.buzzers:
-                    self.__idle_buzzer('master')
-
-                # Vérifie que l'on dispose des bonnes manettes
-                erreur_d_attribution = False
-                for i in range(1, nb_joueuses_requises):
-                    if i not in self.buzzers:
-                        erreur_d_attribution = True
-                        break
-
-                # Pas d'erreur, on a fini
-                if not erreur_d_attribution:
+            # Pas d'erreur, on a fini
+            if not erreur_d_attribution:
                     # On a les manettes, c'est bon
                     return
 
@@ -105,7 +97,7 @@ class BuzzerMgr:
 
         # On connecte les wiimotes joueuses manquantes
         for i in range(1, nb_joueuses_requises):
-            if i not in self.buzzers:
+            if i not in self.buzzers or not self.buzzers[i].connected:
                 self.__connect_buzzer(i, i)
 
     def __connect_buzzer(self, key, name):
@@ -115,21 +107,33 @@ class BuzzerMgr:
         :param name: le nom qui sera affiché à l'écran
         """
 
-        buzzer_en_attente = Buzzer(key)
+        # Si on a déjà un Buzzer du même nom, on le récupère
+        buzzer_en_attente = None
+        if key in self.buzzers:
+            buzzer_en_attente = self.buzzers[key]
+        else:
+            buzzer_en_attente = Buzzer(key)
+
+        # Démarre la connexion de façon asynchrone
         buzzer_en_attente.async_wait()
 
+        # Ouvre une fenêtre
         win = WindowHelper.Instance()
-        win.import_template('connect_buzzer')
+        win.new_page('Page de connexion', label='connect_buzzer', bg='white')
+        win.new_font('Arial', 40, 'title')
+        win.new_color((5, 51, 90), 'dark_blue')
+        win.new_text('Appuyez sur 1 et 2', 'default', 'dark_blue', 'text_connexion')
+        win.add('text_connexion', page='connect_buzzer')
+        win.go_to('connect_buzzer')
         win.refresh()
 
+        # Attend que la manette soit connectée
         def waiting_connection(pg, win, vars, event):
             return buzzer_en_attente.connected
 
-        self.win.event(event_fun=waiting_connection)  # On attend que quelqu'un appuie sur un bouton
+        win.event(event_fun=waiting_connection)  # On attend que quelqu'un appuie sur un bouton
 
-        while not buzzer_en_attente.connected:
-            pass
-
+        # Stocke le nouveau buzzer
         self.buzzers[key] = buzzer_en_attente
 
     def __idle_buzzer(self, key):
@@ -138,7 +142,7 @@ class BuzzerMgr:
         :param key: la clé du buzzer à mettre en veille. Doit être dans self.buzzers
         """
         if key in self.buzzers:
-            self.buzzers[key].allumer_led({1, 0, 0, 1})
+            self.buzzers[key].allumer_led([1, 0, 0, 1])
             self.unused_buzzers.append((key, self.buzzers[key]))
             self.buzzers.pop(key)
         else:
@@ -167,8 +171,14 @@ class BuzzerMgr:
                 list_which.append(b)
         return list_which
 
-    @staticmethod
-    def any_of(buzzers, master_first=True):
+    def get_nb_buzzers(self, count_master=True):
+        """
+        :param: count_master: Compter la master ?
+        :return: Retourne le nombre de manettes
+        """
+        return self.nb_wiimote - (0 if count_master and 'master' in self.buzzers else 1)
+
+    def any_of(self, buzzers, master_first=True):
         """
         Fonction statique : renvoi une wiimote au hasard dans la liste buzzers. Sert quand plusieurs buzzers ont
         pressé une touche en même temps, et qu'il faut déterminer une gagnante équitablement.
@@ -184,8 +194,7 @@ class BuzzerMgr:
                     return b
         return random.choice(buzzers)
 
-    @staticmethod
-    def _prompt_nb_wiimotes(need_master):
+    def _prompt_nb_wiimotes(self, need_master):
         """
         Fonction privée statique : Demande le nombre de wiimotes joueuses requises.
         :param need_master: Pour afficher un message au joueurs comme quoi il faut une wiimote de plus

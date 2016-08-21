@@ -1,6 +1,6 @@
 #def
-text: id_text("Veuillez appuyer sur 1 et 2", police_de_test, blue)
-rect: id_rect(blue, 0)
+text: id_text("Veuillez appuyer sur 1 et 2", title, dark_blue)
+rect: id_rect(dark_blue, 0)
 
 #placing
 id_text(centered, centered)

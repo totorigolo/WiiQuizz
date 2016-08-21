@@ -16,7 +16,7 @@ class GamesMgr:
         print '%d jeux trouvés.' % len(self.games)
 
         # Buzzers
-        self.buzzerMgr = BuzzerMgr()
+        self.buzzerMgr = BuzzerMgr.Instance()
 
     def run(self):
         while True:
@@ -30,7 +30,7 @@ class GamesMgr:
             print ('Chargement du jeu %s... ' % self.games[choix - 1][0]),
             game_module = importlib.import_module('games.{}'.format(self.games[choix - 1][1]))
             game_class = getattr(game_module, game_module.__name__.split('.')[1])
-            game = game_class(self.buzzerMgr)
+            game = game_class()
             print 'jeu chargé !'
 
             game.run()

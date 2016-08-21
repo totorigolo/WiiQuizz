@@ -4,17 +4,16 @@ import time
 from os import listdir
 from os.path import isfile, join, abspath
 
-from WindowHelper import WindowHelper
-
+from BuzzerMgr import BuzzerMgr
 from ListDialog import ListDialog
-from tools import py_encode_font_txt
+from WindowHelper import WindowHelper
 
 
 # noinspection PyUnresolvedReferences
 class CompleteBuzzGame:
     """ Jeu simple affichant uniquement l'équipe qui a buzzé, avec le contrôle d'un Master """
 
-    def __init__(self, buzzerMgr, default_text='Grenade Quizz', window_title='BuzzGame', images_path=None, music_path=None):
+    def __init__(self, default_text='Grenade Quizz', window_title='BuzzGame', images_path=None, music_path=None):
         # Constantes du jeu
         self.default_text = default_text
         self.window_title = window_title
@@ -74,8 +73,8 @@ class CompleteBuzzGame:
         self.py_musics = None
 
         # Buzzers
-        self.buzzerMgr = buzzerMgr
-        self.nb_buzzers = len(self.buzzerMgr.buzzers) - 1  # enlève le master
+        self.buzzerMgr = BuzzerMgr.Instance()
+        self.buzzerMgr.require('ask')
 
     def run(self):
         # Mode image activé : Demande le répertoire des images
@@ -370,21 +369,21 @@ class CompleteBuzzGame:
                 win.add('txt_affiche', txt_pos_x, 110, label_page)
 
             # Affiche les scores
-            if vars['self'].nb_buzzers >= 1:
+            if vars['self'].buzzerMgr.get_nb_buzzers() >= 1:
                 win.add(
                     win.nb_use(
                         win.new_text('{} : {}'.format(vars['self'].team_names[1], scores[0]), 'scores', 'team1'),
                         1),
                     10, 10, label_page)
-            if vars['self'].nb_buzzers >= 2:
+            if vars['self'].buzzerMgr.get_nb_buzzers() >= 2:
                 label_txt = win.nb_use(win.new_text('{} : {}'.format(vars['self'].team_names[2], scores[1]), 'scores', 'team2'), 1)
                 win.add(label_txt, vars['self'].py_width - win.get_element(label_txt)['obj'].get_rect().width, 10, label_page)
-            if vars['self'].nb_buzzers >= 3:
+            if vars['self'].buzzerMgr.get_nb_buzzers() >= 3:
                 win.add(
                     win.nb_use(win.new_text('{} : {}'.format(vars['self'].team_names[3], scores[2]), 'scores', 'team3'), 1),
                     10, vars['self'].py_height - 30, label_page
                 )
-            if vars['self'].nb_buzzers >= 4:
+            if vars['self'].buzzerMgr.get_nb_buzzers() >= 4:
                 label_txt = win.nb_use(win.new_text('{} : {}'.format(vars['self'].team_names[4], scores[3]), 'scores', 'team4'),
                            1)
                 win.add(label_txt,
