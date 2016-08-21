@@ -190,15 +190,19 @@ class WindowHelper:
         Ajoute un texte dans la liste des éléments
     """
 
-    def new_text(self, text, font, color, label=None, add_to_page=False):
+    def new_text(self, text, font, color, label=None, add_to_page=None):
         if label is None:
             label = len(self.elements)
+        try:
+            obj = self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'], self.colors[color].get_rgb())
+        except:
+            raise ValueError("The given font or color does not exist.")
         elem = {
             'type': 'text',
             'color': color,
             'font': font,
             'content': text,
-            'obj': self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'], self.colors[color].get_rgb()),
+            'obj': obj,
             'nb_usable': -1
         }
         if add_to_page == 'current':
@@ -212,13 +216,19 @@ class WindowHelper:
         Ajoute une image dans la liste des éléments
     """
 
-    def new_img(self, url, alpha=False, label=None, add_to_page=False):
+    def new_img(self, url, alpha=False, label=None, add_to_page=None):
         if label is None:
             label = len(self.elements)
         if alpha:
-            bg = pg.image.load(url).convert_alpha()
+            try:
+                bg = pg.image.load(url).convert_alpha()
+            except:
+                raise ImportError("The " + url + " image cannot be loaded.")
         else:
-            bg = pg.image.load(url).convert()
+            try:
+                bg = pg.image.load(url).convert()
+            except:
+                raise ImportError("The " + url + " image cannot be loaded.")
         elem = {
             'type': 'img',
             'content': url,
@@ -237,7 +247,7 @@ class WindowHelper:
         Ajoute un rectangle dans la liste des éléments
     """
 
-    def new_rect(self, color, border, label=None, add_to_page=False):
+    def new_rect(self, color, border, label=None, add_to_page=None):
         if label is None:
             label = len(self.elements)
         elem = {
@@ -257,7 +267,7 @@ class WindowHelper:
         Ajoute un cercle dans la liste des éléments
     """
 
-    def new_circle(self, color, radius, border, label=None, add_to_page=False):
+    def new_circle(self, color, radius, border, label=None, add_to_page=None):
         if label is None:
             label = len(self.elements)
         elem = {
@@ -282,7 +292,7 @@ class WindowHelper:
         returns: label donné
     """
 
-    def new_fill(self, color, label=None, add_to_page=False):
+    def new_fill(self, color, label=None, add_to_page=None):
         if label is None:
             label = len(self.elements)
         elem = {
@@ -301,10 +311,13 @@ class WindowHelper:
         Ajoute un son dans la liste des éléments
     """
 
-    def new_sound(self, url, label=None, add_to_page=False):
+    def new_sound(self, url, label=None, add_to_page=None):
         if label is None:
             label = len(self.elements)
-        sound = pg.mixer.Sound(url)
+        try:
+            sound = pg.mixer.Sound(url)
+        except:
+            raise ImportError("The " + url + " sound cannot be loaded.")
         elem = {
             'type': 'sound',
             'url': url,
@@ -348,7 +361,7 @@ class WindowHelper:
         Ajoute un menu dans la liste des éléments
     """
 
-    def new_menu(self, choices, label=None, add_to_page=False):
+    def new_menu(self, choices, label=None, add_to_page=None):
         if label is None:
             label = len(self.elements)
         elem = {
@@ -386,7 +399,10 @@ class WindowHelper:
             if self.elements[label]['type'] == 'text':
                 font = self.elements[label]['font']
                 text = self.elements[label]['content']
-                self.elements[label]['obj'] = self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'], self.colors[color].get_rgb())
+                try:
+                    self.elements[label]['obj'] = self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'], self.colors[color].get_rgb())
+                except:
+                    raise ValueError('The color cannot be changed.')
             self.elements[label]['color'] = color
             return True
         return False
@@ -400,9 +416,12 @@ class WindowHelper:
             font = self.elements[label]['font']
             color = self.elements[label]['color']
             self.elements[label]['content'] = text
-            self.elements[label]['obj'] = self.fonts[font]['font'].render(py_encode_font_txt(text),
+            try:
+                self.elements[label]['obj'] = self.fonts[font]['font'].render(py_encode_font_txt(text),
                                                                           self.fonts[font]['anti_aliasing'],
                                                                           self.colors[color].get_rgb())
+            except:
+                raise ValueError('The text cannot be changed.')
             return True
         return False
 
@@ -424,7 +443,7 @@ class WindowHelper:
         if page is None:
             page = self.current_page
         if label not in self.elements.keys():
-            return False
+            raise ValueError("The element requested does not exist.")
         elem = {
             'label': label,
             'x': x,
@@ -821,7 +840,7 @@ class WindowHelper:
         Parser de skt
     """
 
-    def parse_template(self, lines, opt=None):
+    def parse_template(self, lines, file=None, opt=None):
         if opt is None:
             opt = {}
         options = {
@@ -851,7 +870,7 @@ class WindowHelper:
                     possible_bg = re.findall("#bg\s*\:\s*(\w+)", line)  # Récupère le bg
                     possible_page = re.findall("#page\s*\:\s*(\w+)\(?(\d*)?x?(\d*)?\)?", line)  # Récupère la page
                     possible_titre = re.findall("#title\s*\:\s*([\w\s]+)", line)  # Récupère le titre
-                    possible_def = re.findall("(text|rect|img|circle)\s*:\s*(\w+)\((.*)\)\s*(\"([\w\d\s]*)\")?\s*",
+                    possible_def = re.findall("(text|rect|img|circle|font|color)\s*:\s*(\w+)\((.*)\)\s*(\"([\w\d\s]*)\")?\s*",
                                               line)  # récupère les définitions
                     possible_placing = re.findall("(\w+)\((.*)\)", line)  # Récupère les placements d'éléments
                     # Paramètre de la page #page
@@ -931,6 +950,26 @@ class WindowHelper:
                     self.new_img(elem['params'][0], alpha=elem['params'][1], label=label)
                 else:
                     self.new_img(elem['params'][0], label=label)
+            elif elem['type'] == 'color':
+                try:
+                    if len(elem['params']) == 3 and elem['params'][0].isdigit() and elem['params'][1].isdigit() and elem['params'][2].isdigit():
+                        self.new_color((int(elem['params'][0]), int(elem['params'][1]), int(elem['params'][2])), label)
+                    elif len(elem['params']) == 1:
+                        self.new_color(int(elem['params'][0]), label)
+                except:
+                    if file is not None:
+                        raise ValueError('The options for '+label+' in the file '+file+' are incorrect.')
+                    else:
+                        raise ValueError('The options for ' + label +' are incorrect.')
+            elif elem['type'] == 'font':
+                try:
+                    self.new_font(elem['params'][0], int(elem['params'][1]), label)
+                except:
+                    if file is not None:
+                        raise ValueError('The options for '+label+' in the file '+file+' are incorrect.')
+                    else:
+                        raise ValueError('The options for ' + label +' are incorrect.')
+
         # On ajoute à la page
         for info in elements['placing']:
             label = info['label']
@@ -967,4 +1006,4 @@ class WindowHelper:
             filename = options['SKT_FOLDER'] + '/' + filename + '.skt'
         with open(filename, 'r') as file:
             lines = file.readlines()
-            self.parse_template(lines, options)
+            self.parse_template(lines, filename, options)
