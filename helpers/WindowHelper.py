@@ -15,6 +15,7 @@ import os
 if not pg.font: print 'Warning, fonts disabled'
 if not pg.mixer: print 'Warning, sound disabled'
 
+
 @Singleton
 class WindowHelper:
 
@@ -27,14 +28,7 @@ class WindowHelper:
         self.win = None  # Fenêtre pygame
         self.opened = False
         self.resizable = True
-
-    """
-        Initialise pygame
-    """
-
-    def init(self):
-        if not self.opened:
-            pg.init()
+        pg.init()
 
     def __del__(self):
         try:
@@ -49,7 +43,6 @@ class WindowHelper:
     """
 
     def open_window(self, width=None, height=None, resizable=None):
-        self.init()
         if width is None:
             width = 500
         if height is None:
@@ -973,6 +966,3 @@ class WindowHelper:
         with open(filename, 'r') as file:
             lines = file.readlines()
             self.parse_template(lines, options)
-
-
-win = WindowHelper.Instance()

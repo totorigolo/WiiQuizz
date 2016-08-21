@@ -20,7 +20,8 @@ class Dialog:
             'neutral': 'black'
         }
 
-        #self.win.new_font('Arial', 30, 'dialog_font')
+        self.win.new_font('Arial', 30, 'dialog_font')
+        self.win.new_font('Arial', 16, 'dialog_font_small')
 
         self.win.new_color('white')
         self.win.new_color('black')
@@ -48,10 +49,12 @@ class Dialog:
             'type' : type,
             'message': message,
             'mode': mode,
-            'time': time.time()
+            'time': time.time(),
+            'active': True
         }
         if mode == 'intrusive':
             self._print_intrusive_msg(type, message)
+            msg['active'] = False
         self.messages.append(msg)
 
     """
@@ -61,11 +64,13 @@ class Dialog:
     def _print_intrusive_msg(self, type, message):
         self.win.new_rect('dialog_color_shadow_'+type, 0, label='dialog_shadow')
         self.win.new_rect('dialog_color_'+type, 0, label='dialog_holder')
-        self.win.new_text(message, 'default', self.correspondence_type_text_color[type], label='dialog_msg')
+        self.win.new_text(message, 'dialog_font', self.correspondence_type_text_color[type], label='dialog_msg')
+        self.win.new_text('Appuyez sur une touche pour continuer...', 'dialog_font_small', self.correspondence_type_text_color[type], label='dialog_msg_info')
 
         self.win.add('dialog_shadow', [0, 'right'], ['y_center - 75', 150])
         self.win.add('dialog_holder', [0, 'right'], ['y_center - 70', 140])
         self.win.add('dialog_msg', 'centered', 'centered')
+        self.win.add('dialog_msg_info', 'centered', 'y_center + 40')
 
         self.win.refresh()
 
@@ -79,4 +84,5 @@ class Dialog:
         self.win.delete('dialog_shadow')
         self.win.delete('dialog_holder')
         self.win.delete('dialog_msg')
+        self.win.delete('dialog_msg_info')
 

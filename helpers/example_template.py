@@ -1,9 +1,9 @@
 # coding: utf8
 
-from WindowHelper import WindowHelper
-from Dialog import Dialog
-import os
 import time
+
+from Dialog import Dialog
+from WindowHelper import WindowHelper
 
 win = WindowHelper.Instance()
 dialog = Dialog.Instance()
@@ -56,4 +56,4 @@ dialog.new_message('error', 'Erreur! Ceci est un message d\'erreur.')
 
 win.refresh()
 
-time.sleep(2)
+#time.sleep(2)
