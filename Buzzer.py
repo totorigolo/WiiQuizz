@@ -100,7 +100,9 @@ class Buzzer:
         led = sum([((2 * tab[i]) ** i) * tab[i] for i in xrange(len(tab))])
         self.wiimote.led = led
 
-    def is_pressed(self, btn):
+    def is_down(self, btn):
+        if self.dummy:
+            return False
         if btn == 'any':
             return bool(self.wiimote.state['buttons'] != 0)
         else:

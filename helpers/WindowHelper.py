@@ -1,16 +1,15 @@
 # coding: utf8
 
+import os
+import re
 from inspect import isfunction
-
-from Singleton import Singleton
 
 import pygame as pg
 from pygame.locals import *
 
 from ColorHelper import ColorHelper
+from Singleton import Singleton
 from tools import py_encode_font_txt, py_encode_title
-import re
-import os
 
 if not pg.font: print 'Warning, fonts disabled'
 if not pg.mixer: print 'Warning, sound disabled'
@@ -928,7 +927,9 @@ class WindowHelper:
                 self.new_circle(elem['params'][0].replace(' ', ''), int(elem['params'][1]), int(elem['params'][2]),
                                 label)
             elif elem['type'] == 'img':
-                elem['params'][0] = elem['params'][0].replace('IMG_FOLDER', options['IMG_FOLDER']).replace('/', '\\')
+                #  TODO: Linux & Windows !!
+                # elem['params'][0] = elem['params'][0].replace('IMG_FOLDER', options['IMG_FOLDER']).replace('/', '\\')
+                elem['params'][0] = elem['params'][0].replace('IMG_FOLDER', options['IMG_FOLDER'])
                 if len(elem['params']) == 2 and elem['params'][1] == 'True':
                     self.new_img(elem['params'][0], alpha=elem['params'][1], label=label)
                 else:
@@ -965,7 +966,8 @@ class WindowHelper:
         }
         options.update(opt)
         if re.match('.*\.skt', filename) is None:
-            filename = options['SKT_FOLDER'] + '\\' + filename + '.skt'
+            # filename = options['SKT_FOLDER'] + '\\' + filename + '.skt'
+            filename = options['SKT_FOLDER'] + '/' + filename + '.skt'
         with open(filename, 'r') as file:
             lines = file.readlines()
             self.parse_template(lines, options)

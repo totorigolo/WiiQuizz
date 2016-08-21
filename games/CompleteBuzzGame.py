@@ -3,10 +3,9 @@
 import time
 from os import listdir
 from os.path import isfile, join, abspath
-from WindowHelper import WindowHelper
 
 from ListDialog import ListDialog
-from tools import py_encode_font_txt
+from WindowHelper import WindowHelper
 
 
 # noinspection PyUnresolvedReferences
@@ -206,7 +205,7 @@ class CompleteBuzzGame:
             # Evénements Wiimote
             new_edge, new_which, new_btn = False, None, None
             if rising_edge:
-                if not vars['self'].buzzerMgr.button_pressed(rising_edge_which, rising_edge_btn):
+                if not vars['self'].buzzerMgr.button_down(rising_edge_which, rising_edge_btn):
                     rising_edge = False
             else:
                 if state == 'waiting':
@@ -214,20 +213,20 @@ class CompleteBuzzGame:
                     change = False
                     if vars['self'].image_mode or vars['self'].music_mode:
                         change = True
-                        if vars['self'].buzzerMgr.button_pressed('master', 'up'):
+                        if vars['self'].buzzerMgr.button_down('master', 'up'):
                             image_mode_displayed = True
                             music_mode_playing, music_mode_changed = True, True
                             new_edge, new_which, new_btn = 'rising', 'master', 'up'
-                        elif vars['self'].buzzerMgr.button_pressed('master', 'down'):
+                        elif vars['self'].buzzerMgr.button_down('master', 'down'):
                             image_mode_displayed = False
                             music_mode_playing, music_mode_changed = False, True
                             new_edge, new_which, new_btn = 'rising', 'master', 'down'
-                        elif vars['self'].buzzerMgr.button_pressed('master', 'right'):
+                        elif vars['self'].buzzerMgr.button_down('master', 'right'):
                             image_cursor += 1
                             music_cursor += 1
                             music_mode_playing, music_mode_changed = False, True
                             new_edge, new_which, new_btn = 'rising', 'master', 'right'
-                        elif vars['self'].buzzerMgr.button_pressed('master', 'left'):
+                        elif vars['self'].buzzerMgr.button_down('master', 'left'):
                             image_cursor -= 1
                             music_cursor -= 1
                             music_mode_playing, music_mode_changed = False, True
@@ -251,9 +250,9 @@ class CompleteBuzzGame:
                                 state = 'buzz_team_{}_'.format(buzzer_any.team)
                                 music_mode_playing, music_mode_changed = False, True
                 elif state == 'blocked' or state[0:10] == 'buzz_team_':
-                    master_any = vars['self'].buzzerMgr.button_pressed('master', 'any')
-                    master_plus = vars['self'].buzzerMgr.button_pressed('master', '+')
-                    master_minus = vars['self'].buzzerMgr.button_pressed('master', '-')
+                    master_any = vars['self'].buzzerMgr.button_down('master', 'any')
+                    master_plus = vars['self'].buzzerMgr.button_down('master', '+')
+                    master_minus = vars['self'].buzzerMgr.button_down('master', '-')
                     if master_plus and not state == 'blocked':
                         current_team = int(state[-1])
                         win.play_sound('snd_win') # Victoire !!

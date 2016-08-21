@@ -1,187 +1,183 @@
 # coding=utf-8
 
-import os
 import random
 
-from WindowHelper import WindowHelper
 
-# noinspection PyUnresolvedReferences
 class BuzzerMgr:
-    def __init__(self, nb_wiimote, dummy=False, need_master=True):
-        """ Initialise les Wiimote dans une GUI """
+    """
+    Cette classe s'occupe de la gestion des Wiimotes. C'est elle qui gère :
+     - la connexion / déconnexion
+     - les évènements
+    """
 
-        # TODO: S'arranger pour ne demander qu'une seule fois la connexion des manettes durant une session
+    def __init__(self):
+        """
+        Initialise le BuzzerMgr
+        """
+        ''' Déclaration et initialisation des attributs '''
+        self.buzzers = dict()
+        self.unused_buzzers = []  # liste de tuple : (ancienne fonction [1-4,'master], Buzzer)
+        self.nb_wiimote = None
+        self.need_master = None
+        self.dummy = None
+        self.initialized = False
+
+    def __reinit(self):
+        """ Supprime les manettes et réinitialise les connexions. NE RECONNECTE PAS les wiimotes. """
+        for poop, b in self.buzzers.iteritems():
+            b.close()
+        self.buzzers = dict()
+
+        for b in self.unused_buzzers:
+            b[1].close()
+        self.unused_buzzers = []
+
+        self.nb_wiimote = 0
+        self.initialized = False
+
+    def connect_master(self):
+        """
+        Connecte uniquement la wiimote master
+        """
+        if 'master' not in self.buzzers:
+            # Cherche si on a un vieux master en mémoire
+            for role, buzzer in self.unused_buzzers:
+                if role == 'master':
+                    self.buzzers['master'] = buzzer
+                    return
+
+            # Connecte un nouveau master
+            self.__connect_buzzer('master', 'Master')
+
+    def require(self, nb_wiimote, need_master=True):
+        """
+        Cette méthode sert à indiquer que nous avons besoin de nb_wiimote wiimotes, avec EN PLUS une wiimote master
+        si need_master est True.s
+        :param nb_wiimote: Le nombre de wiimotes JOUEUSES requises. Peut être 1 à 4 ou 'ask'
+        :param need_master: Indique s'il faut EN PLUS une wiimote master
+        """
 
         # Nombre de wiimotes
         if nb_wiimote == 'ask':
-            nb_wiimote = BuzzerMgr.prompt_nb_wiimotes(need_master)
+            nb_wiimote = BuzzerMgr._prompt_nb_wiimotes(need_master)
 
-        # Initialisation des attributs
-        self.buzzers = dict()
-        self.nb_wiimote = nb_wiimote
-        self.need_master = need_master
-        self.dummy = dummy
-        self.initialized = False
+        nb_joueuses_requises = nb_wiimote - (1 if need_master else 0)
 
-        # Constantes pour PyGame
-        self.py_width = 800
-        self.py_height = 600
-        self.py_margin = 35
-        self.py_border = 5
+        # Si on est déjà initialisé, on regarde combien de wiimotes on a de trop
+        if self.initialized:
+            nb_new_wiimotes_needed = nb_wiimote - self.nb_wiimote
 
-        # Démarre Fenètre
-        win = WindowHelper.Instance()
-        # Démarre Fenêtre si pas ouverte
-        if not win.is_open():
-            win.open_window(self.py_width, self.py_height)
+            # On désactive les wiimotes que l'on aurait en trop, puis on a fini
+            if nb_new_wiimotes_needed < 0:
+                ''' La difficulté ici est que les buzzers sont stockés dans un dict '''
 
-        page_label = win.new_page('Initialisation des Buzzers')
-        
-        # Couleurs
-        win.new_color((50, 150, 250), "txt")
-        win.new_color((200, 200, 200), "border")
-        win.new_color((52, 207, 52), "success")
-        win.new_color("black", "bckg")
+                # Désactive les wiimotes joueuses dont on a plus besoin
+                for b in self.buzzers:
+                    if b not in range(1, nb_joueuses_requises):
+                        self.__idle_buzzer(b)
 
-        # Police de caractère (is watching you)
-        win.new_font("Arial", 35, "font")
+                # Désactive le master
+                if not need_master and 'master' in self.buzzers:
+                    self.__idle_buzzer('master')
 
-        # Images
-        win.new_img(os.path.abspath('./res/sync_buzzer.jpg'), label='img_wiimote')
+                # Vérifie que l'on dispose des bonnes manettes
+                erreur_d_attribution = False
+                for i in range(1, nb_joueuses_requises):
+                    if i not in self.buzzers:
+                        erreur_d_attribution = True
+                        break
 
-        # Textes de titre
-        win.new_text('Télécommande master', 'font', 'txt', label='txt_tel_master')
-        win.new_text('Télécommande 1', 'font', 'txt', label='txt_tel_1')
-        win.new_text('Télécommande 2', 'font', 'txt', label='txt_tel_2')
-        win.new_text('Télécommande 3', 'font', 'txt', label='txt_tel_3')
-        win.new_text('Télécommande 4', 'font', 'txt', label='txt_tel_4')
-        win.new_text('Chargement...', 'font', 'txt', label='loading')
+                # Pas d'erreur, on a fini
+                if not erreur_d_attribution:
+                    # On a les manettes, c'est bon
+                    return
 
-        win.add('loading', 'centered', 110, page_label)
+        # On connecte le master si besoin
+        if need_master and 'master' not in self.buzzers:
+            self.connect_master()
+        elif 'master' in self.buzzers:
+            self.__idle_buzzer('master')
 
-        win.new_rect('border', self.py_border, label='border_rect')
-        win.add('border_rect',
-                [self.py_margin, self.py_width - 2 * self.py_margin],
-                [self.py_margin, self.py_height - 2 * self.py_margin],
-                page_label)
+        # On connecte les wiimotes joueuses manquantes
+        for i in range(1, nb_joueuses_requises):
+            if i not in self.buzzers:
+                self.__connect_buzzer(i, i)
 
-        win.go_to(page_label)
-
-        # Options d'execution
-        vars = {
-            'sub_state': -1, 
-            'init_state': 'aucun', 
-            'current_buzzer': None, 
-            'texte_affiche': 'Chargement', 
-            'transition_next': 0, 
-            'transition_percent': 0,
-            'page_label': page_label,
-            'self': self # instance de l'objet courant, appelable dans fun_after grace à options['self']
-        }
-
-        """ 
-            param: pg instance de pygame
-            param: win instance de windowsHelper courante
-            param: options, liste d'options envoyé en paramètre à la fonction event de windowsHelper (contient les variables)
+    def __connect_buzzer(self, key, name):
         """
-        def fun_after(pg, win, vars):
-            from Buzzer import Buzzer
-            page_label = vars['page_label']
-            if vars['init_state'] == 'aucun':
-                if vars['self'].need_master:
-                    vars['current_buzzer'] = Buzzer('master', dummy=self.dummy)
-                    vars['init_state'] = 'waiting_master'
-                    vars['current_buzzer'].async_wait()
-                    vars['texte_affiche'] = 'txt_tel_master'
-                else:
-                    vars['init_state'] = 10
-            elif vars['init_state'] == 'waiting_master':
-                if vars['current_buzzer'].connected:
-                    vars['self'].buzzers['master'] = vars['current_buzzer']
-                    vars['current_buzzer'] = None
-                    vars['init_state'] = 'transition'
-                    vars['transition_next'] = 1
-                    vars['transition_percent'] = 0
-            elif isinstance(vars['init_state'], int):
-                state_wii_nb = int(vars['init_state'] / 10)
-                sub_state = vars['init_state'] - 10 * state_wii_nb
-                if sub_state == 0:
-                    vars['texte_affiche'] = 'txt_tel_{}'.format(state_wii_nb)
-                    vars['current_buzzer'] = Buzzer(state_wii_nb, dummy=self.dummy)
-                    vars['current_buzzer'].async_wait()
-                    vars['init_state'] += 1
-                elif sub_state == 1:
-                    if vars['current_buzzer'].connected:
-                        vars['self'].buzzers[state_wii_nb] = vars['current_buzzer']
-                        vars['current_buzzer'] = None
-                        vars['init_state'] = 'transition'
-                        vars['transition_next'] = state_wii_nb + 1
-                        vars['transition_percent'] = 0
-                        sub_state = 2
-            elif vars['init_state'] == 'transition':
-                vars['transition_percent'] += vars['transition_percent'] / 2 + 1
-                if vars['transition_percent'] >= 100:
-                    if vars['transition_next'] > vars['self'].nb_wiimote:
-                        return True
-                    vars['init_state'] = vars['transition_next'] * 10
-                    vars['texte_affiche'] = ''
+        Interface de connexion de manette
+        :param key: avec quelle key sera stockée le buzzer dans self.buzzers
+        :param name: le nom qui sera affiché à l'écran
+        """
+        # TODO: Utiliser Dialog
+        pass
 
-            # Affichage
-            win.reset()
-            win.delete('loading', page_label)  # Suppression du message de chargement
+    def __idle_buzzer(self, key):
+        """
+        Met un buzzer en veille
+        :param key: la clé du buzzer à mettre en veille. Doit être dans self.buzzers
+        """
+        if key in self.buzzers:
+            self.buzzers[key].allumer_led({1, 0, 0, 1})
+            self.unused_buzzers.append((key, self.buzzers[key]))
+            self.buzzers.pop(key)
+        else:
+            raise KeyError('Le buzzer "{}" n\'est actuellement pas connecté !')
 
-            if vars['init_state'] == 'transition':
-                # Rectangle vert
-                green_top = green_left = vars['self'].py_margin + vars['self'].py_border
-                green_width = vars['self'].py_width - 2 * (vars['self'].py_margin + vars['self'].py_border)
-                green_height = vars['self'].py_height - 2 * (vars['self'].py_margin + vars['self'].py_border)
-                color_tuple = win.colors['success'].get_rgb()
-                green_color = tuple(int(round(c * (100 - vars['transition_percent']) / 100.0)) for c in color_tuple)
-                rect_label = win.nb_use(win.new_rect(green_color, 0), 1)
-                win.add(rect_label, [green_top, green_width], [green_left, green_height], page_label)
-            else:
-                win.add(vars['texte_affiche'], 'centered', 110, page_label)
-                win.add('img_wiimote', 250, 250, page_label)  # image wiimote
-            win.print_page(page_label)
-            win.delete(vars['texte_affiche'])
-            return False
-        
-        win.event(after_fun=fun_after, vars=vars, page=page_label)
-
-    def button_pressed(self, which, btn):
+    def button_down(self, which, btn):
+        """
+        Indique si le bouton btn est actuellement pressé sur la wiimote which
+        :param which: wiimote dont on souhaite connaitre l'état. Peut être 1 à 4 ou master.
+        :param btn: le bouton. Doit être dans la liste BOUTONS du fichier Buzzers.py
+        :return: un boolean correspondant à l'état du bouton btn sur la wiimote which
+        """
         if which not in self.buzzers.keys() or self.buzzers[which].dummy:
             return False
-        return self.buzzers[which].is_pressed(btn)
+        return self.buzzers[which].is_down(btn)
 
     def buzzers_which(self, btn):
+        """
+        Renvoie la liste des buzzers qui ont le bouton btn pressé.
+        :param btn: le bouton. Doit être dans la liste BOUTONS du fichier Buzzers.py
+        :return: Un array contenant les wiimotes qui ont btn pressé. Il peut contenir 1 à 4 et / ou 'master'
+        """
         list_which = []
         for poop, b in self.buzzers.iteritems():
-            if b.dummy:
-                return []
-            if b.is_pressed(btn):
+            if b.is_down(btn):
                 list_which.append(b)
         return list_which
 
     @staticmethod
-    def any_of(buzzers):
-        """ Sélectionne un buzzer au hasard, sauf avec master qui a la priorité """
+    def any_of(buzzers, master_first=True):
+        """
+        Fonction statique : renvoi une wiimote au hasard dans la liste buzzers. Sert quand plusieurs buzzers ont
+        pressé une touche en même temps, et qu'il faut déterminer une gagnante équitablement.
+        :param buzzers: la liste de wiimotes dont on veut un pseudo-plus-rapide
+        :param master_first: la wiimote master est prioritaire si True
+        :return: une wiimote. Peut être 1 à 4 ou 'master', ou None si buzzers est vide
+        """
         if len(buzzers) == 0:
             return None
-        for b in buzzers:
-            if b.team == 'master':
-                return b
+        if master_first:
+            for b in buzzers:
+                if b.team == 'master':
+                    return b
         return random.choice(buzzers)
 
     @staticmethod
-    def prompt_nb_wiimotes(need_master):
+    def _prompt_nb_wiimotes(need_master):
+        """
+        Fonction privée statique : Demande le nombre de wiimotes joueuses requises.
+        :param need_master: Pour afficher un message au joueurs comme quoi il faut une wiimote de plus
+        :return: un int correspondant au nombre TOTAL (dont master) de wiimotes
+        """
         from ListDialog import ListDialog
         dialog = ListDialog()
 
+        question = u'Combien de Wiimotes joueuses ?'
+        sous_texte = ''
+        offset = 0
         if need_master:
-            question = u'Combien de Wiimotes joueuses ?'
             sous_texte = "une manette supplémentaire est requise pour le contrôle du jeu"
-            return dialog.get_answer([i for i in range(1, 5)], question, sous_texte) + 1
-        else:
-            question = u'A combien de Wiimotes voulez-vous jouer ?'
-            sous_texte = None
-            return dialog.get_answer([i for i in range(1, 5)], question, sous_texte)
+            offset = 1
+        return dialog.get_answer([i for i in range(1, 5)], question, sous_texte) + offset
