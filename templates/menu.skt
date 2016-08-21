@@ -1,7 +1,3 @@
-#def
-text: title_menu("Nombre d'équipe", title, dark_blue)
-text: sub_title_menu("Une manette supplémentaire est nécessaire pour le présentateur", sub_title, dark_blue)
-
 #placing
-title_menu(centered, 50)
-sub_title_menu(centered, 120)
+title_list_dialog(centered, 50)
+sub_title_list_dialog(centered, 120)

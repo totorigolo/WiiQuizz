@@ -174,7 +174,7 @@ class BuzzerMgr:
 
     @staticmethod
     def prompt_nb_wiimotes(need_master):
-        from ListDialog_old import ListDialog
+        from ListDialog import ListDialog
         dialog = ListDialog()
 
         if need_master:
