@@ -13,6 +13,3 @@ et encore d'autres à venir !
 
 - totorigolo
 - bdvllrs
-
-## Crédits
-* OpenClipart-Vectors (https://pixabay.com/en/users/OpenClipart-Vectors-30363/) pour l'icône du pouce vert (et le rouge modifié)
