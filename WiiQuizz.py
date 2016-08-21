@@ -1,5 +1,10 @@
 # coding: utf8
 
+"""
+Credits:
+OpenClipart-Vectors (https://pixabay.com/en/users/OpenClipart-Vectors-30363/)
+"""
+
 from GamesMgr import GamesMgr
 import os
 
