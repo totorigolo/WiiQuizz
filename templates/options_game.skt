@@ -1,21 +1,27 @@
 #def
-rect: option_1(blue_options, 0)
-rect: option_2(blue_options, 0)
-rect: option_3(blue_options, 0)
-rect: option_4(blue_options, 0)
+rect: option_up(blue_options, 0)
+rect: option_left(blue_options, 0)
+rect: option_down(blue_options, 0)
+rect: option_right(blue_options, 0)
 img: arrow_up(IMG_FOLDER/arrow_up.png, True)
 img: arrow_down(IMG_FOLDER/arrow_down.png, True)
 img: arrow_left(IMG_FOLDER/arrow_left.png, True)
 img: arrow_right(IMG_FOLDER/arrow_right.png, True)
+// Définition des options avant pour que ce soit dynamique
 
 
 #placing
-option_1(50, y_center - 75, x_center - 80, 50)
-option_2(50, y_center + 25, x_center - 80, 50)
-option_3(x_center + 20, y_center - 75, x_center - 80, 50)
-option_4(x_center + 20, y_center + 25, x_center - 80, 50)
+option_up(50, y_center - 75, x_center - 80, 50)
+option_left(50, y_center + 25, x_center - 80, 50)
+option_down(x_center + 20, y_center - 75, x_center - 80, 50)
+option_right(x_center + 20, y_center + 25, x_center - 80, 50)
 
 arrow_up(60, y_center - 60)
 arrow_left(60, y_center + 40)
 arrow_down(x_center + 30, y_center + 40)
 arrow_right(x_center + 30, y_center - 60)
+
+option_up_text((x_center-80)/2 - self_width/4, y_center - 68)
+option_left_text((x_center-80)/2 - self_width/4, y_center + 32)
+option_down_text((x_center-80)/2 - self_width/4 + x_center, y_center + 32)
+option_right_text((x_center-80)/2 - self_width/4 + x_center, y_center - 68)
