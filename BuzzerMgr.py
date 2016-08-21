@@ -52,22 +52,20 @@ class BuzzerMgr:
             # Connecte un nouveau master
             self.__connect_buzzer('master', 'Master')
 
-    def require(self, nb_wiimote, need_master=True):
+    def require(self, nb_joueuses_requises, need_master=True):
         """
         Cette méthode sert à indiquer que nous avons besoin de nb_wiimote wiimotes, avec EN PLUS une wiimote master
-        si need_master est True.s
-        :param nb_wiimote: Le nombre de wiimotes JOUEUSES requises. Peut être 1 à 4 ou 'ask'
+        si need_master est True.
+        :param nb_joueuses_requises: Le nombre de wiimotes JOUEUSES requises. Peut être 1 à 4 ou 'ask'
         :param need_master: Indique s'il faut EN PLUS une wiimote master
         """
 
         # Nombre de wiimotes
-        if nb_wiimote == 'ask':
-            nb_wiimote = self._prompt_nb_wiimotes(need_master)
-
-        nb_joueuses_requises = nb_wiimote - (1 if need_master else 0)
+        if nb_joueuses_requises == 'ask':
+            nb_joueuses_requises = self._prompt_nb_wiimotes(need_master)
 
         # Si on est déjà initialisé, on regarde combien de wiimotes on a de trop pour les désactiver
-        if nb_wiimote - self.nb_wiimote < 0:
+        if nb_joueuses_requises - self.nb_wiimote < 0:
             # Désactive les wiimotes joueuses dont on a plus besoin
             for b in self.buzzers:
                 if b not in range(1, nb_joueuses_requises):
@@ -79,7 +77,7 @@ class BuzzerMgr:
 
             # Vérifie que l'on dispose des bonnes manettes
             erreur_d_attribution = False
-            for i in range(1, nb_joueuses_requises):
+            for i in range(1, nb_joueuses_requises + 1):
                 if i not in self.buzzers or not self.buzzers[i].connected:
                     erreur_d_attribution = True
                     break
@@ -92,11 +90,11 @@ class BuzzerMgr:
         # On connecte le master si besoin
         if need_master and 'master' not in self.buzzers:
             self.connect_master()
-        elif 'master' in self.buzzers:
+        elif not need_master and 'master' in self.buzzers:
             self.__idle_buzzer('master')
 
         # On connecte les wiimotes joueuses manquantes
-        for i in range(1, nb_joueuses_requises):
+        for i in range(1, nb_joueuses_requises + 1):
             if i not in self.buzzers or not self.buzzers[i].connected:
                 self.__connect_buzzer(i, i)
 

@@ -9,7 +9,7 @@ from games import game_list
 
 class GamesMgr:
     def __init__(self):
-        print 'Recherche de jeux... ',
+        print 'Recherche de jeux...',
         self.games = []
         for name, file in game_list.iteritems():
             self.games.append((name, file))
@@ -27,10 +27,10 @@ class GamesMgr:
             if choix == 0:
                 break
 
-            print ('Chargement du jeu %s... ' % self.games[choix - 1][0]),
+            print ('Chargement du jeu %s...' % self.games[choix - 1][0]),
             game_module = importlib.import_module('games.{}'.format(self.games[choix - 1][1]))
             game_class = getattr(game_module, game_module.__name__.split('.')[1])
-            game = game_class()
             print 'jeu chargé !'
 
+            game = game_class()
             game.run()

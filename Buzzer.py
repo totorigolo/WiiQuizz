@@ -92,13 +92,15 @@ class Buzzer:
         # TODO: Faire un t.join() dans le destructeur
 
     def vibrer(self, temps=0.5):
-        self.wiimote.rumble = 1
-        time.sleep(temps)
-        self.wiimote.rumble = 0
+        if not self.dummy:
+            self.wiimote.rumble = 1
+            time.sleep(temps)
+            self.wiimote.rumble = 0
 
     def allumer_led(self, tab):
-        led = sum([((2 * tab[i]) ** i) * tab[i] for i in xrange(len(tab))])
-        self.wiimote.led = led
+        if not self.dummy:
+            led = sum([((2 * tab[i]) ** i) * tab[i] for i in xrange(len(tab))])
+            self.wiimote.led = led
 
     def is_down(self, btn):
         if self.dummy:
