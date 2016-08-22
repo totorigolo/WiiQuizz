@@ -1,8 +1,9 @@
 # coding=utf-8
 
-import random
+from BuzzerMgr import BuzzerMgr
 from WindowHelper import WindowHelper
 from constants import *
+
 
 class ListDialog:
     def __init__(self):
@@ -36,7 +37,8 @@ class ListDialog:
             "color_active": "dark_blue",
             "border_active": "light_blue",
             "font_active": "options",
-            "margin": WIN_MARGIN
+            "margin": WIN_MARGIN,
+            "event_poster": BuzzerMgr.Instance()  # Afin de bénéficier de la navigation avec la wiimote master
         }
 
         self.win.add_menu('menu_list_dialog', 'centered', 180, opt=opt, page=page_label)

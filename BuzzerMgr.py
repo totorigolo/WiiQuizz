@@ -1,10 +1,15 @@
 # coding=utf-8
 
 import random
+from Queue import Queue
+
+import pygame as pg
 
 from Buzzer import Buzzer
 from Singleton import Singleton
 from WindowHelper import WindowHelper
+
+WIIMOTE_EVENT = pg.USEREVENT  # Type d'évènement correspondant à un buzzer. Voir BuzzerMgr.post_events()
 
 
 @Singleton
@@ -15,7 +20,7 @@ class BuzzerMgr:
      - les évènements
     """
 
-    def __init__(self, dummy=False):
+    def __init__(self, allow_dummy=False):
         """
         Initialise le BuzzerMgr
         """
@@ -24,7 +29,8 @@ class BuzzerMgr:
         self.unused_buzzers = []  # liste de tuple : (ancienne fonction [1-4,'master], Buzzer)
         self.nb_wiimote = 0
         self.need_master = None
-        self.dummy = dummy
+        self.allow_dummy = allow_dummy
+        self.event_queue = Queue()
 
     def __reinit(self):
         """ Supprime les manettes et réinitialise les connexions. NE RECONNECTE PAS les wiimotes. """
@@ -110,7 +116,7 @@ class BuzzerMgr:
         if key in self.buzzers:
             buzzer_en_attente = self.buzzers[key]
         else:
-            buzzer_en_attente = Buzzer(key, dummy=self.dummy)
+            buzzer_en_attente = Buzzer(key, allow_dummy=self.allow_dummy)
 
         # Démarre la connexion de façon asynchrone
         buzzer_en_attente.async_wait()
@@ -126,11 +132,19 @@ class BuzzerMgr:
 
         win.refresh()
 
+        # Variable d'execution
+        vars = {
+            'buzzer_en_attente': buzzer_en_attente,
+            'self': self
+        }
+
         # Attend que la manette soit connectée
         def waiting_connection(pg, win, vars, event):
-            return buzzer_en_attente.connected
+            if event.type == pg.KEYDOWN and event.key == pg.K_d:
+                vars['buzzer_en_attente'].dummy = True
+            return vars['buzzer_en_attente'].connected
 
-        win.event(event_fun=waiting_connection)  # On attend que quelqu'un appuie sur un bouton
+        win.event(event_fun=waiting_connection, vars=vars)  # On attend que quelqu'un appuie sur un bouton
 
         # Stocke le nouveau buzzer
         self.buzzers[key] = buzzer_en_attente
@@ -176,6 +190,19 @@ class BuzzerMgr:
         :return: Retourne le nombre de manettes
         """
         return self.nb_wiimote - (0 if count_master and 'master' in self.buzzers else 1)
+
+    def post_events(self):
+        """
+        Ajoute les évènements des buzzers à la file de PyGame.
+        Les évènements ajoutés sont du type WIIMOTE_EVENT (pg.USEREVENT). Les attributs sont :
+          - wiimote_id : 1 à 4 ou 'master'
+          - btn : le bouton ayant généré l'évènement. Voir BOUTONS dans Buzzer.py
+          - pressed : True si l'évènement correspond à une touche qui vient d'être pressée
+        """
+        for id, buzzer in self.buzzers.items():
+            events = buzzer.get_events()
+            for e in events:
+                pg.event.post(pg.event.Event(WIIMOTE_EVENT, wiimote_id=id, btn=e[0], pressed=e[1]))
 
     def any_of(self, buzzers, master_first=True):
         """

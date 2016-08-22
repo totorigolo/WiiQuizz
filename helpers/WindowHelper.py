@@ -1,16 +1,15 @@
 # coding: utf8
 
+import os
+import re
 from inspect import isfunction
-
-from Singleton import Singleton
 
 import pygame as pg
 from pygame.locals import *
 
 from ColorHelper import ColorHelper
+from Singleton import Singleton
 from tools import py_encode_font_txt, py_encode_title
-import re
-import os
 
 if not pg.font: print 'Warning, fonts disabled'
 if not pg.mixer: print 'Warning, sound disabled'
@@ -390,7 +389,6 @@ class WindowHelper:
             return True
         return False
 
-
     def edit_text(self, label, text):
         """
             Modifie le contenu d'un élément
@@ -543,7 +541,6 @@ class WindowHelper:
                     num += 1
         return num + 1
 
-
     def _print_rect(self, num, page=None):
         """
             Affichage d'un rectangle
@@ -613,11 +610,13 @@ class WindowHelper:
         clock = pg.time.Clock()
         while not done:
             x, y = elem_x, elem_y
-            clock.tick(10)  # Ne boucle que 25 fois/sec
+            clock.tick(10)  # Ne boucle que 10 fois/sec
             if before_fun is not None:
                 vars.update(before_fun(pg, self, vars, menu))
 
             # Boucle d'événement
+            if 'event_poster' in opt:
+                opt['event_poster'].post_events()
             for event in pg.event.get():
                 if event.type == QUIT:
                     done = True
@@ -630,6 +629,15 @@ class WindowHelper:
                         choix -= 1
                     elif event.key == K_DOWN:
                         choix += 1
+                elif event.type == USEREVENT:  # TODO: Correspond aux Wiimotes (renommer USEREVENT)
+                    if event.wiimote_id == 'master' and event.pressed:
+                        if event.btn == 'HAUT':
+                            choix -= 1
+                        elif event.btn == 'BAS':
+                            choix += 1
+                        elif event.btn == 'A':
+                            done = True
+                            pressed = True
                 elif event.type == VIDEORESIZE:
                     width_win, height_win = event.w, event.h
                     self.open_window(width_win, height_win)  # On re-taille la fenêtre
@@ -750,9 +758,11 @@ class WindowHelper:
         done = False
         clock = pg.time.Clock()
         while not done:
-            clock.tick(10)  # 25 img/sec
+            clock.tick(10)  # 10 img/sec
             if before_fun is not None:
                 done = before_fun(pg, self, vars)
+            if 'event_poster' in vars:
+                vars['event_poster'].post_events()
             for event in pg.event.get():
                 if event.type == QUIT:
                     done = True
