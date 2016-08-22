@@ -7,24 +7,31 @@ from constants import *
 
 @Singleton
 class TeamMgr:
-    def __init__(self, max_simult_buzzer=1):
+    """
+        Team Manager
+        Attention, une fenêtre doit être active pour utiliser les méthodes
+    """
+    def __init__(self, nb_players, max_simult_buzzer=1):
         """
         Nombre de personne pouvant buzzer simultanément (si -1, pas de restrictions)
-        :param max_simult_buzzer:
+        :param nb_players: nombre de joueurs en jeu
+        :param max_simult_buzzer: nombre de personne pouvant buzzer simultanément
         """
         self.players = {}
         self.max_simult_buzzer = max_simult_buzzer
         self.wining_points = WINING_POINTS
         self.losing_points = LOSING_POINTS
         self.buzzing = []
+        self.nb_players = nb_players
 
-    def add_player(self, name, wiimote):
+    def add_player(self, name, wiimote, team_name):
         """
         Ajoute un joueur
-        :param name: nom du joueur
+        :param name: nom du joueur noms : team1, team2, team3, team4
         :param wiimote: wiimote du joueur
+        :param team_name: Nom de l'équipe apparente (Pastèque, Ananas, ...)
         """
-        self.players[name] = Team(name, wiimote)
+        self.players[name] = Team(name, wiimote, team_name)
 
     def buzz(self, name):
         """
@@ -36,6 +43,7 @@ class TeamMgr:
             return False
         self.buzzing.append(name)
         self.players[name].is_buzzing = True
+        self.players[name].wiimote.vibrer()
         return True
 
     def accept_buzz(self, name, points=None):
@@ -93,3 +101,14 @@ class TeamMgr:
         :param points: nombre de points
         """
         self.players[name].add_points(points)
+
+    def get_best_player(self):
+        max_points = 0
+        best_players = []
+        for name, p in self.players.items():
+            if p.points == max_points:
+                best_players.append(name)
+            elif p.points > max_points:
+                best_players = []
+                max_points = p.points
+        return best_players
