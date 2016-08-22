@@ -986,11 +986,14 @@ class WindowHelper:
         """
             Importe un fichier .skt
         """
+
+        project_dir = os.path.abspath('/'.join((os.path.dirname(os.path.abspath(__file__)), '..')))
+
         if opt is None:
             opt = {}
         options = {
-            'IMG_FOLDER': os.path.abspath('../res'),
-            'SKT_FOLDER': os.path.abspath('../templates')
+            'IMG_FOLDER': project_dir + '/res',
+            'SKT_FOLDER': project_dir + '/templates'
         }
         options.update(opt)
         if re.match('.*\.skt', filename) is None:
