@@ -12,8 +12,9 @@ class Dialog:
         self.messages = []
         self.win = WindowHelper.Instance()
 
-        if self.win.current_page == -1:
-            raise NameError("No active page found.")
+        if self.win.current_page == -1:  # Si pas de page d'ouverte
+            self.win.new_page('Erreur', label='dialog_default')
+            self.win.go_to('dialog_default')
 
         self.templates_options = {
             'IMG_FOLDER': os.path.abspath('./res'),

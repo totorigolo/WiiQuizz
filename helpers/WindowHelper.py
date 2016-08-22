@@ -125,6 +125,9 @@ class WindowHelper:
         self.print_page(label)
         return label
 
+    def page_exists(self, page):
+        return page in self.pages.keys()
+
     def nb_use(self, label, num=1):
         """
             Définit le nombre de fois qu'un élément peut être affiché avant d'être automatiquement supprimé

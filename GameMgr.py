@@ -3,7 +3,7 @@
 
 class GameMgr:
     """
-    Cette classe s'occupe du déroulement d'un jeu. Elle cependant pas obligatoire à utiliser dans la création d'un
+    Cette classe s'occupe du déroulement d'un jeu. Elle est cependant pas obligatoire à utiliser dans la création d'un
     nouveau jeu. Cependant, il est impératif que tout jeu comporte un constructeur et s'exécute dans une méthode
     run(); pour plus de détails, voir GamesMgr.
     C'est elle qui gère :

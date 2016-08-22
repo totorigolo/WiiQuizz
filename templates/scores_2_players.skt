@@ -1,0 +1,15 @@
+#def
+text: team1_name("Pastèque", title, team2)
+text: team1_score("200", very_big, team2)
+rect: team1_bg(team1, 0)
+text: team2_name("Ananas", title, team1)
+text: team2_score("200", very_big, team1)
+rect: team2_bg(team2, 0)
+
+#placing
+team1_bg(0, 0, x_center, bottom)
+team1_name(x_center/2 - self_width/2, 100)
+team1_score(x_center/2 - self_width/2, centered)
+team2_bg(x_center, 0, x_center, bottom)
+team2_name(3*x_center/2 - self_width/2, 100)
+team2_score(3*x_center/2 - self_width/2, centered)

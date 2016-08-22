@@ -6,7 +6,6 @@ from Dialog import Dialog
 from WindowHelper import WindowHelper
 
 win = WindowHelper.Instance()
-dialog = Dialog.Instance()
 
 win.new_page('Test fichier template', 960, 600, 'page_1', bg='white')
 win.go_to('page_1')
@@ -52,13 +51,17 @@ win.new_text('Réponse gauche', 'font', 'dark_blue', label='option_left_text')
 win.new_text('Réponse bas', 'font', 'dark_blue', label='option_down_text')
 win.new_text('Réponse droite', 'font', 'dark_blue', label='option_right_text')
 
-win.import_template('four_players', opt=options)
-win.import_template('options_game', opt=options)
+win.import_template('scores_4_players', opt=options)
 
-dialog.new_message('error', 'Erreur! Ceci est un message d\'erreur.')
 
 # win.edit_color('option_left', 'team1')
 
 win.refresh()
 
-#time.sleep(2)
+
+def event_fun(pg, win, vars, event):
+    if event.type == pg.KEYDOWN:
+        return True
+    return False
+
+win.event(event_fun=event_fun)
