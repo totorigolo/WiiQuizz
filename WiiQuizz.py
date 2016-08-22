@@ -14,6 +14,7 @@ if __name__ == '__main__':
     try:
         # Connexion de la manette Master
         buzzerMgr = BuzzerMgr.Instance()
+        buzzerMgr.set_dummy(False)
         buzzerMgr.connect_master()
 
         # Création du gestionnaire de jeux

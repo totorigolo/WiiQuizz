@@ -36,12 +36,10 @@ BOUTONS = {
 
 # TODO: Détecter la déconnexion
 class Buzzer:
-    def __init__(self, team, allow_dummy=False):
-        # TODO: Ne plus accepter dummy et prendre un attribut allow_dummy pour le debug
+    def __init__(self, team, dummy=False):
         self.wiimote = None
         self.connected = False
-        self.dummy = False
-        self.allow_dummy = allow_dummy
+        self.dummy = dummy
         self.team = team
         self.async_connection_thread = None
         self.quit = False
@@ -90,7 +88,7 @@ class Buzzer:
             else:  # Déjà connecté et pas d'overwrite, donc on ne fait rien
                 return
 
-        while tries > 0 and not (self.dummy and self.allow_dummy) and not self.quit:
+        while tries > 0 and not self.dummy and not self.quit:
             print "Tentative...",
             try:
                 self.wiimote = cwiid.Wiimote()
@@ -119,13 +117,13 @@ class Buzzer:
                 for btn, state in self.btn_state.items():
                     self.btn_state[btn] = self.is_down(btn)
 
-                break
+                return
         else: # Echec
-            if not self.dummy and self.allow_dummy:
+            if not self.dummy:
                 print "Echec des tentatives de connexion, passage en mode dummy !"
                 self.dummy = True
 
-        if self.dummy and self.allow_dummy:
+        if self.dummy:
             time.sleep(0.2)
             self.connected = True
             print "Manette connectée (dummy mode) !"
@@ -133,6 +131,7 @@ class Buzzer:
 
         dialog = Dialog.Instance()
         dialog.new_message('error', 'Impossible de connecter la manette.')
+        # TODO: Ne fonctionne pas
         raise RuntimeError('Impossible de connecter la manette.')
 
     def async_wait(self):

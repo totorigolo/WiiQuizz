@@ -20,7 +20,7 @@ class BuzzerMgr:
      - les évènements
     """
 
-    def __init__(self, allow_dummy=False):
+    def __init__(self, dummy=False):
         """
         Initialise le BuzzerMgr
         """
@@ -29,7 +29,7 @@ class BuzzerMgr:
         self.unused_buzzers = []  # liste de tuple : (ancienne fonction [1-4,'master], Buzzer)
         self.nb_wiimote = 0
         self.need_master = None
-        self.allow_dummy = allow_dummy
+        self.dummy = dummy
         self.event_queue = Queue()
 
     def __reinit(self):
@@ -43,6 +43,13 @@ class BuzzerMgr:
         self.unused_buzzers = []
 
         self.nb_wiimote = 0
+
+    def set_dummy(self, dummy):
+        # TODO: Reconnecter les manettes selon
+        self.dummy = dummy
+        if dummy:
+            print "Vous devriez redémarrer si vous désirer connecter des manettes précédemment dummy, car" \
+                  "cette fonctionnalité n'est pas encore supportée."
 
     def connect_master(self):
         """
@@ -116,7 +123,7 @@ class BuzzerMgr:
         if key in self.buzzers:
             buzzer_en_attente = self.buzzers[key]
         else:
-            buzzer_en_attente = Buzzer(key, allow_dummy=self.allow_dummy)
+            buzzer_en_attente = Buzzer(key, dummy=self.dummy)
 
         # Démarre la connexion de façon asynchrone
         buzzer_en_attente.async_wait()
