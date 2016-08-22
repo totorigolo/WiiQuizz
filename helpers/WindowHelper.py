@@ -986,15 +986,6 @@ class WindowHelper:
         """
             Importe un fichier .skt
         """
-        print os.path.abspath('.')
-        print os.path.abspath('..')
-        print os.path.abspath('../templates') + '/' + 'truc' + '.skt'
-        print filename
-        print os.path.abspath('../templates') + '/' + filename + '.skt'
-
-        import time
-        time.sleep(0.2)
-
         if opt is None:
             opt = {}
         options = {
