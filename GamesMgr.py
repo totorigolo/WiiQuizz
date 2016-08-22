@@ -8,6 +8,9 @@ from games import game_list
 
 
 class GamesMgr:
+    """
+    TODO: Doc à réaliser. cf GameMgr qui dit : "pour plus de détails, voir GamesMgr."
+    """
     def __init__(self):
         print 'Recherche de jeux...',
         self.games = []
