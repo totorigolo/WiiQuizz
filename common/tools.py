@@ -1,8 +1,9 @@
 # coding=utf-8
 
 import sys
+import os
 from random import randint
-
+import re
 
 def py_encode_font_txt(txt):
     if not isinstance(txt, str) or not isinstance(txt, unicode):
@@ -65,6 +66,18 @@ def clef(dict, val):
             return k
     return False
 
+
+def list_files(files):
+    listed_files = os.listdir(files)
+    def comp(x, y):
+        try:
+            x = re.findall("([\d\.]*)\.\w{2,4}", x)
+            y = re.findall("([\d\.]*)\.\w{2,4}", y)
+            x, y = float(x[0]), float(y[0])
+        except:
+            raise ValueError("Les fichiers n'ont pas le bon format (float.ext)")
+        return cmp(x, y)
+    return sorted(listed_files, cmp=comp)
 
 def format_text(text):
     return text.lower().replace(' ', '_').replace('é', 'e').replace('à', 'a').replace('è', 'e')
