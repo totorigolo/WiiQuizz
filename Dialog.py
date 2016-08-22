@@ -1,9 +1,9 @@
 # coding: utf8
 
-from WindowHelper import WindowHelper
-from Singleton import Singleton
 import time
-import os
+
+from Singleton import Singleton
+from WindowHelper import WindowHelper
 
 
 @Singleton
@@ -17,8 +17,6 @@ class Dialog:
             self.win.go_to('dialog_default')
 
         self.templates_options = {
-            'IMG_FOLDER': os.path.abspath('./res'),
-            'SKT_FOLDER': os.path.abspath('./templates')
         }
 
         self.types = ['error', 'success', 'warning', 'neutral']

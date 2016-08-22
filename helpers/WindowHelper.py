@@ -986,15 +986,24 @@ class WindowHelper:
         """
             Importe un fichier .skt
         """
+        print os.path.abspath('.')
+        print os.path.abspath('..')
+        print os.path.abspath('../templates') + '/' + 'truc' + '.skt'
+        print filename
+        print os.path.abspath('../templates') + '/' + filename + '.skt'
+
+        import time
+        time.sleep(0.2)
+
         if opt is None:
             opt = {}
         options = {
-            'IMG_FOLDER': os.path.abspath('./res'),
-            'SKT_FOLDER': os.path.abspath('./templates')
+            'IMG_FOLDER': os.path.abspath('../res'),
+            'SKT_FOLDER': os.path.abspath('../templates')
         }
         options.update(opt)
         if re.match('.*\.skt', filename) is None:
-            options['SKT_FOLDER'] =  options['SKT_FOLDER'].replace('\\', '/')
+            options['SKT_FOLDER'] = options['SKT_FOLDER'].replace('\\', '/')
             filename = options['SKT_FOLDER'] + '/' + filename + '.skt'
         with open(filename, 'r') as file:
             lines = file.readlines()
