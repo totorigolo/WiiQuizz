@@ -12,9 +12,12 @@ class Dialog:
         self.messages = []
         self.win = WindowHelper.Instance()
 
+        if self.win.current_page == -1:
+            raise NameError("No active page found.")
+
         self.templates_options = {
-            'IMG_FOLDER': os.path.abspath('../res'),
-            'SKT_FOLDER': os.path.abspath('../templates')
+            'IMG_FOLDER': os.path.abspath('./res'),
+            'SKT_FOLDER': os.path.abspath('./templates')
         }
 
         self.types = ['error', 'success', 'warning', 'neutral']
@@ -43,6 +46,9 @@ class Dialog:
 
         self.win.new_color((217, 217, 217), 'dialog_color_neutral')
         self.win.new_color((111, 111, 111), 'dialog_color_shadow_neutral')
+
+    def settings(self, opt=None):
+        self.templates_options.update(opt)
 
     """
         Ajoute un message

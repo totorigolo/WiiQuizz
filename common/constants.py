@@ -13,3 +13,6 @@ NAME_TEAM1 = "Pastèque"
 NAME_TEAM2 = "Ananas"
 NAME_TEAM3 = "Kiwi"
 NAME_TEAM4 = "Melon"
+
+WINING_POINTS = 100
+LOSING_POINTS = 50
