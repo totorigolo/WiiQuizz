@@ -77,7 +77,26 @@ def list_files(files):
         except:
             raise ValueError("Les fichiers n'ont pas le bon format (float.ext)")
         return cmp(x, y)
-    return sorted(listed_files, cmp=comp)
+    listed_files = sorted(listed_files, cmp=comp)
+    formated_list = []
+    list_in_progress = []
+    last_int = -1
+    for file in listed_files:
+        try:
+            file_num = float(re.findall("([\d\.]*)\.\w{2,4}", file)[0])
+            if last_int == -1:
+                last_int = int(file_num)
+                list_in_progress.append(file_num)
+            elif int(file_num) == last_int:
+                list_in_progress.append(file_num)
+            else:
+                last_int = file_num
+                formated_list.append(list_in_progress)
+                list_in_progress = []
+        except:
+            raise ValueError("Les fichiers n'ont pas le bon format (float.ext)")
+        # Si ça a passé le premier test, ça devrait passer celui-là mais on sait jamais !
+    return formated_list
 
 def format_text(text):
     return text.lower().replace(' ', '_').replace('é', 'e').replace('à', 'a').replace('è', 'e')
