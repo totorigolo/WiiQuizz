@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from WindowHelper import WindowHelper
+
 
 class GameMgr:
     """
@@ -12,23 +14,47 @@ class GameMgr:
      ATTENTION : Ne pas confondre avec GamesMgr, qui gère le chargement DES jeux.
     """
 
-    def __init__(self, game_content_mgr_list):
+    def __init__(self, game_name='WiiQuizz', game_content_mgr_list=None):
         """
         Initialise le GameMgr.
         Les gestionnaires de contenu vont afficher leur contenu dans le jeu.
-        :type game_content_mgr_list: Une liste des gestionnaires de contenu
+        :param game_name: object
+        :param game_content_mgr_list: Une liste des gestionnaires de contenu. None pour n'en utiliser aucun et
+        obtenir un jeu de buzzer simple.
         """
-        pass
+        self.game_name = game_name
+        self.win = WindowHelper.Instance()
+        self.game_content_mgr_list = game_content_mgr_list
 
     def run(self):
         """
         Exécution du jeu.
         """
 
-        self.game_content_mgr_list = []
-        # Le code après est ce que je pense de cette méthode :
+        # Ouvre une nouvelle page pour le jeu
+        self.win.new_page(self.game_name, 960, 600, 'page_game', bg='white')
+        self.win.dump_elements('page_game')
+        self.win.go_to('page_game')
 
-        # blablabla
+        """
+            Appelée pour lister les événements
+        """
+
+        def event_fun(pg, win, vars, event):
+            for cm in self.game_content_mgr_list:
+                cm.update_events(pg.event)
+            if event.type == pg.locals.KEYDOWN and event.key == pg.locals.K_ESCAPE:
+                return True
+
+        """
+            Appelé après les événements
+        """
+
+        def after_fun(pg, win, vars):
+            pass
+
+        self.win.event(event_fun=event_fun, after_fun=after_fun, vars=vars)
+
 
         for cm in self.game_content_mgr_list:
             # cm.update_events(pg.event)  # commenté car sinon erreurs de code

@@ -16,7 +16,7 @@ class TeamMgr:
      - la joie à la victoire, et la déception à la défaite
     """
 
-    # TODO: Lesquelles ?
+    # TODO: Lesquelles ? ("ATTENTION : une fenêtre doit être active pour utiliser les méthodes.")
 
     def __init__(self, max_simult_buzzer=1):
         """
