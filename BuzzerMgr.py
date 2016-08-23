@@ -8,6 +8,7 @@ import pygame as pg
 from Buzzer import Buzzer
 from Singleton import Singleton
 from WindowHelper import WindowHelper
+from constants import *
 
 WIIMOTE_EVENT = pg.USEREVENT  # Type d'évènement correspondant à un buzzer. Voir BuzzerMgr.post_events()
 
@@ -131,7 +132,7 @@ class BuzzerMgr:
 
         # Ouvre une fenêtre
         win = WindowHelper.Instance()
-        win.new_page('Page de connexion', label='connect_buzzer', bg='white')
+        win.new_page('Page de connexion', WIN_WIDTH, WIN_HEIGHT ,label='connect_buzzer', bg='white')
         win.go_to('connect_buzzer')
 
         win.import_template('wiimote_connexion')
