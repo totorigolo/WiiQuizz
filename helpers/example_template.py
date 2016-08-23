@@ -47,7 +47,7 @@ win.new_text('Réponse gauche', 'font', 'dark_blue', label='option_left_text')
 win.new_text('Réponse bas', 'font', 'dark_blue', label='option_down_text')
 win.new_text('Réponse droite', 'font', 'dark_blue', label='option_right_text')
 
-win.import_template('scores_4_players')
+win.import_template('buzz_team1')
 
 
 # win.edit_color('option_left', 'team1')
