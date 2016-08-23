@@ -5,6 +5,7 @@ import random
 from Singleton import Singleton
 from Team import Team
 from WindowHelper import WindowHelper
+from Dialog import Dialog
 
 
 @Singleton
@@ -38,6 +39,7 @@ class TeamMgr:
         self.waiting_msg = ''
 
         self.win = WindowHelper.Instance()
+        self.dialog = Dialog.Instance()
 
         self.win.new_color((255, 0, 96), 'team1')
         self.win.new_color((252, 255, 0), 'team2')
@@ -67,9 +69,12 @@ class TeamMgr:
             self.win.new_text(team.team_name, 'very_big', self.color_correspondence[team_num], label=team_num)
             self.win.new_text(str(team.points), 'title', self.color_correspondence[team_num],
                               label=(team_num + '_result'))
+
         self.win.import_template(name_template)
 
         if self.state == 'must_pick_one':
+            self.dialog.new_message('error', "Erreur: appeler la méthode pick_one_buzz()")
+
             self.win.new_font('Arial', 40, 'title')
             self.win.new_color((30, 28, 230), 'strange_blue')
             self.win.new_text('MPO', 'title', 'strange_blue', 'msg_buzzer')
@@ -83,6 +88,13 @@ class TeamMgr:
             txt = 'Equipe %d a buzzed' % self.buzzing_teams[0]
             self.win.new_text(txt, 'title', 'strange_red', 'msg_buzzer')
             self.win.add('msg_buzzer', page=page_label)
+
+            team_text = "team{}".format(self.buzzing_teams[0])
+            color = self.color_correspondence["team{}".format(self.buzzing_teams[0])]
+
+            self.win.new_text(self.teams[self.buzzing_teams[0]].team_name, 'very_big', color, label="text_buzz_"+team_text)
+            self.win.import_template('buzz_'+team_text)
+            self.refresh()
         else:
             self.win.delete('msg_buzzer', page_label)
 
