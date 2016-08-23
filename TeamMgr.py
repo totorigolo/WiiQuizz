@@ -2,10 +2,10 @@
 
 import random
 
+from Dialog import Dialog
 from Singleton import Singleton
 from Team import Team
 from WindowHelper import WindowHelper
-from Dialog import Dialog
 
 
 @Singleton
@@ -36,7 +36,7 @@ class TeamMgr:
         self.losing_points = 0
         self.set_score_mode()
         self.state = 'accept'  # voir docstring
-        self.waiting_msg = ''
+        self.waiting_msg_state = ''  # win ou lose
 
         self.win = WindowHelper.Instance()
         self.dialog = Dialog.Instance()
@@ -45,6 +45,8 @@ class TeamMgr:
         self.win.new_color((252, 255, 0), 'team2')
         self.win.new_color((58, 119, 71), 'team3')
         self.win.new_color((255, 162, 0), 'team4')
+        self.win.new_color((210, 4, 5), 'red_error')
+        self.win.new_color((60, 154, 80), 'green_victory')
 
         self.win.new_font('Arial', 40, 'title')
         self.win.new_font('Arial', 70, 'very_big')
@@ -72,39 +74,30 @@ class TeamMgr:
 
         self.win.import_template(name_template)
 
+        self.win.delete('msg_buzzer', page_label)
+
         if self.state == 'must_pick_one':
             self.dialog.new_message('error', "Erreur: appeler la méthode pick_one_buzz()")
 
-            self.win.new_font('Arial', 40, 'title')
-            self.win.new_color((30, 28, 230), 'strange_blue')
-            self.win.new_text('MPO', 'title', 'strange_blue', 'msg_buzzer')
-            self.win.add('msg_buzzer', page=page_label)
-        else:
-            self.win.delete('msg_buzzer', page_label)
-
         if self.state == 'waiting_answer':
-            self.win.new_font('Arial', 40, 'title')
-            self.win.new_color((220, 154, 80), 'strange_red')
-            txt = 'Equipe %d a buzzed' % self.buzzing_teams[0]
-            self.win.new_text(txt, 'title', 'strange_red', 'msg_buzzer')
-            self.win.add('msg_buzzer', page=page_label)
-
             team_text = "team{}".format(self.buzzing_teams[0])
             color = self.color_correspondence["team{}".format(self.buzzing_teams[0])]
 
             self.win.new_text(self.teams[self.buzzing_teams[0]].team_name, 'very_big', color, label="text_buzz_"+team_text)
             self.win.import_template('buzz_'+team_text)
-            self.refresh()
         else:
-            self.win.delete('msg_buzzer', page_label)
+            for i in range(1, 4):
+                self.win.undo_template('buzz_team%d' % i)
+            pass
 
         if self.state == 'waiting_msg':
-            self.win.new_font('Arial', 40, 'title')
-            self.win.new_color((60, 154, 80), 'green_victory')
-            self.win.new_text(self.waiting_msg, 'title', 'green_victory', 'msg_buzzer')
-            self.win.add('msg_buzzer', page=page_label)
+            if self.waiting_msg == 'win':
+                self.win.import_template('good_answer')
+            elif self.waiting_msg == 'lose':
+                self.win.import_template('bad_answer')
         else:
-            self.win.delete('msg_buzzer', page_label)
+            self.win.undo_template('good_answer')
+            self.win.undo_template('bad_answer')
 
         self.win.refresh()
 
@@ -205,7 +198,7 @@ class TeamMgr:
             self.teams[id].add_points(points)
             self.clear_buzzes()
             self.state = 'waiting_msg'
-            self.waiting_msg = 'Gagné !'
+            self.waiting_msg = 'win'
         return points
 
     def refuse_buzz(self, points=None):
@@ -226,7 +219,7 @@ class TeamMgr:
             self.teams[id].add_points(-points)
             self.clear_buzzes()
             self.state = 'waiting_msg'
-            self.waiting_msg = 'Perdu !'
+            self.waiting_msg = 'lose'
         return -points
 
     def cancel_buzz(self):

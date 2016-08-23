@@ -1,9 +1,11 @@
 # coding: utf-8
-
-from tools import list_files
 import os
+
 import pygame as pg
+
+from ListDialog import ListDialog
 from WindowHelper import WindowHelper
+from tools import list_files
 
 
 class GameImageMgr:
@@ -12,7 +14,10 @@ class GameImageMgr:
     """
 
     def __init__(self, dirname):
-        project_dir = os.path.abspath('/'.join((os.path.dirname(os.path.abspath(__file__)), '..'))) + "/games/" + dirname
+        if dirname == 'ask':
+            dirname = GameImageMgr.prompt_image_folder()
+        project_dir = os.path.abspath(
+            '/'.join((os.path.dirname(os.path.abspath(__file__)), '..'))) + "/games/images/" + dirname
         self.files = list_files(project_dir)
         self.image_dir = project_dir + "/"
         self.question = 0
@@ -21,6 +26,45 @@ class GameImageMgr:
         self.win = WindowHelper.Instance()
         self.is_paused = False
         self.printed = False
+
+    @staticmethod
+    def get_file_list(path):
+        try:
+            file_list = []
+            for image in os.listdir(path):
+                if os.path.isfile(os.path.join(path, image)):
+                    file_list.append(image)
+            return file_list
+        except OSError:
+            print 'Répertoire introuvable ({}) !'.format(path)
+            return []
+
+    @staticmethod
+    def get_folder_list(path):
+        try:
+            folders = []
+            for folder in os.listdir(os.path.abspath(path)):
+                if not os.path.isfile(os.path.join(os.path.abspath(path), folder)):
+                    folders.append(folder)
+            return path, folders
+        except OSError:
+            print u"Aucun répertoire d'images trouvé !"
+            return []
+
+    @staticmethod
+    def get_image_folders():
+        return GameImageMgr.get_folder_list('./games/images/')
+
+    # TODO: En faire un Dialog -> FolderDialog
+    @staticmethod
+    def prompt_image_folder():
+        folder, folder_list = GameImageMgr.get_image_folders()
+        dialog = ListDialog()
+        # TODO: Gérer quand il n'y a aucun dossier
+        choix = dialog.get_answer(folder_list + ['Annuler'], 'Sélectionnez un dossier :')
+        if choix >= len(folder_list):
+            return None
+        return folder_list[choix]
 
     def get_current_file(self):
         """
@@ -96,7 +140,6 @@ class GameImageMgr:
         elif self.is_paused and self.printed:
             self.win.delete('game_img_mgr_image', page_label)
             self.printed = False
-
 
     def pause(self):
         """

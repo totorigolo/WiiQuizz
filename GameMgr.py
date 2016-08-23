@@ -16,22 +16,24 @@ class GameMgr:
      ATTENTION : Ne pas confondre avec GamesMgr, qui gère le chargement DES jeux.
     """
 
-    def __init__(self, game_name='WiiQuizz', game_content_mgr_list=None):
+    def __init__(self, game_name='WiiQuizz', game_content_mgr_classes=None):
         """
         Initialise le GameMgr.
         Les gestionnaires de contenu vont afficher leur contenu dans le jeu.
         :param game_name: object
-        :param game_content_mgr_list: Une liste des gestionnaires de contenu. None pour n'en utiliser aucun et
+        :param game_content_mgr_classes: Une liste des gestionnaires de contenu. None pour n'en utiliser aucun et
         obtenir un jeu de buzzer simple.
         """
         self.game_name = game_name
         self.team_mgr = TeamMgr.Instance()
         self.win = WindowHelper.Instance()
-        self.game_content_mgr_list = game_content_mgr_list
         self.page_label = 'page_game'
 
-        if self.game_content_mgr_list is None:
+        # Charge les gestionnaires de contenu de jeu
+        if game_content_mgr_classes is not None:
             self.game_content_mgr_list = []
+            for cm_class in game_content_mgr_classes:
+                self.game_content_mgr_list.append(cm_class('ask'))
 
         # Connexion des manettes
         self.buzzer_mgr = BuzzerMgr.Instance()
@@ -68,11 +70,9 @@ class GameMgr:
             """
                 Appelé pour lister les événements
             """
-            for cm in vars['game_content_mgr_list']:
-                cm.add_events(event)
             if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:  # Event clavier
                 return True
-            if event.type == pg.USEREVENT and event.pressed:  # Event wiimote
+            elif event.type == pg.USEREVENT and event.pressed:  # Event wiimote
                 if event.wiimote_id == 'master':  # Gestion de la télécommande master
                     if event.btn == 'HOME':
                         return True
@@ -106,6 +106,10 @@ class GameMgr:
                 elif not vars['pause']:  # Gère le buzz des wiimotes
                     vars['team_mgr'].add_buzz(event.wiimote_id)
 
+            else:  # Evènements non gérés
+                for cm in vars['game_content_mgr_list']:
+                    cm.process_event(event)
+
         def after_fun(pg, win, vars):
             """
                 Appelé après les événements
@@ -116,7 +120,6 @@ class GameMgr:
 
             # Affichage des contenus
             for cm in vars['game_content_mgr_list']:
-                cm.process_events()
                 cm.draw_on(vars['page_label'])
 
             # Affichage des scores
