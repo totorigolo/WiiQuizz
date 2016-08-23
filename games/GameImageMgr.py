@@ -2,6 +2,8 @@
 
 from tools import list_files
 import os
+import pygame as pg
+from WindowHelper import WindowHelper
 
 
 class GameImageMgr:
@@ -16,15 +18,18 @@ class GameImageMgr:
         self.question = 0
         self.version = 0
         self.current_img = self.files[self.question][self.version]
+        self.win = WindowHelper.Instance()
+        self.is_paused = False
+        self.printed = False
 
-    def get_current_img(self):
+    def get_current_file(self):
         """
         Renvoie l'image courante
         :return: lien de l'image courante
         """
         return self.image_dir + self.current_img
 
-    def get_next_img(self):
+    def get_next_file(self):
         """
         Renvoie l'image de la catégorie suivant
         :return: lien de l'image suivante | False si pas d'image suivante
@@ -35,7 +40,7 @@ class GameImageMgr:
             return False
         return self.image_dir + img
 
-    def get_prev_img(self):
+    def get_prev_file(self):
         """
         Renvoie l'image de la catégorie précédente
         :return: lien de l'image précédente | False si pas d'image suivante
@@ -68,9 +73,33 @@ class GameImageMgr:
             return False
         return self.image_dir + img
 
+    def process_event(self, event):
+        """
+        Gère les événements
+        :type event: événement
+        :return:
+        """
+        if event.type == pg.USEREVENT:
+            if event.btn == 'DROITE':
+                self.question += 1
+            elif event.btn == 'GAUCHE':
+                self.question -= 1
+            elif event.btn == 'HAUT':
+                self.version += 1
+            elif event.btn == 'BAS':
+                self.version -= 1
+
+    def draw_on(self, page_label):
+        if not self.is_paused and not self.printed:
+            self.win.new_img(self.image_dir + self.current_img[self.question][self.version], label='game_img_mgr_image')
+            self.win.add('game_img_mgr_image', page=page_label)
+        elif self.is_paused and self.printed:
+            self.win.delete('game_img_mgr_image', page_label)
+            self.printed = False
+
 
     def pause(self):
         """
         Est exécuté lorsque le jeu est mis en pause
         """
-        pass
+        self.id_paused = not self.is_paused
