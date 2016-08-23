@@ -97,9 +97,7 @@ class GameMgr:
                         if vars['pause']:
                             self.win.import_template('pause')
                         else:
-                            self.win.delete('text_pause_img', vars['page_label'])
-                            self.win.delete('bg_pause', vars['page_label'])
-                            self.win.edit_color('bg_pause', 'white')
+                            self.win.undo_template('pause')
 
                         # Informe les GameSomeMgr
                         for cm in vars['game_content_mgr_list']:

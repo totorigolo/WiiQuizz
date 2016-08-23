@@ -27,7 +27,7 @@ class WindowHelper:
         self.win = None  # Fenêtre pygame
         self.opened = False
         self.resizable = True
-        self.last_template = {'page': None, 'elements': []}
+        self.templates = dict()
         pg.init()
 
     def __del__(self):
@@ -850,16 +850,13 @@ class WindowHelper:
         lines = [mode, line]
         self.parse_template(lines)
 
-    def parse_template(self, lines, file=None, opt=None):
+    def parse_template(self, name, lines, file=None, opt=None):
         """
             Parser de skt
         """
         if opt is None:
             opt = {}
-        options = {
-            'IMG_FOLDER': os.path.abspath('../res'),
-            'SKT_FOLDER': os.path.abspath('../templates')
-        }
+        options = {}
         options.update(opt)
         mode = None
         page = {
@@ -883,8 +880,9 @@ class WindowHelper:
                     possible_bg = re.findall("#bg\s*\:\s*(\w+)", line)  # Récupère le bg
                     possible_page = re.findall("#page\s*\:\s*(\w+)\(?(\d*)?x?(\d*)?\)?", line)  # Récupère la page
                     possible_titre = re.findall("#title\s*\:\s*([\w\s]+)", line)  # Récupère le titre
-                    possible_def = re.findall("(text|rect|img|circle|font|color)\s*:\s*(\w+)\((.*)\)\s*(\"([\w\d\s]*)\")?\s*",
-                                              line)  # récupère les définitions
+                    possible_def = re.findall(
+                        "(text|rect|img|circle|font|color)\s*:\s*(\w+)\((.*)\)\s*(\"([\w\d\s]*)\")?\s*",
+                        line)  # récupère les définitions
                     possible_placing = re.findall("(\w+)\((.*)\)", line)  # Récupère les placements d'éléments
                     # Paramètre de la page #page
                     if mode is None and len(possible_page) == 1:
@@ -953,7 +951,11 @@ class WindowHelper:
             label_page = self.current_page
         else:
             label_page = self.new_page(page['title'], page['width'], page['height'], label=page['label'], bg=page['bg'])
-        self.last_template['page'] = label_page
+
+        if name not in self.templates:
+            self.templates[name] = {'page': None, 'elements': []}
+        self.templates[name]['page'] = label_page
+
         # On ajoute les couleurs et fonts
         for label, elem in elements['colors_and_fonts'].items():
             if elem['type'] == 'color':
@@ -995,7 +997,7 @@ class WindowHelper:
         # On ajoute à la page
         for info in elements['placing']:
             label = info['label']
-            self.last_template['elements'].append(label)
+            self.templates[name]['elements'].append(label)
             if self.elements[label]['type'] == 'rect':
                 if info['params'][0].isdigit():
                     info['params'][0] = int(info['params'][0])
@@ -1014,7 +1016,7 @@ class WindowHelper:
                     info['params'][1] = int(info['params'][1])
                 self.add(label, info['params'][0], info['params'][1], label_page)
 
-    def import_template(self, filename, opt=None):
+    def import_template(self, name, filename=None, opt=None):
         """
             Importe un fichier .skt
         """
@@ -1028,19 +1030,22 @@ class WindowHelper:
             'SKT_FOLDER': project_dir + '/templates'
         }
         options.update(opt)
-        if re.match('.*\.skt', filename) is None:
-            options['SKT_FOLDER'] = options['SKT_FOLDER'].replace('\\', '/')
-            filename = options['SKT_FOLDER'] + '/' + filename + '.skt'
 
-        self.last_template['elements'] = []
-        self.last_template['page'] = None
+        if filename is None:
+            # if re.match('.*\.skt', name) is None:
+            options['SKT_FOLDER'] = options['SKT_FOLDER'].replace('\\', '/')
+            filename = options['SKT_FOLDER'] + '/' + name + '.skt'
+
         with open(filename, 'r') as file:
             lines = file.readlines()
-            self.parse_template(lines, filename, options)
+            self.parse_template(name, lines, filename, options)
 
-    def undo_last_template(self):
+    def undo_template(self, name):
         """
         Supprime tous les éléments ajoutés par le dernier import_template à la vue
+        :return: False si le template label n'existe pas, sinon True
         """
-        for label in self.last_template['elements']:
-            self.delete(label, self.last_template['page'])
+        if name not in self.templates:
+            return False
+        for element_label in self.templates[name]['elements']:
+            self.delete(element_label, self.templates[name]['page'])
