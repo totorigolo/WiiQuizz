@@ -62,7 +62,6 @@ class TeamMgr:
         Affiche les scores sur la page
         :param page_label: label de la page sur lequel afficher les scores
         """
-        self.win.go_to(page_label)  # TODO: Le goto est-il nécessaire ? (supprimer le TODO si oui)
         name_template = '{}_players'.format(len(self.teams))
         for id, team in self.teams.items():
             team_num = "team{}".format(id)
@@ -94,7 +93,6 @@ class TeamMgr:
 
             self.win.new_text(self.teams[self.buzzing_teams[0]].team_name, 'very_big', color, label="text_buzz_"+team_text)
             self.win.import_template('buzz_'+team_text)
-            self.refresh()
         else:
             self.win.delete('msg_buzzer', page_label)
 
@@ -106,7 +104,6 @@ class TeamMgr:
         else:
             self.win.delete('msg_buzzer', page_label)
 
-        self.win.refresh()
 
     def add_team(self, id, wiimote, team_name):
         """
