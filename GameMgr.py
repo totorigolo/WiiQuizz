@@ -55,6 +55,7 @@ class GameMgr:
         # Variable accessibles dans les fonctions suivantes
         vars = {
             'pause': False,  # TODO
+            'pause_just_changed': False,  # TODO
             'page_label': self.page_label,
             'team_mgr': self.team_mgr,
             'game_content_mgr_list': self.game_content_mgr_list,
@@ -73,7 +74,10 @@ class GameMgr:
                 return True
             if event.type == pg.USEREVENT and event.pressed:  # Event wiimote
                 if event.wiimote_id == 'master':  # Gestion de la télécommande master
-                    if not vars['pause'] and vars['team_mgr'].state == 'waiting_answer':  # Une équipe a buzzé
+                    if event.btn == 'HOME':
+                        return True
+
+                    elif not vars['pause'] and vars['team_mgr'].state == 'waiting_answer':  # Une équipe a buzzé
                         if event.btn == '+':
                             vars['team_mgr'].accept_buzz()
                         elif event.btn == '-':
@@ -81,12 +85,13 @@ class GameMgr:
                         elif event.btn == 'A':
                             vars['team_mgr'].cancel_buzz()
 
-                    elif not vars['pause'] and vars[
-                        'team_mgr'].state == 'waiting_msg':  # Message de réponse juste ou fausse
+                    # Message de réponse juste ou fausse : A pour passer
+                    elif not vars['pause'] and vars['team_mgr'].state == 'waiting_msg' and event.btn == 'A':
                         vars['team_mgr'].skip_msg()
 
                     elif event.btn == 'B':  # B: Bascule la pause
                         vars['pause'] = not vars['pause']
+                        vars['pause_just_changed'] = True
 
                         # Affichage de la pause
                         if vars['pause']:
@@ -119,12 +124,7 @@ class GameMgr:
             # Affichage des scores
             vars['team_mgr'].draw_on(vars['page_label'])
 
-            # Affichage du masque de pause
-            # TODO: Je sais pas comment faire : un masque noir foncé semi-transparent
-            if vars['pause']:
-                self.win.import_template('pause')
-
-        self.win.event(event_fun=event_fun, after_fun=after_fun, vars=vars)
+        self.win.event(event_fun=event_fun, after_fun=after_fun, vars=vars, fps=60)
 
         # blablabla
 
@@ -135,6 +135,3 @@ class GameMgr:
         '''
 
         pass
-
-    def list_files(self, dir):
-
