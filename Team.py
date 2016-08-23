@@ -2,7 +2,7 @@
 
 
 class Team:
-    def _init__(self, id, wiimote, team_name):
+    def __init__(self, id, wiimote, team_name):
         self.id = id
         self.team_name = team_name
         self.wiimote = wiimote

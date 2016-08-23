@@ -74,6 +74,7 @@ class BuzzerMgr:
         """
 
         # Nombre de wiimotes
+        # TODO: permettre de renseigner des bornes pour ask
         if nb_joueuses_requises == 'ask':
             nb_joueuses_requises = self._prompt_nb_wiimotes(need_master)
 

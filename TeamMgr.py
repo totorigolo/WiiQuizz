@@ -1,5 +1,7 @@
 # coding=utf-8
 
+import random
+
 from Singleton import Singleton
 from Team import Team
 from WindowHelper import WindowHelper
@@ -16,18 +18,24 @@ class TeamMgr:
      - la joie à la victoire, et la déception à la défaite
     """
 
-    # TODO: Lesquelles ? ("ATTENTION : une fenêtre doit être active pour utiliser les méthodes.")
+    # TODO: J'ai apporté des modifs (max_simult_buzzer=1 obligatoirement). Il faudra rajouter des fonctionnalités, pour QuestionGame par exemple
 
-    def __init__(self, max_simult_buzzer=1):
+    def __init__(self):
         """
+        self.state peut prendre les valeurs :
+          - 'accept' : accepte les buzzes
+          - 'waiting_answer' : attend que le buzz soit accepté ou refusé (ou annulé)
+          - 'waiting_msg' : affiche un message (perdu ou gagné), et attend skip_msg() pour redevenir 'accept'-ing
+          - 'must_pick_one' : il faut appeler la fonction pick_one_buzz()
         :param max_simult_buzzer: nombre de personne pouvant buzzer simultanément (si -1, pas de restrictions)
         """
         self.teams = {}
-        self.max_simult_buzzer = max_simult_buzzer
         self.buzzing_teams = []
         self.wining_points = 0
         self.losing_points = 0
         self.set_score_mode()
+        self.state = 'accept'  # voir docstring
+        self.waiting_msg = ''
 
         self.win = WindowHelper.Instance()
 
@@ -47,21 +55,46 @@ class TeamMgr:
             'team4': 'team4'
         }
 
-    def draw_scores(self, page_label):
+    def draw_on(self, page_label):
         """
         Affiche les scores sur la page
         :param page_label: label de la page sur lequel afficher les scores
         """
-        self.win.go_to(page_label)
+        self.win.go_to(page_label)  # TODO: Le goto est-il nécessaire ? (supprimer le TODO si oui)
         name_template = '{}_players'.format(len(self.teams))
-        for id, team in self.teams:
+        for id, team in self.teams.items():
             team_num = "team{}".format(id)
             self.win.new_text(team.team_name, 'very_big', self.color_correspondence[team_num], label=team_num)
-            self.win.new_text(str(team.points), 'title', self.color_correspondence[team_num], label=(team_num+'_result'))
+            self.win.new_text(str(team.points), 'title', self.color_correspondence[team_num],
+                              label=(team_num + '_result'))
         self.win.import_template(name_template)
 
-        self.win.refresh()
+        if self.state == 'must_pick_one':
+            self.win.new_font('Arial', 40, 'title')
+            self.win.new_color((30, 28, 230), 'strange_blue')
+            self.win.new_text('MPO', 'title', 'strange_blue', 'msg_buzzer')
+            self.win.add('msg_buzzer', page=page_label)
+        else:
+            self.win.delete('msg_buzzer', page_label)
 
+        if self.state == 'waiting_answer':
+            self.win.new_font('Arial', 40, 'title')
+            self.win.new_color((220, 154, 80), 'strange_red')
+            txt = 'Equipe %d a buzzed' % self.buzzing_teams[0]
+            self.win.new_text(txt, 'title', 'strange_red', 'msg_buzzer')
+            self.win.add('msg_buzzer', page=page_label)
+        else:
+            self.win.delete('msg_buzzer', page_label)
+
+        if self.state == 'waiting_msg':
+            self.win.new_font('Arial', 40, 'title')
+            self.win.new_color((60, 154, 80), 'green_victory')
+            self.win.new_text(self.waiting_msg, 'title', 'green_victory', 'msg_buzzer')
+            self.win.add('msg_buzzer', page=page_label)
+        else:
+            self.win.delete('msg_buzzer', page_label)
+
+        self.win.refresh()
 
     def add_team(self, id, wiimote, team_name):
         """
@@ -109,70 +142,118 @@ class TeamMgr:
         :param id: id de l'équipe qui veut buzzer
         :return: boolean indiquant si ça a fonctionné
         """
-        if self.max_simult_buzzer != -1 and len(self.buzzing_teams) >= self.max_simult_buzzer:
+        # if self.max_simult_buzzer != -1 and len(self.buzzing_teams) >= self.max_simult_buzzer:
+        #     return False
+        if len(self.buzzing_teams) >= 1:
             return False
         self.buzzing_teams.append(id)
         self.teams[id].is_buzzing = True
         self.teams[id].wiimote.vibrer()
+        self.state = 'waiting_answer'
         return True
 
-    def accept_buzz(self, id, points=None):
+    def add_buzz(self, id):
         """
-        Accepter un buzz (ex: bonne réponse).
-        :param id: id de l'équipe
+        Ajoute un buzz à la liste. Il faut impérativement appeler pick_one_buzz() pour n'en garder qu'un seul.
+        :param id: le buzzer à ajouter
+        """
+        if self.state == 'accept' or self.state == 'must_pick_one':
+            self.buzzing_teams.append(id)
+            self.teams[id].is_buzzing = True
+            self.state = 'must_pick_one'
+
+    def pick_one_buzz(self):
+        """
+        Ne garde qu'un seul buzzer, choisi au hasard.
+        """
+        if self.state == 'must_pick_one':
+            random_id = random.choice(self.buzzing_teams)
+            self.clear_buzzes()
+            self.buzzing_teams.append(random_id)
+            self.teams[random_id].is_buzzing = True
+            self.teams[random_id].wiimote.vibrer()
+
+            self.state = 'waiting_answer'
+
+    def accept_buzz(self, points=None):
+        """
+        Accepter un buzz (ex: bonne réponse) et invalide les autres buzzes.
+        :param id: id de l'équipe, ou 'random' pour être équitable
         :param points: nombre de point à ajouter. Ne pas fournir points (None) revient à utiliser le score_mode en cours
         :return: nombre de points ajoutés. None si pas de point ajoutés et False si id n'a pas buzzé
         """
         if points is None:
             points = self.wining_points
         try:
+            id = random.choice(self.buzzing_teams)
             self.buzzing_teams.remove(id)
         except ValueError:
             return False
         else:
-            self.teams[id].is_buzzing = False
             self.teams[id].add_points(points)
+            self.clear_buzzes()
+            self.state = 'waiting_msg'
+            self.waiting_msg = 'Gagné !'
         return points
 
-    def refuse_buzz(self, id, points=None):
+    def refuse_buzz(self, points=None):
         """
-        Refuser un buzz (ex: mauvaise réponse)
-        :param id: id de l'équipe
+        Refuser un buzz (ex: mauvaise réponse) et invalide les autres buzzes.
+        :param id: id de l'équipe, ou 'random' pour être équitable
         :param points: nombre de point à retirer. Ne pas fournir points (None) revient à utiliser le score_mode en cours
         :return: nombre de points retirés. None si pas de point retirés et False si id n'a pas buzzé
         """
         if points is None:
             points = self.losing_points
         try:
+            id = random.choice(self.buzzing_teams)
             self.buzzing_teams.remove(id)
         except ValueError:
             return False
         else:
-            self.teams[id].is_buzzing = False
             self.teams[id].add_points(-points)
+            self.clear_buzzes()
+            self.state = 'waiting_msg'
+            self.waiting_msg = 'Perdu !'
         return -points
 
-    def cancel_buzz(self, name):
+    def cancel_buzz(self):
         """
-        Annule un buzz
-        :param name: id de l'équipe à annuler
+        Annule un buzz.
+        :param id: id de l'équipe à annuler
         :return: True si l'annulation a réussi, False sinon.
         """
         try:
-            self.buzzing_teams.remove(name)
+            id = random.choice(self.buzzing_teams)
+            self.buzzing_teams.remove(id)
         except ValueError:
             return
         else:
-            self.teams[name].is_buzzing = False
+            self.teams[id].is_buzzing = False
+            self.state = 'accept'
         return True
 
     def clear_buzzes(self):
         """
-        Annule tous les buzzs
+        Annule tous les buzzes.
         """
         for t in self.buzzing_teams:
             self.teams[t].is_buzzing = False
         self.buzzing_teams = []
+        self.state = 'accept'
+
+    def skip_msg(self):
+        """
+        Quand state est 'waiting_msg', passe en attente de buzz (à state = 'accept')
+        """
+        if self.state == 'waiting_msg':
+            self.state = 'accept'
+
+    def awaiting_buzzes(self):
+        """
+        :return: Renvoie True si au moins un buzzer a buzzé, False sinon.
+        """
+        return len(self.buzzing_teams) > 0
 
     def add_points(self, id, points):
         """

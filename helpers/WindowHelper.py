@@ -775,7 +775,7 @@ class WindowHelper:
             color = self.colors[elem['color']].get_rgb()
             pg.draw.circle(self.win, color, [x, y], radius, elem['border'])
 
-    def event(self, before_fun=None, event_fun=None, after_fun=None, vars=None, page=None):
+    def event(self, before_fun=None, event_fun=None, after_fun=None, vars=None, page=None, fps=10):
         """
             Créé un événement
         """
@@ -784,7 +784,7 @@ class WindowHelper:
         done = False
         clock = pg.time.Clock()
         while not done:
-            clock.tick(10)  # 10 img/sec
+            clock.tick(fps)  # Limite le framerate
             if before_fun is not None:
                 done = before_fun(pg, self, vars)
             if 'event_poster' in vars:
