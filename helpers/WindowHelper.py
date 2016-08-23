@@ -27,6 +27,7 @@ class WindowHelper:
         self.win = None  # Fenêtre pygame
         self.opened = False
         self.resizable = True
+        self.last_template = {'page': None, 'elements': []}
         pg.init()
 
     def __del__(self):
@@ -143,8 +144,10 @@ class WindowHelper:
             Ajoute une couleur dans la liste des couleurs
             param: color type str | ColorHelper | tuple
             param: label optional (default: num)
-            returns: label
+            returns: label, False si la couleur existe déjà
         """
+        if label in self.colors.keys():
+            return False
         if label is None:
             if isinstance(color, str) and (color, color) not in self.colors.items():
                 label = color
@@ -158,7 +161,10 @@ class WindowHelper:
     def new_font(self, family, size, label=None, opt=None):
         """
             Ajoute une police de caractère
+            :return label ou False si l'élément existait déjà
         """
+        if label in self.fonts.keys():
+            return False
         if label is None:
             label = family + str(size)
         if opt is None:
@@ -186,7 +192,10 @@ class WindowHelper:
     def new_text(self, text, font, color, label=None, add_to_page=None):
         """
             Ajoute un texte dans la liste des éléments
+            :return label | False si l'élément existait déjà
         """
+        if label in self.elements.keys():
+            return False
         if label is None:
             label = len(self.elements)
         try:
@@ -211,7 +220,10 @@ class WindowHelper:
     def new_img(self, url, alpha=False, label=None, add_to_page=None):
         """
             Ajoute une image dans la liste des éléments
+            :return label | False si l'élément existait déjà
         """
+        if label in self.elements.keys():
+            return False
         if label is None:
             label = len(self.elements)
         if alpha:
@@ -241,7 +253,10 @@ class WindowHelper:
     def new_rect(self, color, border, label=None, add_to_page=None):
         """
             Ajoute un rectangle dans la liste des éléments
+            :return label | False si l'élément existait déjà
         """
+        if label in self.elements.keys():
+            return False
         if label is None:
             label = len(self.elements)
         elem = {
@@ -260,7 +275,10 @@ class WindowHelper:
     def new_circle(self, color, radius, border, label=None, add_to_page=None):
         """
             Ajoute un cercle dans la liste des éléments
+            :return label | False si l'élément existait déjà
         """
+        if label in self.elements.keys():
+            return False
         if label is None:
             label = len(self.elements)
         elem = {
@@ -283,8 +301,10 @@ class WindowHelper:
             param: color couleur à remplir
             param: label de l'élément
             param: add_to_page (défaut False)
-            returns: label donné
+            returns: label donné | False si l'élément existait déjà
         """
+        if label in self.elements.keys():
+            return False
         if label is None:
             label = len(self.elements)
         elem = {
@@ -302,7 +322,10 @@ class WindowHelper:
     def new_sound(self, url, label=None, add_to_page=None):
         """
             Ajoute un son dans la liste des éléments
+            :return label | False si l'élément existait déjà
         """
+        if label in self.elements.keys():
+            return False
         if label is None:
             label = len(self.elements)
         try:
@@ -923,6 +946,7 @@ class WindowHelper:
             label_page = self.current_page
         else:
             label_page = self.new_page(page['title'], page['width'], page['height'], label=page['label'], bg=page['bg'])
+        self.last_template['page'] = label_page
         # On ajoute les couleurs et fonts
         for label, elem in elements['colors_and_fonts'].items():
             if elem['type'] == 'color':
@@ -964,6 +988,7 @@ class WindowHelper:
         # On ajoute à la page
         for info in elements['placing']:
             label = info['label']
+            self.last_template['elements'].append(label)
             if self.elements[label]['type'] == 'rect':
                 if info['params'][0].isdigit():
                     info['params'][0] = int(info['params'][0])
@@ -999,6 +1024,16 @@ class WindowHelper:
         if re.match('.*\.skt', filename) is None:
             options['SKT_FOLDER'] = options['SKT_FOLDER'].replace('\\', '/')
             filename = options['SKT_FOLDER'] + '/' + filename + '.skt'
+
+        self.last_template['elements'] = []
+        self.last_template['page'] = None
         with open(filename, 'r') as file:
             lines = file.readlines()
             self.parse_template(lines, filename, options)
+
+    def undo_last_template(self):
+        """
+        Supprime tous les éléments ajoutés par le dernier import_template à la vue
+        """
+        for label in self.last_template['elements']:
+            self.delete(label, self.last_template['page'])
