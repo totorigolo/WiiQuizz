@@ -23,6 +23,7 @@ class GameImageMgr:
         self.win.new_font('Arial', 20, 'page_info_game_img_mgr')
         self.is_paused = False
         self.printed = False
+        self.showing = False
 
     def get_current_file(self):
         """
@@ -94,9 +95,11 @@ class GameImageMgr:
             elif event.btn == 'BAS':
                 self.version -= 1
                 self.printed = False
+            elif event.btn == '1':
+                self.showing = not self.showing
 
     def draw_on(self, page_label):
-        if not self.is_paused and not self.printed:
+        if not self.is_paused and not self.printed and self.showing:
             self.win.new_img(self.image_dir + self.files[self.question][self.version], label='game_img_mgr_image')  # Ajoute l'image
             self.win.new_text("Image : " + self.question + "/"+ len(self.files), 'page_info_game_img_mgr', 'black', label='game_img_mgr_num_page')  # Ajoute le numéro de page
             self.win.new_text("Version : " + self.version + "/"+ len(self.files[self.question]), 'page_info_game_img_mgr', 'black', label='game_img_mgr_num_version')  # Ajoute le numéro de version
