@@ -2,9 +2,6 @@
 rect: team1_bg(team1, 0)
 rect: team2_bg(team2, 0)
 rect: team3_bg(team3, 0)
-text: team1_result("0", title, team2)
-text: team2_result("0", title, team1)
-text: team3_result("0", title, team4)
 
 #placing
 team1_bg(left, top, x_center, 60)
