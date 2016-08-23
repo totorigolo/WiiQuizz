@@ -792,12 +792,19 @@ class WindowHelper:
             for event in pg.event.get():
                 if event.type == QUIT:
                     done = True
+                    self.callback_close()
+                elif event.type == VIDEORESIZE:
+                    self.open_window(event.w, event.h)
                 if event_fun is not None:
                     done = event_fun(pg, self, vars, event)
             if after_fun is not None:
                 done = after_fun(pg, self, vars)
             if self.is_open():
                 pg.display.flip()
+            if not self.is_open():
+                break
+        if not self.is_open():
+            self.close()
 
     def reset(self):
         """
