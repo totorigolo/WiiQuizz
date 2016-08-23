@@ -70,7 +70,7 @@ class GameMgr:
             """
             for cm in vars['game_content_mgr_list']:
                 cm.add_events(event)
-            if event.type == pg.locals.KEYDOWN and event.key == pg.locals.K_ESCAPE:  # Event clavier
+            if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:  # Event clavier
                 return True
             if event.type == pg.USEREVENT and event.pressed:  # Event wiimote
                 if event.wiimote_id == 'master':  # Gestion de la télécommande master

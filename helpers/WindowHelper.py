@@ -1016,7 +1016,7 @@ class WindowHelper:
                     info['params'][1] = int(info['params'][1])
                 self.add(label, info['params'][0], info['params'][1], label_page)
 
-    def import_template(self, name, filename=None, opt=None):
+    def import_template(self, name, filename=None, opt=None):  # TODO: ajouter le page_label pour dire dans quelle page ajouter les éléments
         """
             Importe un fichier .skt
         """
