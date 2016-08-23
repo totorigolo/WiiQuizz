@@ -99,6 +99,7 @@ class GameImageMgr:
             self.win.add('game_img_mgr_image', page=page_label)
             self.win.add('game_img_mgr_num_page', 50, 'bottom - 150', page=page_label)
             self.win.add('game_img_mgr_num_version', 50, 'bottom - 100', page=page_label)
+            self.printed = True
         elif self.is_paused and self.printed:
             self.win.delete('game_img_mgr_image', page_label)
             self.printed = False
