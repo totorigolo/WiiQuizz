@@ -189,7 +189,7 @@ class WindowHelper:
         self.fonts[label] = elem
         return label
 
-    def new_text(self, text, font, color, label=None, add_to_page=None):
+    def new_text(self, text, font, color, label=None, add_to_page=None):  # TODO: Possibilité de mettre un fond au texte
         """
             Ajoute un texte dans la liste des éléments
             :return label | False si l'élément existait déjà
