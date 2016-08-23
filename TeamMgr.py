@@ -2,10 +2,11 @@
 
 import random
 
-from Dialog import Dialog
 from Singleton import Singleton
 from Team import Team
 from WindowHelper import WindowHelper
+from Dialog import Dialog
+import os
 
 
 @Singleton
@@ -50,6 +51,10 @@ class TeamMgr:
 
         self.win.new_font('Arial', 40, 'title')
         self.win.new_font('Arial', 70, 'very_big')
+
+        self.win.new_sound(os.path.abspath('../res/buzzer.ogg'), 'sound_buzz')
+        self.win.new_sound(os.path.abspath('../res/win.ogg'), 'sound_win')
+        self.win.new_sound(os.path.abspath('../res/loose.ogg'), 'sound_loose')
 
         # Couleur des textes
         self.color_correspondence = {
@@ -152,6 +157,7 @@ class TeamMgr:
         self.buzzing_teams.append(id)
         self.teams[id].is_buzzing = True
         self.teams[id].wiimote.vibrer()
+        self.win.play_sound('sound_buzz')
         self.state = 'waiting_answer'
         return True
 
@@ -197,6 +203,7 @@ class TeamMgr:
             self.clear_buzzes()
             self.state = 'waiting_msg'
             self.waiting_msg = 'win'
+            self.win.play_sound('sound_win')
         return points
 
     def refuse_buzz(self, points=None):
@@ -218,6 +225,7 @@ class TeamMgr:
             self.clear_buzzes()
             self.state = 'waiting_msg'
             self.waiting_msg = 'lose'
+            self.win.play_sound('sound_loose')
         return -points
 
     def cancel_buzz(self):
