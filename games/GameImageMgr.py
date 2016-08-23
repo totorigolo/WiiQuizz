@@ -128,12 +128,16 @@ class GameImageMgr:
         if event.type == pg.USEREVENT:
             if event.btn == 'DROITE':
                 self.question += 1
+                self.printed = False
             elif event.btn == 'GAUCHE':
                 self.question -= 1
+                self.printed = False
             elif event.btn == 'HAUT':
                 self.version += 1
+                self.printed = False
             elif event.btn == 'BAS':
                 self.version -= 1
+                self.printed = False
 
     def draw_on(self, page_label):
         if not self.is_paused and not self.printed:
