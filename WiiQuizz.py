@@ -7,6 +7,14 @@ OpenClipart-Vectors (https://pixabay.com/en/users/OpenClipart-Vectors-30363/)
 
 import os
 
+try:
+    import pygame_sdl2
+
+    pygame_sdl2.import_as_pygame()
+    print 'pygame_SDL2 a été trouvé et sera utilisé à la place de pygame.'
+except ImportError:
+    print "pygame_SDL2 n'a pas été trouvé."
+
 from BuzzerMgr import BuzzerMgr
 from GamesMgr import GamesMgr
 

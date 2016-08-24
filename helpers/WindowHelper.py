@@ -18,6 +18,7 @@ if not pg.mixer: print 'Warning, sound disabled'
 # TODO: Faire de belles erreurs, en utilisant Dialog pour les afficher
 # TODO: Séparer le son du WindowHelper
 # TODO: Faire un Ressource Manager, pour une gestion des ressources avancée
+# TODO: Les erreurs de pygame sont meilleures, ne pas try si c'est pour raise aussitôt -> il faut résoudre l'erreur ou faire print et la re-raise
 
 @Singleton
 class WindowHelper:
@@ -189,9 +190,9 @@ class WindowHelper:
             'size': size,
             'font': pg.font.SysFont(family, size),
             'anti_aliasing': True,
-            'bold':False,
+            'bold': False,
             'italic': False,
-            'underline':False
+            'underline': False
         }
         elem.update(opt)
         # Mise à jour des options visuelles
@@ -215,9 +216,10 @@ class WindowHelper:
         if label is None:
             label = len(self.elements)
         try:
-            obj = self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'], self.colors[color].get_rgb())
-        except:
-            raise ValueError("The given font or color does not exist.")
+            obj = self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'],
+                                                  self.colors[color].get_rgb())
+        except Exception as e:
+            raise ValueError("Pygame error : %s" % e)
         elem = {
             'type': 'text',
             'color': color,
@@ -245,13 +247,17 @@ class WindowHelper:
         if alpha:
             try:
                 bg = pg.image.load(url).convert_alpha()
-            except:
-                raise ImportError("The " + url + " image cannot be loaded.")
+            except Exception as e:
+                raise ValueError("Can't import image : %s" % e)
+                # except:
+                #     raise ImportError("The " + url + " image cannot be loaded.")
         else:
             try:
                 bg = pg.image.load(url).convert()
-            except:
-                raise ImportError("The " + url + " image cannot be loaded.")
+            except Exception as e:
+                raise ValueError("Can't import image : %s" % e)
+                # except:
+                #     raise ImportError("The " + url + " image cannot be loaded.")
         elem = {
             'type': 'img',
             'content': url,
@@ -427,9 +433,11 @@ class WindowHelper:
                 font = self.elements[label]['font']
                 text = self.elements[label]['content']
                 try:
-                    self.elements[label]['obj'] = self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'], self.colors[color].get_rgb())
-                except:
-                    raise ValueError('The color cannot be changed.')
+                    self.elements[label]['obj'] = self.fonts[font]['font'].render(py_encode_font_txt(text),
+                                                                                  self.fonts[font]['anti_aliasing'],
+                                                                                  self.colors[color].get_rgb())
+                except Exception as e:
+                    raise ValueError("The color cannot be changed : %s" % e)
             self.elements[label]['color'] = color
             return True
         return False
@@ -444,10 +452,10 @@ class WindowHelper:
             self.elements[label]['content'] = text
             try:
                 self.elements[label]['obj'] = self.fonts[font]['font'].render(py_encode_font_txt(text),
-                                                                          self.fonts[font]['anti_aliasing'],
-                                                                          self.colors[color].get_rgb())
-            except:
-                raise ValueError('The text cannot be changed.')
+                                                                              self.fonts[font]['anti_aliasing'],
+                                                                              self.colors[color].get_rgb())
+            except Exception as e:
+                raise ValueError("The text cannot be changed : %s" % e)
             return True
         return False
 
@@ -463,6 +471,8 @@ class WindowHelper:
     def add(self, label, x='centered', y='centered', page=None):
         """
             Ajoute l'élément à la page donnée
+            :type x: Any
+            :type y: Any
         """
         if page is None:
             page = self.current_page
@@ -478,7 +488,8 @@ class WindowHelper:
         self.pages[page]['elements'].append(elem)
         return True
 
-    def add_menu(self, label, x='centered', y='centered', before_fun=None, after_fun=None, opt=None, vars=None, page=None):
+    def add_menu(self, label, x='centered', y='centered', before_fun=None, after_fun=None, opt=None, vars=None,
+                 page=None):
         """
             Ajoute un menu à la page donnée
         """
@@ -606,8 +617,8 @@ class WindowHelper:
                 'left': "0",
                 'right': str(p_width),
                 'bottom': str(p_height),
-                'x_center': str(p_width/2),
-                'y_center': str(p_height/2)
+                'x_center': str(p_width / 2),
+                'y_center': str(p_height / 2)
             }
             for k, v in changes.items():
                 x1 = x1.replace(k, v)
@@ -724,23 +735,30 @@ class WindowHelper:
                     if choix == k:
                         if options["border_active"] is not None:
                             txt = self.fonts[options["font_active"]]['font'].render(py_encode_font_txt(text),
-                                                                              self.fonts[options["font_active"]]['anti_aliasing'],
-                                                                              self.colors[options["color_active"]].get_rgb(),
-                                                                              self.colors[options["border_active"]].get_rgb())
+                                                                                    self.fonts[options["font_active"]][
+                                                                                        'anti_aliasing'],
+                                                                                    self.colors[options[
+                                                                                        "color_active"]].get_rgb(),
+                                                                                    self.colors[options[
+                                                                                        "border_active"]].get_rgb())
                         else:
                             txt = self.fonts[options["font_active"]]['font'].render(py_encode_font_txt(text),
-                                                                              self.fonts[options["font_active"]]['anti_aliasing'],
-                                                                              self.colors[options["color_active"]].get_rgb())
+                                                                                    self.fonts[options["font_active"]][
+                                                                                        'anti_aliasing'],
+                                                                                    self.colors[options[
+                                                                                        "color_active"]].get_rgb())
                     else:
                         if options["border"] is not None:
                             txt = self.fonts[options["font"]]['font'].render(py_encode_font_txt(text),
-                                                                        self.fonts[options["font_active"]]['anti_aliasing'],
-                                                                        self.colors[options["color"]].get_rgb(),
-                                                                        self.colors[options["border"]].get_rgb())
+                                                                             self.fonts[options["font_active"]][
+                                                                                 'anti_aliasing'],
+                                                                             self.colors[options["color"]].get_rgb(),
+                                                                             self.colors[options["border"]].get_rgb())
                         else:
                             txt = self.fonts[options["font"]]['font'].render(py_encode_font_txt(text),
-                                                                        self.fonts[options["font_active"]]['anti_aliasing'],
-                                                                        self.colors[options["color"]].get_rgb())
+                                                                             self.fonts[options["font_active"]][
+                                                                                 'anti_aliasing'],
+                                                                             self.colors[options["color"]].get_rgb())
 
                     if elem_x == "centered":
                         x = (width_win - txt.get_rect().width) / 2
@@ -983,23 +1001,26 @@ class WindowHelper:
         for label, elem in elements['colors_and_fonts'].items():
             if elem['type'] == 'color':
                 try:
-                    if len(elem['params']) == 3 and elem['params'][0].isdigit() and elem['params'][1].isdigit() and elem['params'][2].isdigit():
+                    if len(elem['params']) == 3 and elem['params'][0].isdigit() and elem['params'][1].isdigit() and \
+                            elem['params'][2].isdigit():
                         self.new_color((int(elem['params'][0]), int(elem['params'][1]), int(elem['params'][2])), label)
                     elif len(elem['params']) == 1:
                         self.new_color(int(elem['params'][0]), label)
-                except:
+                except Exception as e:
                     if file is not None:
-                        raise ValueError('The options for '+label+' in the file '+file+' are incorrect.')
+                        raise ValueError(
+                            'The options for ' + label + ' in the file ' + file + ' are incorrect. : %s' % e)
                     else:
-                        raise ValueError('The options for ' + label +' are incorrect.')
+                        raise ValueError('The options for ' + label + ' are incorrect : %s' % e)
             elif elem['type'] == 'font':
                 try:
                     self.new_font(elem['params'][0], int(elem['params'][1]), label)
-                except:
+                except Exception as e:
                     if file is not None:
-                        raise ValueError('The options for ' + label + ' in the file '+file+' are incorrect.')
+                        raise ValueError(
+                            'The options for ' + label + ' in the file ' + file + ' are incorrect : %s' % e)
                     else:
-                        raise ValueError('The options for ' + label + ' are incorrect.')
+                        raise ValueError('The options for ' + label + ' are incorrect : %s' % e)
         # On ajoute les éléments
         for label, elem in elements['def'].items():
             if elem['type'] == 'text':
@@ -1021,6 +1042,9 @@ class WindowHelper:
         for info in elements['placing']:
             label = info['label']
             self.templates[name]['elements'].append(label)
+            if label not in self.elements:
+                print "parse_template('%s') : Le label %s n'existe pas." % (name, label)
+                continue
             if self.elements[label]['type'] == 'rect':
                 if info['params'][0].isdigit():
                     info['params'][0] = int(info['params'][0])
@@ -1039,7 +1063,8 @@ class WindowHelper:
                     info['params'][1] = int(info['params'][1])
                 self.add(label, info['params'][0], info['params'][1], label_page)
 
-    def import_template(self, name, filename=None, opt=None):  # TODO: ajouter le page_label pour dire dans quelle page ajouter les éléments
+    def import_template(self, name, filename=None,
+                        opt=None):  # TODO: ajouter le page_label pour dire dans quelle page ajouter les éléments
         """
             Importe un fichier .skt
         """

@@ -16,16 +16,13 @@ class ListDialog:
         self.win.new_font('Arial', 20, 'sub_title')
         self.win.new_font('Arial', 25, 'options')
 
-    def get_answer(self, choices, question=None, sub_text = None):
-        if question is None:
-            question = ""
-        if sub_text is None:
-            sub_text = ""
-
+    def get_answer(self, choices, question=None, sub_text=None):
         page_label = self.win.go_to(self.win.new_page(question, WIN_WIDTH, WIN_HEIGHT, bg='white'))
 
-        self.win.new_text(question, 'title', 'dark_blue', label='title_list_dialog')
-        self.win.new_text(sub_text, 'sub_title', 'dark_blue', label='sub_title_list_dialog')
+        if question is not None:
+            self.win.new_text(question, 'title', 'dark_blue', label='title_list_dialog')
+        if sub_text is not None:
+            self.win.new_text(sub_text, 'sub_title', 'dark_blue', label='sub_title_list_dialog')
         self.win.new_menu(choices, label='menu_list_dialog')
 
         self.win.import_template('menu')
