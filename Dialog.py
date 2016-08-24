@@ -8,6 +8,14 @@ from WindowHelper import WindowHelper
 
 @Singleton
 class Dialog:
+    @staticmethod
+    def Instance():
+        """
+        Cette fonction est un workaround pour bénéficier de l'autocomplétion sur cette classe
+        :rtype: Dialog
+        """
+        return Dialog.Instance()
+
     def __init__(self):
         self.messages = []
         self.win = WindowHelper.Instance()

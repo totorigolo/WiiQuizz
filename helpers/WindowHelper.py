@@ -21,6 +21,13 @@ if not pg.mixer: print 'Warning, sound disabled'
 
 @Singleton
 class WindowHelper:
+    @staticmethod
+    def Instance():
+        """
+        Cette fonction est un workaround pour bénéficier de l'autocomplétion sur cette classe
+        :rtype: WindowHelper
+        """
+        return WindowHelper.Instance()
 
     def __init__(self):
         self.elements = {}  # éléments (toute sorte !)

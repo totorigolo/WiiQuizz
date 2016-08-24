@@ -20,6 +20,14 @@ class TeamMgr:
      - la joie à la victoire, et la déception à la défaite
     """
 
+    @staticmethod
+    def Instance():
+        """
+        Cette fonction est un workaround pour bénéficier de l'autocomplétion sur cette classe
+        :rtype: TeamMgr
+        """
+        return TeamMgr.Instance()
+
     # TODO: J'ai apporté des modifs (max_simult_buzzer=1 obligatoirement). Il faudra rajouter des fonctionnalités, pour QuestionGame par exemple
 
     def __init__(self):

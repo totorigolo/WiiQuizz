@@ -21,6 +21,14 @@ class BuzzerMgr:
      - les évènements
     """
 
+    @staticmethod
+    def Instance():
+        """
+        Cette fonction est un workaround pour bénéficier de l'autocomplétion sur cette classe
+        :rtype: BuzzerMgr
+        """
+        return BuzzerMgr.Instance()
+
     def __init__(self, dummy=False):
         """
         Initialise le BuzzerMgr
