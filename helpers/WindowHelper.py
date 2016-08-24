@@ -144,14 +144,14 @@ class WindowHelper:
         self.elements[label]['nb_usable'] = num
         return label
 
-    def new_color(self, color, label=None):
+    def new_color(self, color, label=None, overwrite=True):
         """
             Ajoute une couleur dans la liste des couleurs
             param: color type str | ColorHelper | tuple
             param: label optional (default: num)
             returns: label, False si la couleur existe déjà
         """
-        if label in self.colors.keys():
+        if label in self.colors.keys() and not overwrite:
             return False
         if label is None:
             if isinstance(color, str) and (color, color) not in self.colors.items():
@@ -159,16 +159,19 @@ class WindowHelper:
             else:
                 label = len(self.colors)
         if isinstance(color, str) or isinstance(color, tuple):
-            color = ColorHelper(color)
-        self.colors[label] = color
+            self.colors[label] = ColorHelper(color)
+        elif isinstance(color, ColorHelper):
+            self.colors[label] = color
+        else:
+            raise ValueError("L'attribut color doit être du type ColorHelper, string ou tuple.")
         return label
 
-    def new_font(self, family, size, label=None, opt=None):
+    def new_font(self, family, size, label=None, opt=None, overwrite=False):
         """
             Ajoute une police de caractère
             :return label ou False si l'élément existait déjà
         """
-        if label in self.fonts.keys():
+        if label in self.fonts.keys() and not overwrite:
             return False
         if label is None:
             label = family + str(size)
@@ -256,12 +259,12 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    def new_rect(self, color, border, label=None, add_to_page=None):
+    def new_rect(self, color, border, label=None, add_to_page=None, overwrite=True):
         """
             Ajoute un rectangle dans la liste des éléments
             :return label | False si l'élément existait déjà
         """
-        if label in self.elements.keys():
+        if label in self.elements.keys() and not overwrite:
             return False
         if label is None:
             label = len(self.elements)
@@ -278,12 +281,12 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    def new_circle(self, color, radius, border, label=None, add_to_page=None):
+    def new_circle(self, color, radius, border, label=None, add_to_page=None, overwrite=True):
         """
             Ajoute un cercle dans la liste des éléments
             :return label | False si l'élément existait déjà
         """
-        if label in self.elements.keys():
+        if label in self.elements.keys() and not overwrite:
             return False
         if label is None:
             label = len(self.elements)
@@ -301,7 +304,7 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    def new_fill(self, color, label=None, add_to_page=None):
+    def new_fill(self, color, label=None, add_to_page=None, overwrite=True):
         """
             Ajoute un remplissage
             param: color couleur à remplir
@@ -309,7 +312,7 @@ class WindowHelper:
             param: add_to_page (défaut False)
             returns: label donné | False si l'élément existait déjà
         """
-        if label in self.elements.keys():
+        if label in self.elements.keys() and not overwrite:
             return False
         if label is None:
             label = len(self.elements)
@@ -325,19 +328,22 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    def new_sound(self, url, label=None, add_to_page=None):
+    def new_sound(self, url, label=None, add_to_page=None, overwrite=False):
         """
             Ajoute un son dans la liste des éléments
             :return label | False si l'élément existait déjà
         """
-        if label in self.elements.keys():
+        if label in self.elements.keys() and not overwrite:
             return False
         if label is None:
             label = len(self.elements)
-        try:
-            sound = pg.mixer.Sound(url)
-        except:
-            raise ImportError("The " + url + " sound cannot be loaded.")
+
+        # Tente de charger le son
+        sound = pg.mixer.Sound(url)
+        print sound.get_length()
+        if sound.get_length() < 0.001:
+            raise ValueError("The " + url + " sound cannot be loaded.")
+
         elem = {
             'type': 'sound',
             'url': url,
