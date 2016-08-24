@@ -190,12 +190,13 @@ class WindowHelper:
         self.fonts[label] = elem
         return label
 
-    def new_text(self, text, font, color, label=None, add_to_page=None):  # TODO: Possibilité de mettre un fond au texte
+    def new_text(self, text, font, color, label=None, add_to_page=None,
+                 overwrite=False):  # TODO: Possibilité de mettre un fond au texte
         """
             Ajoute un texte dans la liste des éléments
             :return label | False si l'élément existait déjà
         """
-        if label in self.elements.keys():
+        if label in self.elements.keys() and not overwrite:
             return False
         if label is None:
             label = len(self.elements)
@@ -218,12 +219,12 @@ class WindowHelper:
         self.elements[label] = elem
         return label
 
-    def new_img(self, url, alpha=False, label=None, add_to_page=None):
+    def new_img(self, url, alpha=False, label=None, add_to_page=None, overwrite=False):
         """
             Ajoute une image dans la liste des éléments
             :return label | False si l'élément existait déjà
         """
-        if label in self.elements.keys():
+        if label in self.elements.keys() and not overwrite:
             return False
         if label is None:
             label = len(self.elements)
@@ -351,17 +352,17 @@ class WindowHelper:
         """
             Joue un son
         """
-        if not self.elements[label]['playing']:
-            self.elements[label]['obj'].play()
-            self.elements[label]['playing'] = True
+        # if not self.elements[label]['playing']:
+        self.elements[label]['obj'].play()
+        # self.elements[label]['playing'] = True
 
     def stop_sound(self, label):
         """
             Arrête un son
         """
-        if self.elements[label]['playing']:
-            self.elements[label]['obj'].stop()
-            self.elements[label]['playing'] = False
+        # if self.elements[label]['playing']:
+        self.elements[label]['obj'].stop()
+        # self.elements[label]['playing'] = False
 
     def is_mixer_busy(self):
         """

@@ -1,12 +1,12 @@
 # coding=utf-8
 
+import os
 import random
 
+from Dialog import Dialog
 from Singleton import Singleton
 from Team import Team
 from WindowHelper import WindowHelper
-from Dialog import Dialog
-import os
 
 
 @Singleton
@@ -52,9 +52,9 @@ class TeamMgr:
         self.win.new_font('Arial', 40, 'title')
         self.win.new_font('Arial', 70, 'very_big')
 
-        self.win.new_sound(os.path.abspath('../res/buzzer.ogg'), 'sound_buzz')
-        self.win.new_sound(os.path.abspath('../res/win.ogg'), 'sound_win')
-        self.win.new_sound(os.path.abspath('../res/loose.ogg'), 'sound_loose')
+        self.win.new_sound(os.path.abspath('./res/buzzer.ogg'), 'sound_buzz')
+        self.win.new_sound(os.path.abspath('./res/win.ogg'), 'sound_win')
+        self.win.new_sound(os.path.abspath('./res/loose.ogg'), 'sound_loose')
 
         # Couleur des textes
         self.color_correspondence = {
@@ -74,12 +74,10 @@ class TeamMgr:
             team_num = "team{}".format(id)
             self.win.new_text(team.team_name, 'very_big', self.color_correspondence[team_num], label=team_num)
             self.win.new_text(str(team.points), 'title', self.color_correspondence[team_num],
-                              label=(team_num + '_result'))
-
+                              label=(team_num + '_result'), overwrite=True)
         self.win.import_template(name_template)
 
         self.win.delete('msg_buzzer', page_label)
-
         if self.state == 'must_pick_one':
             self.dialog.new_message('error', "Erreur: appeler la méthode pick_one_buzz()")
 
@@ -103,7 +101,6 @@ class TeamMgr:
             self.win.undo_template('good_answer')
             self.win.undo_template('bad_answer')
 
-
     def add_team(self, id, wiimote, team_name):
         """
         Ajoute un joueur.
@@ -114,7 +111,7 @@ class TeamMgr:
         # TODO: Gérer 'new'
         self.teams[id] = Team(id, wiimote, team_name)
 
-    def set_score_mode(self, mode='add_only', wining_points=None, loosing_points=None):
+    def set_score_mode(self, mode='add_more', wining_points=None, loosing_points=None):
         """
         Permet de définir comment sont donnés les points pour une bonne ou une mauvaise réponse. La méthode d'ajout
         varie suivant le mode de score, indiqué par how_many.
@@ -178,10 +175,12 @@ class TeamMgr:
         if self.state == 'must_pick_one':
             random_id = random.choice(self.buzzing_teams)
             self.clear_buzzes()
+
             self.buzzing_teams.append(random_id)
             self.teams[random_id].is_buzzing = True
             self.teams[random_id].wiimote.vibrer()
 
+            self.win.play_sound('sound_buzz')
             self.state = 'waiting_answer'
 
     def accept_buzz(self, points=None):

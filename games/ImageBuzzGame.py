@@ -1,8 +1,10 @@
 # coding=utf-8
 
-from CompleteBuzzGame import CompleteBuzzGame
+from GameImageMgr import GameImageMgr
+from GameMgr import GameMgr
 
 
-class ImageBuzzGame(CompleteBuzzGame):
+class ImageBuzzGame(GameMgr):
     def __init__(self):
-        CompleteBuzzGame.__init__(self, window_title='Image Buzz Game', images_path='prompt')
+        GameMgr.__init__(self, game_name='Image Buzz Game', game_content_mgr_classes=[GameImageMgr])
+        # GameMgr.__init__(self, game_name='Jeu de test')

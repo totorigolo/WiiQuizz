@@ -1,8 +1,8 @@
 # coding=utf-8
 
-from CompleteBuzzGame import CompleteBuzzGame
+from GameMgr import GameMgr
 
 
-class SimpleBuzzGame(CompleteBuzzGame):
+class SimpleBuzzGame(GameMgr):
     def __init__(self):
-        CompleteBuzzGame.__init__(self, window_title='Simple Buzz Game')
+        GameMgr.__init__(self, game_name='Simple Buzz Game')

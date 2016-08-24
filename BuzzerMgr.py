@@ -74,13 +74,15 @@ class BuzzerMgr:
         :param need_master: Indique s'il faut EN PLUS une wiimote master
         """
 
+        # TODO: Ajouter bornes à 'ask'
+
         # Nombre de wiimotes
         # TODO: permettre de renseigner des bornes pour ask
         if nb_joueuses_requises == 'ask':
             nb_joueuses_requises = self._prompt_nb_wiimotes(need_master)
 
         # Si on est déjà initialisé, on regarde combien de wiimotes on a de trop pour les désactiver
-        if nb_joueuses_requises - self.nb_wiimote < 0:
+        if nb_joueuses_requises - self.get_nb_buzzers(False) < 0:
             # Désactive les wiimotes joueuses dont on a plus besoin
             for b in self.buzzers:
                 if b not in range(1, nb_joueuses_requises):
@@ -112,6 +114,8 @@ class BuzzerMgr:
         for i in range(1, nb_joueuses_requises + 1):
             if i not in self.buzzers or not self.buzzers[i].connected:
                 self.__connect_buzzer(i, i)
+
+        self.nb_wiimote = nb_joueuses_requises + (1 if need_master else 0)
 
     def __connect_buzzer(self, key, name):
         """

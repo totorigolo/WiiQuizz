@@ -3,6 +3,7 @@
 from BuzzerMgr import BuzzerMgr
 from TeamMgr import TeamMgr
 from WindowHelper import WindowHelper
+from constants import *
 
 
 class GameMgr:
@@ -30,20 +31,21 @@ class GameMgr:
         self.page_label = 'page_game'
 
         # Charge les gestionnaires de contenu de jeu
+        self.game_content_mgr_list = []
         if game_content_mgr_classes is not None:
-            self.game_content_mgr_list = []
             for cm_class in game_content_mgr_classes:
                 self.game_content_mgr_list.append(cm_class('ask'))
 
         # Connexion des manettes
         self.buzzer_mgr = BuzzerMgr.Instance()
-        self.buzzer_mgr.require(2)
+        self.buzzer_mgr.require('ask')
 
         # Gestion des équipes
-        # TODO: il faudrait aussi une fonction require() pour TeamMgr
+        # TODO: il faudrait aussi une fonction require() pour TeamMgr, qui demande si différent nb de joueurs que faire des scores.
+        # TODO: On pourrait ne pas conserver les scores entre les manches, mais retenir pour chaque équipe le nombre de fois où elle a terminé 1er, 2er...
         # TODO: il faut refaire ça
-        self.team_mgr.add_team(1, self.buzzer_mgr.buzzers[1], "Pastèque")
-        self.team_mgr.add_team(2, self.buzzer_mgr.buzzers[2], "Ananas")
+        for i in range(1, self.buzzer_mgr.get_nb_buzzers(False) + 1):
+            self.team_mgr.add_team(i, self.buzzer_mgr.buzzers[i], TEAM_NAMES[i - 1])
 
     def run(self):
         """
@@ -56,8 +58,7 @@ class GameMgr:
 
         # Variable accessibles dans les fonctions suivantes
         vars = {
-            'pause': False,  # TODO
-            'pause_just_changed': False,  # TODO
+            'pause': False,
             'page_label': self.page_label,
             'team_mgr': self.team_mgr,
             'game_content_mgr_list': self.game_content_mgr_list,
@@ -65,6 +66,9 @@ class GameMgr:
             "event_poster": BuzzerMgr.Instance()
         # TODO: En faire une fonction -> Afin de bénéficier des évènements wiimotes
         }
+
+        def before_fun(pg, win, vars):
+            win.dump_elements(vars['page_label'])
 
         def event_fun(pg, win, vars, event):
             """
@@ -91,16 +95,10 @@ class GameMgr:
 
                     elif event.btn == 'B':  # B: Bascule la pause
                         vars['pause'] = not vars['pause']
-                        vars['pause_just_changed'] = True
-
-                        # Affichage de la pause
-                        if vars['pause']:
-                            self.win.import_template('pause')
-                        else:
-                            self.win.undo_template('pause')
 
                         # Informe les GameSomeMgr
                         for cm in vars['game_content_mgr_list']:
+                            print 'pause changed'
                             cm.pause(vars['pause'])
 
                 elif not vars['pause']:  # Gère le buzz des wiimotes
@@ -125,7 +123,15 @@ class GameMgr:
             # Affichage des scores
             vars['team_mgr'].draw_on(vars['page_label'])
 
-        self.win.event(event_fun=event_fun, after_fun=after_fun, vars=vars, fps=60)
+            # Affichage de la pause
+            if vars['pause']:
+                self.win.import_template('pause')
+            else:
+                self.win.undo_template('pause')
+
+            win.refresh()
+
+        self.win.event(before_fun=before_fun, event_fun=event_fun, after_fun=after_fun, vars=vars, fps=60)
 
         # blablabla
 

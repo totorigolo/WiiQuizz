@@ -13,3 +13,11 @@ NAME_TEAM1 = "Pastèque"
 NAME_TEAM2 = "Ananas"
 NAME_TEAM3 = "Kiwi"
 NAME_TEAM4 = "Melon"
+
+# TODO
+TEAM_NAMES = [
+    NAME_TEAM1,
+    NAME_TEAM2,
+    NAME_TEAM3,
+    NAME_TEAM4
+]
