@@ -1,11 +1,12 @@
 # coding: utf-8
+
 import os
 
 import pygame as pg
 
 from ListDialog import ListDialog
 from WindowHelper import WindowHelper
-from tools import list_files
+from tools import list_files, safe_modulo
 
 
 class GameImageMgr:
@@ -19,10 +20,15 @@ class GameImageMgr:
         project_dir = os.path.abspath(
             '/'.join((os.path.dirname(os.path.abspath(__file__)), '..'))) + "/games/images/" + dirname
         self.files = list_files(project_dir)
+
+        self.no_img = False
+        if not (len(self.files) > 0 and len(self.files[0]) > 0):
+            self.no_img = True
+
         self.image_dir = project_dir + "/"
-        self.question = 0  # TODO: Quoi si pas de 0.0.jpg ?
+        self.question = 0
         self.version = 0
-        self.current_img = self.files[self.question][self.version]
+
         self.win = WindowHelper.Instance()
 
         self.win.new_font('Arial', 20, 'page_info_game_img_mgr')
@@ -71,24 +77,24 @@ class GameImageMgr:
 
     def next_file(self):
         self.question += 1
-        self.question %= len(self.files)
+        self.question = safe_modulo(self.question, len(self.files))
         self.printed = False
         self.version = 0
 
     def prev_file(self):
         self.question -= 1
-        self.question %= len(self.files)
+        self.question = safe_modulo(self.question, len(self.files))
         self.printed = False
         self.version = 0
 
     def next_version(self):
         self.version += 1
-        self.version %= len(self.files[self.question])
+        self.question = safe_modulo(self.question, len(self.files[self.question]))
         self.printed = False
 
     def prev_version(self):
         self.version -= 1
-        self.version %= len(self.files[self.question])
+        self.question = safe_modulo(self.question, len(self.files[self.question]))
         self.printed = False
 
     def process_event(self, event):
@@ -97,6 +103,9 @@ class GameImageMgr:
         :type event: événement
         :return:
         """
+        if self.no_img:
+            return
+
         if event.type == pg.USEREVENT and event.wiimote_id == 'master':
             if event.btn == 'DROITE':
                 self.next_file()
@@ -110,6 +119,9 @@ class GameImageMgr:
                 self.showing = not self.showing
 
     def draw_on(self, page_label):
+        if self.no_img:
+            return
+
         # if not self.is_paused and not self.printed and self.showing:
         if not self.is_paused and self.showing:
             self.win.new_img(self.image_dir + self.files[self.question][self.version], label='game_img_mgr_image',
