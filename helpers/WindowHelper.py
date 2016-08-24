@@ -15,6 +15,10 @@ if not pg.font: print 'Warning, fonts disabled'
 if not pg.mixer: print 'Warning, sound disabled'
 
 
+# TODO: Faire de belles erreurs, en utilisant Dialog pour les afficher
+# TODO: Séparer le son du WindowHelper
+# TODO: Faire un Ressource Manager, pour une gestion des ressources avancée
+
 @Singleton
 class WindowHelper:
 
