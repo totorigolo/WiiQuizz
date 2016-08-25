@@ -11,9 +11,13 @@ try:
     import pygame_sdl2
 
     pygame_sdl2.import_as_pygame()
-    print 'pygame_SDL2 a été trouvé et sera utilisé à la place de pygame.'
+    import pygame
+
+    print "pygame_SDL2 a été trouvé et sera utilisé à la place de pygame -> SDL %d.%d.%d" % pygame_sdl2.get_sdl_version()
 except ImportError:
-    print "pygame_SDL2 n'a pas été trouvé."
+    import pygame
+
+    print "pygame_SDL2 n'a pas été trouvé -> SDL %d.%d.%d" % pygame.get_sdl_version()
 
 from BuzzerMgr import BuzzerMgr
 from GamesMgr import GamesMgr
