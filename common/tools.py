@@ -69,6 +69,11 @@ def clef(dict, val):
 
 
 def list_files(files):
+    """
+
+    :param files:
+    :return: Une list des fichiers, ou None si erreur
+    """
 
     def comp(x, y):
         try:
@@ -80,7 +85,12 @@ def list_files(files):
         return cmp(x, y)
 
     listed_files = os.listdir(files)
-    listed_files = sorted(listed_files, cmp=comp)
+
+    try:
+        listed_files = sorted(listed_files, cmp=comp)
+    except RuntimeError:
+        return None
+
     formatted_list = []
     list_in_progress = []
     last_int = -1

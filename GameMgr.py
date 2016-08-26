@@ -30,11 +30,20 @@ class GameMgr:
         self.win = WindowHelper.Instance()
         self.page_label = 'page_game'
 
+        self.initialized = False
+
         # Charge les gestionnaires de contenu de jeu
         self.game_content_mgr_list = []
         if game_content_mgr_classes is not None:
+            error = False
             for cm_class in game_content_mgr_classes:
-                self.game_content_mgr_list.append(cm_class('ask'))
+                cm_instance = cm_class('ask')
+                self.game_content_mgr_list.append(cm_instance)
+                if not cm_instance.initialized:
+                    error = True
+            if error:
+                print "Erreur lors du chargement du ContentMgr : %s" % cm_class
+                return
 
         # Connexion des manettes
         self.buzzer_mgr = BuzzerMgr.Instance()
@@ -47,10 +56,16 @@ class GameMgr:
         for i in range(1, self.buzzer_mgr.get_nb_buzzers(False) + 1):
             self.team_mgr.add_team(i, self.buzzer_mgr.buzzers[i], TEAM_NAMES[i - 1])
 
+        self.initialized = True
+
     def run(self):
         """
         Exécution du jeu.
         """
+        if not self.initialized:
+            print "Le jeu est mal initialisé."
+            return
+
         # Ouvre une nouvelle page pour le jeu
         self.win.new_page(self.game_name, 960, 600, 'page_game', bg='white')
         self.win.dump_elements('page_game')

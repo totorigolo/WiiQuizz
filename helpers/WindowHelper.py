@@ -32,6 +32,7 @@ class WindowHelper:
 
     def __init__(self):
         self.elements = {}  # éléments (toute sorte !)
+        self.images = dict()  # TODO: dict d'images pour les précharger
         self.colors = {}  # couleurs
         self.fonts = {}  # liste des polices
         self.pages = {}  # liste des pages
@@ -71,6 +72,8 @@ class WindowHelper:
             self.new_font('Arial', 30, 'default')
             self.new_color('black')
             self.new_color('white')
+        else:
+            self.refresh()
         self.opened = True
 
     def is_open(self):
@@ -206,7 +209,7 @@ class WindowHelper:
         return label
 
     def new_text(self, text, font, color, label=None, add_to_page=None,
-                 overwrite=False):  # TODO: Possibilité de mettre un fond au texte
+                 overwrite=True):  # TODO: Possibilité de mettre un fond au texte
         """
             Ajoute un texte dans la liste des éléments
             :return label | False si l'élément existait déjà
@@ -244,6 +247,7 @@ class WindowHelper:
             return False
         if label is None:
             label = len(self.elements)
+            # TODO: Ce code n'est pas safe (ex: le seul element a le label 1).
         if alpha:
             try:
                 bg = pg.image.load(url).convert_alpha()
@@ -353,7 +357,6 @@ class WindowHelper:
 
         # Tente de charger le son
         sound = pg.mixer.Sound(url)
-        print sound.get_length()
         if sound.get_length() < 0.001:
             raise ValueError("The " + url + " sound cannot be loaded.")
 
@@ -531,15 +534,20 @@ class WindowHelper:
     def print_page(self, page=None):
         """
             Affiche tous les éléments d'une page donnée
+            :return: False si la page n'existe pas, True sinon
         """
         if page is None:
             page = self.current_page
+        if page not in self.pages:
+            return False
         num = 0
         while num < len(self.pages[page]['elements']):
             num = self.print_elem(num, page)
 
         if self.is_open():
             pg.display.flip()
+
+        return True
 
     def print_elem(self, num, page=None):
         """
@@ -851,8 +859,13 @@ class WindowHelper:
         """
             Enlève les éléments de la page
         """
-        color = self.colors[self.pages[self.current_page]['bg']].get_rgb()
-        self.win.fill(color)
+        try:
+            color = self.colors[self.pages[self.current_page]['bg']]
+        except KeyError:
+            # TODO: Utiliser une erreur perso
+            print "Can't reset(), either no current page or no background color."
+        else:
+            self.win.fill(color.get_rgb())
 
     def refresh(self):
         """

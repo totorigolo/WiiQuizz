@@ -21,9 +21,9 @@ class GameImageMgr:
             '/'.join((os.path.dirname(os.path.abspath(__file__)), '..'))) + "/games/images/" + dirname
         self.files = list_files(project_dir)
 
-        self.no_img = False
-        if not (len(self.files) > 0 and len(self.files[0]) > 0):
-            self.no_img = True
+        self.initialized = False
+        if self.files is not None and not (len(self.files) > 0 and len(self.files[0]) > 0):
+            self.initialized = True
 
         self.image_dir = project_dir + "/"
         self.question = 0
@@ -72,30 +72,51 @@ class GameImageMgr:
         # TODO: Gérer quand il n'y a aucun dossier
         choix = dialog.get_answer(folder_list + ['Annuler'], 'Sélectionnez un dossier :')
         if choix >= len(folder_list):
-            return None
+            return ''
         return folder_list[choix]
 
     def next_file(self):
         self.question += 1
-        self.question = safe_modulo(self.question, len(self.files))
-        self.printed = False
         self.version = 0
+        self.image_changed()
 
     def prev_file(self):
         self.question -= 1
-        self.question = safe_modulo(self.question, len(self.files))
-        self.printed = False
         self.version = 0
+        self.image_changed()
 
     def next_version(self):
         self.version += 1
-        self.question = safe_modulo(self.question, len(self.files[self.question]))
-        self.printed = False
+        self.image_changed()
 
     def prev_version(self):
         self.version -= 1
-        self.question = safe_modulo(self.question, len(self.files[self.question]))
+        self.image_changed()
+
+    def image_changed(self):
+        self.question = safe_modulo(self.question, len(self.files))
+        self.version = safe_modulo(self.version, len(self.files[self.question]))
         self.printed = False
+
+        # Chargement et préchargement
+        self.win.new_img(self.image_dir + self.files[self.question][self.version], label='game_img_mgr_image',
+                         overwrite=True)  # Ajoute l'image
+        self.win.__preload_image(self.question, self.version)
+
+    def __preload_image(self, question, version):
+        """
+
+        :param question: La question à précharger
+        :param version: La version de la question à précharger
+        :return:
+        """
+        try:
+            self.win.preload_img(self.image_dir + self.files[self.question][self.version])  # Charge l'image l'image
+            return True
+        except AttributeError, NameError:
+            print 'Préchagement pas encore implémenté (futur = RAII).'
+        except KeyError:
+            return False
 
     def process_event(self, event):
         """
@@ -103,7 +124,7 @@ class GameImageMgr:
         :type event: événement
         :return:
         """
-        if self.no_img:
+        if self.initialized:
             return
 
         if event.type == pg.USEREVENT and event.wiimote_id == 'master':
@@ -119,7 +140,7 @@ class GameImageMgr:
                 self.showing = not self.showing
 
     def draw_on(self, page_label):
-        if self.no_img:
+        if self.initialized:
             return
 
         # if not self.is_paused and not self.printed and self.showing:
