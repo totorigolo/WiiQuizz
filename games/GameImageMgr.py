@@ -36,6 +36,11 @@ class GameImageMgr:
         self.printed = False
         self.showing = False
 
+        if self.initialized:
+            print "GameImageMgr initialisé !"
+        else:
+            print "GameImageMgr non initialisé !"
+
     @staticmethod
     def get_file_list(path):
         try:
