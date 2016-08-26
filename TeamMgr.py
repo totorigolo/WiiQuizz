@@ -109,15 +109,15 @@ class TeamMgr:
             self.win.undo_template('good_answer')
             self.win.undo_template('bad_answer')
 
-    def add_team(self, id, wiimote, team_name):
+    def add_team(self, id, buzzer, team_name):
         """
         Ajoute un joueur.
         :param id: nom du joueur noms : 1 à 4
-        :param wiimote: wiimote du joueur.
-        :param team_name: Nom de l'équipe apparente (Pastèque, Ananas, ...)
+        :param buzzer: buzzer de l'équipe.
+        :param team_name: Nom de l'équipe apparente (ex: Pastèque, Ananas, ...)
         """
         # TODO: Gérer 'new'
-        self.teams[id] = Team(id, wiimote, team_name)
+        self.teams[id] = Team(id, buzzer, team_name)
 
     def set_score_mode(self, mode='add_more', wining_points=None, loosing_points=None):
         """
@@ -161,7 +161,7 @@ class TeamMgr:
             return False
         self.buzzing_teams.append(id)
         self.teams[id].is_buzzing = True
-        self.teams[id].wiimote.vibrer()
+        self.teams[id].buzzer.vibrer()
         self.win.play_sound('sound_buzz')
         self.state = 'waiting_answer'
         return True
@@ -186,7 +186,7 @@ class TeamMgr:
 
             self.buzzing_teams.append(random_id)
             self.teams[random_id].is_buzzing = True
-            self.teams[random_id].wiimote.vibrer()
+            self.teams[random_id].buzzer.vibrer()
 
             self.win.play_sound('sound_buzz')
             self.state = 'waiting_answer'

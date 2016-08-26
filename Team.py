@@ -2,10 +2,10 @@
 
 
 class Team:
-    def __init__(self, id, wiimote, team_name):
+    def __init__(self, id, buzzer, team_name):
         self.id = id
         self.team_name = team_name
-        self.wiimote = wiimote
+        self.buzzer = buzzer
         self.points = 0
         self.is_buzzing = False
 
