@@ -3,6 +3,7 @@
 import importlib
 
 from BuzzerMgr import BuzzerMgr
+from Dialog import Dialog
 from ListDialog import ListDialog
 from games import game_list
 
@@ -35,5 +36,9 @@ class GamesMgr:
             game_class = getattr(game_module, game_module.__name__.split('.')[1])
             print 'jeu chargé !'
 
-            game = game_class()
-            game.run()
+            try:
+                game = game_class()
+                game.run()
+            except Exception as e:
+                dialog = Dialog.Instance()
+                dialog.new_message('error', e)
