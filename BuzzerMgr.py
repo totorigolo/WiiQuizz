@@ -225,6 +225,7 @@ class BuzzerMgr:
         for id, buzzer in self.buzzers.items():
             events = buzzer.get_events()
             for e in events:
+                # noinspection PyArgumentList
                 pg.event.post(pg.event.Event(WIIMOTE_EVENT, wiimote_id=id, btn=e[0], pressed=e[1]))
 
     def any_of(self, buzzers, master_first=True):
