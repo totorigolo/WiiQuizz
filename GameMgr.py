@@ -35,15 +35,11 @@ class GameMgr:
         # Charge les gestionnaires de contenu de jeu
         self.game_content_mgr_list = []
         if game_content_mgr_classes is not None:
-            error = False
             for cm_class in game_content_mgr_classes:
                 cm_instance = cm_class('ask')
                 self.game_content_mgr_list.append(cm_instance)
                 if not cm_instance.initialized:
-                    error = True
-            if error:
-                print "Erreur lors du chargement du ContentMgr : %s" % cm_class
-                return
+                    raise RuntimeError("Erreur lors du chargement du ContentMgr : %s" % str(cm_class).split('.')[-1])
 
         # Connexion des manettes
         self.buzzer_mgr = BuzzerMgr.Instance()
@@ -77,9 +73,7 @@ class GameMgr:
             'page_label': self.page_label,
             'team_mgr': self.team_mgr,
             'game_content_mgr_list': self.game_content_mgr_list,
-            'self': self,
-            "event_poster": BuzzerMgr.Instance()
-        # TODO: En faire une fonction -> Afin de bénéficier des évènements wiimotes
+            'self': self
         }
 
         def before_fun(pg, win, vars):

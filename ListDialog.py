@@ -1,6 +1,5 @@
 # coding=utf-8
 
-from BuzzerMgr import BuzzerMgr
 from WindowHelper import WindowHelper
 from constants import *
 
@@ -37,8 +36,7 @@ class ListDialog:
             "color_active": "dark_blue",
             "border_active": "light_blue",
             "font_active": "options",
-            "margin": WIN_MARGIN,
-            "event_poster": BuzzerMgr.Instance()  # Afin de bénéficier de la navigation avec la wiimote master
+            "margin": WIN_MARGIN
         }
 
         self.win.add_menu('menu_list_dialog', 'centered', 180, opt=opt, page=page_label)

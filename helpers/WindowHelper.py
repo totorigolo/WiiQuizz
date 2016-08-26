@@ -41,6 +41,7 @@ class WindowHelper:
         self.opened = False
         self.resizable = True
         self.templates = dict()
+        self.event_posters = []
         pg.init()
 
     def __del__(self):
@@ -678,6 +679,8 @@ class WindowHelper:
                 vars.update(before_fun(pg, self, vars, menu))
 
             # Boucle d'événement
+            for ep in self.event_posters:
+                ep.post_events()
             if 'event_poster' in opt:
                 opt['event_poster'].post_events()
             for event in pg.event.get():
@@ -833,6 +836,8 @@ class WindowHelper:
             if before_fun is not None:
                 done = done or before_fun(pg, self, vars)
 
+            for ep in self.event_posters:
+                ep.post_events()
             if 'event_poster' in vars:
                 vars['event_poster'].post_events()
             for event in pg.event.get():
@@ -853,6 +858,25 @@ class WindowHelper:
                 break
         if not self.is_open():
             self.close()
+
+    def register_event_poster(self, event_poster):
+        """
+        Enregistre un Event Poster, c'est-à-dire un objet qui va ajouter des éléments dans pygame.event
+        :param event_poster: Un objet ayant une fonction post_events()
+        """
+        self.event_posters.append(event_poster)
+        print "Event poster added : %s" % event_poster
+
+    def remove_event_poster(self, event_poster):
+        """
+        Supprime un Event Poster, c'est-à-dire un objet qui ajoute des éléments dans pygame.event
+        :param event_poster: Un objet ayant une fonction post_events()
+        """
+        try:
+            self.event_posters.remove(event_poster)
+            print "Event poster removed : %s" % event_poster
+        except ValueError:
+            print "Event poster absent from list : %s" % event_poster
 
     def reset(self):
         """

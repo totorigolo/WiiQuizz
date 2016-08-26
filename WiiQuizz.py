@@ -19,6 +19,7 @@ except ImportError:
 
     print "pygame_SDL2 n'a pas été trouvé -> SDL %d.%d.%d" % pygame.get_sdl_version()
 
+from WindowHelper import WindowHelper
 from BuzzerMgr import BuzzerMgr
 from GamesMgr import GamesMgr
 
@@ -30,10 +31,11 @@ if __name__ == '__main__':
         print "Répertoire d'exécution :", os.getcwd()
         print
 
-        # Connexion de la manette Master
+        # Connexion de la manette Master et enregistrement des buzzers à WindowHelper
         buzzerMgr = BuzzerMgr.Instance()
         buzzerMgr.set_dummy(False)
         buzzerMgr.connect_master()
+        WindowHelper.Instance().register_event_poster(buzzerMgr)
 
         # Création du gestionnaire de jeux
         gamesMgr = GamesMgr()
@@ -49,12 +51,10 @@ if __name__ == '__main__':
 
         # noinspection PyBroadException
         try:
-            from WindowHelper import WindowHelper
             from Dialog import Dialog
             from constants import WIN_HEIGHT, WIN_WIDTH
 
-            win = WindowHelper.Instance()
-            win.open_window(WIN_WIDTH, WIN_HEIGHT)
+            WindowHelper.Instance().open_window(WIN_WIDTH, WIN_HEIGHT)
             dialog = Dialog.Instance()
             dialog.new_message('error', e)
         except KeyboardInterrupt or SystemExit:
