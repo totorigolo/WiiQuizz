@@ -91,7 +91,7 @@ class Dialog:
         self.win.refresh()
 
         def event_fun(pg, win, vars, event):
-            if event.type == pg.KEYDOWN:
+            if event.type == pg.KEYDOWN or (event.type == pg.USEREVENT and event.wiimote_id == 'master'):
                 return True
             return False
 

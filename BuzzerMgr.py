@@ -165,7 +165,10 @@ class BuzzerMgr:
                 vars['buzzer_en_attente'].dummy = True
             return vars['buzzer_en_attente'].connected
 
-        win.event(event_fun=waiting_connection, vars=vars)  # On attend que quelqu'un appuie sur un bouton
+        def before_fun(pg, win, vars):
+            return vars['buzzer_en_attente'].connected
+
+        win.event(before_fun=before_fun, event_fun=waiting_connection, vars=vars)  # On attend que quelqu'un appuie sur un bouton
 
         # Stocke le nouveau buzzer
         self.buzzers[key] = buzzer_en_attente

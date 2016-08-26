@@ -133,7 +133,6 @@ class GameMgr:
 
         self.win.event(before_fun=before_fun, event_fun=event_fun, after_fun=after_fun, vars=vars, fps=60)
 
-        # blablabla
 
         '''
         -> En gros, si on prend l'exemple de ImageContentMgr (le nom est pas top mais ça tu verras toi ;) ), c'est
