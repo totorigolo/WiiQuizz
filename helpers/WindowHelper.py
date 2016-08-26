@@ -832,7 +832,7 @@ class WindowHelper:
             clock.tick(fps)  # Limite le framerate
 
             if before_fun is not None:
-                done = before_fun(pg, self, vars)
+                done = done or before_fun(pg, self, vars)
 
             if 'event_poster' in vars:
                 vars['event_poster'].post_events()
@@ -843,10 +843,10 @@ class WindowHelper:
                 elif event.type == VIDEORESIZE:
                     self.open_window(event.w, event.h)
                 if event_fun is not None:
-                    done = event_fun(pg, self, vars, event)
+                    done = done or event_fun(pg, self, vars, event)
 
             if after_fun is not None:
-                done = after_fun(pg, self, vars)
+                done = done or after_fun(pg, self, vars)
 
             if self.is_open():
                 pg.display.flip()

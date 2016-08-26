@@ -1,0 +1,6 @@
+#def
+rect: team1_bg(team1, 0)
+
+#placing
+team1_bg(left, top, right, 60)
+team1_result(centered, 8)
