@@ -162,13 +162,13 @@ class WindowHelper:
             param: label optional (default: num)
             returns: label, False si la couleur existe déjà
         """
-        if label in self.colors.keys() and not overwrite:
-            return False
         if label is None:
             if isinstance(color, str) and (color, color) not in self.colors.items():
                 label = color
             else:
                 label = len(self.colors)
+        if label in self.colors.keys() and not overwrite:
+            return False
         if isinstance(color, str) or isinstance(color, tuple):
             self.colors[label] = ColorHelper(color)
         elif isinstance(color, ColorHelper):
@@ -182,10 +182,10 @@ class WindowHelper:
             Ajoute une police de caractère
             :return label ou False si l'élément existait déjà
         """
-        if label in self.fonts.keys() and not overwrite:
-            return False
         if label is None:
             label = family + str(size)
+        if label in self.fonts.keys() and not overwrite:
+            return False
         if opt is None:
             opt = {}
         elem = {
@@ -214,10 +214,10 @@ class WindowHelper:
             Ajoute un texte dans la liste des éléments
             :return label | False si l'élément existait déjà
         """
+        if label is None:
+            label = self.get_unused_label()
         if label in self.elements.keys() and not overwrite:
             return False
-        if label is None:
-            label = len(self.elements)
         try:
             obj = self.fonts[font]['font'].render(py_encode_font_txt(text), self.fonts[font]['anti_aliasing'],
                                                   self.colors[color].get_rgb())
@@ -243,23 +243,22 @@ class WindowHelper:
             Ajoute une image dans la liste des éléments
             :return label | False si l'élément existait déjà
         """
+        if label is None:
+            label = self.get_unused_label()
         if label in self.elements.keys() and not overwrite:
             return False
-        if label is None:
-            label = len(self.elements)
-            # TODO: Ce code n'est pas safe (ex: le seul element a le label 1).
         if alpha:
-            try:
-                bg = pg.image.load(url).convert_alpha()
-            except Exception as e:
-                raise ValueError("Can't import image : %s" % e)
+            # try:
+            bg = pg.image.load(url).convert_alpha()
+            # except Exception as e:
+            #     raise ValueError("Can't import image : %s" % e)
                 # except:
                 #     raise ImportError("The " + url + " image cannot be loaded.")
         else:
-            try:
-                bg = pg.image.load(url).convert()
-            except Exception as e:
-                raise ValueError("Can't import image : %s" % e)
+            # try:
+            bg = pg.image.load(url).convert()
+            # except Exception as e:
+            #     raise ValueError("Can't import image : %s" % e)
                 # except:
                 #     raise ImportError("The " + url + " image cannot be loaded.")
         elem = {
@@ -281,10 +280,10 @@ class WindowHelper:
             Ajoute un rectangle dans la liste des éléments
             :return label | False si l'élément existait déjà
         """
+        if label is None:
+            label = self.get_unused_label()
         if label in self.elements.keys() and not overwrite:
             return False
-        if label is None:
-            label = len(self.elements)
         elem = {
             'type': 'rect',
             'color': color,
@@ -303,10 +302,10 @@ class WindowHelper:
             Ajoute un cercle dans la liste des éléments
             :return label | False si l'élément existait déjà
         """
+        if label is None:
+            label = self.get_unused_label()
         if label in self.elements.keys() and not overwrite:
             return False
-        if label is None:
-            label = len(self.elements)
         elem = {
             'type': 'circle',
             'color': color,
@@ -329,10 +328,10 @@ class WindowHelper:
             param: add_to_page (défaut False)
             returns: label donné | False si l'élément existait déjà
         """
+        if label is None:
+            label = self.get_unused_label()
         if label in self.elements.keys() and not overwrite:
             return False
-        if label is None:
-            label = len(self.elements)
         elem = {
             'type': 'fill',
             'color': color,
@@ -350,10 +349,10 @@ class WindowHelper:
             Ajoute un son dans la liste des éléments
             :return label | False si l'élément existait déjà
         """
+        if label is None:
+            label = self.get_unused_label()
         if label in self.elements.keys() and not overwrite:
             return False
-        if label is None:
-            label = len(self.elements)
 
         # Tente de charger le son
         sound = pg.mixer.Sound(url)
@@ -1110,3 +1109,9 @@ class WindowHelper:
             return False
         for element_label in self.templates[name]['elements']:
             self.delete(element_label, self.templates[name]['page'])
+
+    def get_unused_label(self):
+        new_label = len(self.elements)
+        while new_label in self.elements:
+            new_label += 1
+        return new_label
