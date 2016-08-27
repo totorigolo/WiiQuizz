@@ -141,12 +141,3 @@ class GameMgr:
             win.refresh()
 
         self.win.event(before_fun=before_fun, event_fun=event_fun, after_fun=after_fun, vars=vars, fps=60)
-
-
-        '''
-        -> En gros, si on prend l'exemple de ImageContentMgr (le nom est pas top mais ça tu verras toi ;) ), c'est
-        lui qui va afficher l'image actuelle, réagir au master pour afficher / cacher, afficher la position actuelle
-        (4/12 par ex), etc... De même pour GameTextMgr, GameSoundMgr et GameQuestionMgr.
-        '''
-
-        pass
