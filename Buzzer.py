@@ -148,18 +148,18 @@ class Buzzer:
         ATTENTION : Cette méthode est bloquante.
         :param temps: Le nombre de secondes pendant lequel vibrer.
         """
-        if not self.dummy:
+        if not self.dummy and self.connected:
             self.wiimote.rumble = 1
             time.sleep(temps)
             self.wiimote.rumble = 0
 
     def allumer_led(self, tab):
-        if not self.dummy:
+        if not self.dummy and self.connected:
             led = sum([((2 * tab[i]) ** i) * tab[i] for i in xrange(len(tab))])
             self.wiimote.led = led
 
     def is_down(self, btn):
-        if self.dummy:
+        if self.dummy or not self.connected:
             return False
         if btn == 'any':
             return bool(self.wiimote.state['buttons'] != 0)
