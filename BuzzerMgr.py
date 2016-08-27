@@ -33,7 +33,6 @@ class BuzzerMgr:
         """
         Initialise le BuzzerMgr
         """
-        ''' Déclaration et initialisation des attributs '''
         self.buzzers = dict()
         self.unused_buzzers = []  # liste de tuple : (ancienne fonction [1-4,'master], Buzzer)
         self.nb_wiimote = 0
