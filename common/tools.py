@@ -119,3 +119,8 @@ def safe_modulo(a, b, default=0):
     if b == 0:
         return default
     return a % b
+
+
+def str_only_nice_char(str):
+    pattern = re.compile(r'\W+')
+    return pattern.sub('', str)
