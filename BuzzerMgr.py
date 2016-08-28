@@ -161,7 +161,6 @@ class BuzzerMgr:
         def waiting_connection(pg, win, vars, event):
             if event.type == pg.KEYDOWN and event.key == pg.K_d:
                 vars['buzzer_en_attente'].dummy = True
-            return vars['buzzer_en_attente'].connected
 
         def before_fun(pg, win, vars):
             return vars['buzzer_en_attente'].connected
