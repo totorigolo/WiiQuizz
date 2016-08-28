@@ -2,7 +2,6 @@
 
 import time
 
-from ElementWatcher import ElementWatcher
 from Singleton import Singleton
 from WindowHelper import WindowHelper
 
@@ -80,21 +79,25 @@ class Dialog:
         """
             Affiche un message intrusif
         """
-        with ElementWatcher('dialog_watcher'):
-            self.win.new_rect('dialog_color_shadow_' + type, 0, label='dialog_shadow')
-            self.win.new_rect('dialog_color_' + type, 0, label='dialog_holder')
-            self.win.new_text(message, 'dialog_font', self.correspondence_type_text_color[type], label='dialog_msg')
-            self.win.new_text('Appuyez sur une touche pour continuer...', 'dialog_font_small',
-                              self.correspondence_type_text_color[type], label='dialog_msg_info')
+        self.win.new_rect('dialog_color_shadow_' + type, 0, label='dialog_shadow')
+        self.win.new_rect('dialog_color_' + type, 0, label='dialog_holder')
+        self.win.new_text(message, 'dialog_font', self.correspondence_type_text_color[type], label='dialog_msg')
+        self.win.new_text('Appuyez sur une touche pour continuer...', 'dialog_font_small',
+                          self.correspondence_type_text_color[type], label='dialog_msg_info')
 
-            self.win.import_template('dialog_messages', opt=self.templates_options)
+        self.win.import_template('dialog_messages', opt=self.templates_options)
 
-            self.win.refresh()
+        self.win.refresh()
 
-            def event_fun(pg, win, vars, event):
-                if event.type == pg.KEYDOWN or (
-                                    event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed == True):
-                    return True
-                return False
+        def event_fun(pg, win, vars, event):
+            if event.type == pg.KEYDOWN or (
+                                event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed == True):
+                return True
+            return False
 
-            self.win.event(event_fun=event_fun)  # On attend que quelqu'un appuie sur un bouton
+        self.win.event(event_fun=event_fun)  # On attend que quelqu'un appuie sur un bouton
+
+        self.win.delete('dialog_shadow')
+        self.win.delete('dialog_holder')
+        self.win.delete('dialog_msg')
+        self.win.delete('dialog_msg_info')

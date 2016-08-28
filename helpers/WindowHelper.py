@@ -42,7 +42,6 @@ class WindowHelper:
         self.resizable = True
         self.templates = dict()
         self.event_posters = []
-        self.elements_watchers = []  # TODO: Trouver un meilleur nom
         pg.init()
 
     def __del__(self):
@@ -131,8 +130,7 @@ class WindowHelper:
             'bg': bg,
             'elements': []
         }
-        for element_watcher in self.elements_watchers:
-            element_watcher.watch_page(label)
+        print "New page created with label '%s'." % label
         return label
 
     def go_to(self, label):
@@ -158,17 +156,6 @@ class WindowHelper:
         # TODO: Utiliser les secondes ou un nombre
         self.elements[label]['nb_usable'] = num
         return label
-
-    def register_element_watcher(self, element_watcher):
-        self.elements_watchers.append(element_watcher)
-        print "Element watcher registered : %s" % element_watcher
-
-    def remove_element_watcher(self, element_watcher):
-        try:
-            self.elements_watchers.remove(element_watcher)
-            print "Element watcher removed : %s" % element_watcher
-        except ValueError:
-            print "Element watcher absent from list : %s" % element_watcher
 
     def new_color(self, color, label=None, overwrite=True):
         """
@@ -246,9 +233,9 @@ class WindowHelper:
             'obj': obj,
             'nb_usable': -1
         }
-        if add_to_page is not None:
-            self.add(elem, add_to_page)
         self.elements[label] = elem
+        if add_to_page is not None:
+            self.add(label, page=add_to_page)
         return label
 
     def new_img(self, url, alpha=False, label=None, add_to_page=None, overwrite=False):
@@ -281,9 +268,9 @@ class WindowHelper:
             'obj': bg,
             'nb_usable': -1
         }
-        if add_to_page is not None:
-            self.add(elem, add_to_page)
         self.elements[label] = elem
+        if add_to_page is not None:
+            self.add(label, page=add_to_page)
         return label
 
     def new_rect(self, color, border, label=None, add_to_page=None, overwrite=True):
@@ -301,9 +288,9 @@ class WindowHelper:
             'border': border,
             'nb_usable': -1
         }
-        if add_to_page is not None:
-            self.add(elem, add_to_page)
         self.elements[label] = elem
+        if add_to_page is not None:
+            self.add(label, page=add_to_page)
         return label
 
     def new_circle(self, color, radius, border, label=None, add_to_page=None, overwrite=True):
@@ -322,9 +309,9 @@ class WindowHelper:
             'border': border,
             'nb_usable': -1
         }
-        if add_to_page is not None:
-            self.add(elem, add_to_page)
         self.elements[label] = elem
+        if add_to_page is not None:
+            self.add(label, page=add_to_page)
         return label
 
     def new_fill(self, color, label=None, add_to_page=None, overwrite=True):
@@ -344,9 +331,9 @@ class WindowHelper:
             'color': color,
             'nb_usable': -1
         }
-        if add_to_page is not None:
-            self.add(elem, add_to_page)
         self.elements[label] = elem
+        if add_to_page is not None:
+            self.add(label, page=add_to_page)
         return label
 
     def new_sound(self, url, label=None, add_to_page=None, overwrite=False):
@@ -371,9 +358,9 @@ class WindowHelper:
             'playing': False,
             'nb_usable': -1
         }
-        if add_to_page is not None:
-            self.add(elem, add_to_page)
         self.elements[label] = elem
+        if add_to_page is not None:
+            self.add(label, page=add_to_page)
         return label
 
     def play_sound(self, label):
@@ -410,11 +397,11 @@ class WindowHelper:
             'result': None,
             'nb_usable': -1
         }
+        self.elements[label] = elem
         if add_to_page == 'current':
             self.add(self.current_page)
         elif isinstance(add_to_page, int) or isinstance(add_to_page, str):
             self.add(add_to_page)
-        self.elements[label] = elem
         return label
 
     def get_menu_result(self, label):
@@ -482,7 +469,7 @@ class WindowHelper:
         if page is None or page == 'current':
             page = self.current_page
         if label not in self.elements.keys():
-            raise ValueError("The requested element does not exist.")
+            raise ValueError("The element to add does not exist.")
         elem = {
             'label': label,
             'x': x,
@@ -491,8 +478,6 @@ class WindowHelper:
             'nb_recursion': -1  # récursion infinie
         }
         self.pages[page]['elements'].append(elem)
-        for element_watcher in self.elements_watchers:
-            element_watcher.watch_element(elem, page)
         return True
 
     def add_menu(self, label, x='centered', y='centered', before_fun=None, after_fun=None, opt=None, vars=None,
@@ -530,12 +515,30 @@ class WindowHelper:
         # TODO: Si son, le stoper
         if page is None:
             page = self.current_page
-        for k in range(len(self.pages[page]['elements'])):
-            elem_info = self.pages[page]['elements'][k]
-            if elem_info['label'] == label:
-                del self.pages[page]['elements'][k]
+
+        def delete_from_page_elements(self, page, label):
+            try:
+                for elem_info in self.pages[page]['elements']:
+                    try:
+                        if elem_info['label'] == label:
+                            self.pages[page]['elements'].remove(elem_info)
+                            return True
+                    except KeyError:
+                        print "delete() : problem when deleting element."
+            except KeyError:
+                print "delete() : page %s doesn't exist." % page
+            return False
+
+        def delete_from_elements(self, label):
+            if label in self.elements:
+                self.elements.pop(label)
                 return True
-        return False
+            print "delete() : element %s not in win.elements." % label
+            return False
+
+        r1 = delete_from_elements(self, label)
+        r2 = delete_from_page_elements(self, page, label)
+        return r1 and r2
 
     def print_page(self, page=None):
         """
@@ -910,8 +913,15 @@ class WindowHelper:
         """
         if page is None:
             page = self.current_page
-        self.pages[page]['elements'] = []
-        # TODO: Faire ça ne supprime pas les éléments
+        if page not in self.pages:
+            print "dump_elements() : la page %s n'existe pas" % page
+            return
+        try:
+            for label in [e['label'] for e in self.pages[page]['elements']]:
+                r = self.delete(label, page)
+                print "Element %s deleted : %s" % (label, r)
+        except KeyError:
+            print 'dump_elements() : la page %s est invalide' % page
 
     def delete_page(self, page=None):
         """
@@ -922,8 +932,13 @@ class WindowHelper:
             page = self.current_page
         if page == self.current_page:
             self.current_page = -1
+        if page not in self.pages:
+            print "delete_page() : the page %s doesn't exists" % page
+            return False
         self.dump_elements(page)
         self.pages.pop(page)
+        print "Page %s deleted." % page
+        return True
 
     def fill(self, color):
         """

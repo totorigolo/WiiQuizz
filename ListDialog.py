@@ -1,5 +1,5 @@
 # coding=utf-8
-from ElementWatcher import ElementWatcher
+
 from WindowHelper import WindowHelper
 from constants import *
 
@@ -16,30 +16,32 @@ class ListDialog:
         self.win.new_font('Arial', 25, 'options')
 
     def get_answer(self, choices, question=None, sub_text=None):
-        with ElementWatcher():
-            page_label = self.win.go_to(self.win.new_page(question, WIN_WIDTH, WIN_HEIGHT, bg='white'))
+        page_label = self.win.go_to(self.win.new_page(question, WIN_WIDTH, WIN_HEIGHT, bg='white'))
 
-            self.win.dump_elements(page_label)
+        self.win.dump_elements(page_label)
 
-            if question is not None:
-                self.win.new_text(question, 'title', 'dark_blue', label='title_list_dialog')
-            if sub_text is not None:
-                self.win.new_text(sub_text, 'sub_title', 'dark_blue', label='sub_title_list_dialog')
-            self.win.new_menu(choices, label='menu_list_dialog')
+        if question is not None:
+            self.win.new_text(question, 'title', 'dark_blue', label='title_list_dialog')
+        if sub_text is not None:
+            self.win.new_text(sub_text, 'sub_title', 'dark_blue', label='sub_title_list_dialog')
+        self.win.new_menu(choices, label='menu_list_dialog')
 
-            # TODO: A quelle page ça importe ?
-            self.win.import_template('menu')
+        self.win.import_template('menu')
 
-            opt = {
-                "font": "options",
-                "color": "dark_blue",
-                "border": None,
-                "color_active": "dark_blue",
-                "border_active": "light_blue",
-                "font_active": "options",
-                "margin": WIN_MARGIN
-            }
+        opt = {
+            "font": "options",
+            "color": "dark_blue",
+            "border": None,
+            "color_active": "dark_blue",
+            "border_active": "light_blue",
+            "font_active": "options",
+            "margin": WIN_MARGIN
+        }
 
-            self.win.add_menu('menu_list_dialog', 'centered', 180, opt=opt, page=page_label)
-            self.win.refresh()
-            return self.win.get_menu_result('menu_list_dialog')
+        self.win.add_menu('menu_list_dialog', 'centered', 180, opt=opt, page=page_label)
+        self.win.refresh()
+        r = self.win.get_menu_result('menu_list_dialog')
+
+        self.win.delete_page(page_label)
+
+        return r
