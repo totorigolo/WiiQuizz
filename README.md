@@ -9,6 +9,13 @@ contrôleurs de différents jeux de soirée comme :
 
 et encore d'autres à venir !
 
+Ce programme ne fonctionne (pour le moment) que sur linux et python 2.
+
+## Dépendances
+
+* pygame pour les fenêtres (pygame-sdl2 de préférence)
+* cwiid pour les wiimotes
+
 ## Développeurs
 
 - totorigolo
