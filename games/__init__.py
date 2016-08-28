@@ -2,5 +2,6 @@
 
 game_list = {
     'Buzzer Simple': 'SimpleBuzzGame',
-    'Image Buzzer': 'ImageBuzzGame'
+    'Image Buzzer': 'ImageBuzzGame',
+    'Blind Test': 'MusicBuzzGame'
 }

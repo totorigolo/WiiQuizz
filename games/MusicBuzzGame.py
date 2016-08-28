@@ -1,8 +1,9 @@
 # coding=utf-8
 
-from CompleteBuzzGame import CompleteBuzzGame
+from GameMgr import GameMgr
+from GameSoundMgr import GameSoundMgr
 
 
-class MusicBuzzGame(CompleteBuzzGame):
+class MusicBuzzGame(GameMgr):
     def __init__(self):
-        CompleteBuzzGame.__init__(self, window_title='Blind Test', music_path='prompt')
+        GameMgr.__init__(self, game_name='Image Buzz Game', game_content_mgr_classes=[GameSoundMgr])
