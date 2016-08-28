@@ -4,6 +4,7 @@ import importlib
 
 from BuzzerMgr import BuzzerMgr
 from Dialog import Dialog
+from ElementWatcher import ElementWatcher
 from ListDialog import ListDialog
 from games import game_list
 
@@ -37,8 +38,12 @@ class GamesMgr:
             print 'jeu chargé !'
 
             try:
-                game = game_class()
-                game.run()
+                with ElementWatcher('game_loaded'):
+                    game = game_class()
+                    game.run()
             except Exception as e:
+                import sys, traceback, time
+                traceback.print_exception(*sys.exc_info())
+
                 dialog = Dialog.Instance()
                 dialog.new_message('error', e)

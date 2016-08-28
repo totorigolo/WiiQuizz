@@ -21,9 +21,9 @@ class GameImageMgr:
             '/'.join((os.path.dirname(os.path.abspath(__file__)), '..'))) + "/games/images/" + dirname
         self.files = list_files(project_dir)
 
-        self.initialized = False
-        if self.files is not None and not (len(self.files) > 0 and len(self.files[0]) > 0):
-            self.initialized = True
+        # self.initialized = False
+        # if self.files is not None and not (len(self.files) > 0 and len(self.files[0]) > 0):
+        self.initialized = True
 
         self.image_dir = project_dir + "/"
         self.question = 0
@@ -104,9 +104,9 @@ class GameImageMgr:
         self.printed = False
 
         # Chargement et préchargement
-        self.win.new_img(self.image_dir + self.files[self.question][self.version], label='game_img_mgr_image',
-                         overwrite=True)  # Ajoute l'image
-        self.win.__preload_image(self.question, self.version)
+        # self.win.new_img(self.image_dir + self.files[self.question][self.version], label='game_img_mgr_image',
+        #                  overwrite=True)  # Ajoute l'image
+        # self.win.__preload_image(self.question, self.version)
 
     def __preload_image(self, question, version):
         """
@@ -129,7 +129,7 @@ class GameImageMgr:
         :type event: événement
         :return:
         """
-        if self.initialized:
+        if not self.initialized:
             return
 
         if event.type == pg.USEREVENT and event.wiimote_id == 'master':
@@ -145,7 +145,7 @@ class GameImageMgr:
                 self.showing = not self.showing
 
     def draw_on(self, page_label):
-        if self.initialized:
+        if not self.initialized:
             return
 
         # if not self.is_paused and not self.printed and self.showing:

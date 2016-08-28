@@ -42,6 +42,7 @@ class WindowHelper:
         self.resizable = True
         self.templates = dict()
         self.event_posters = []
+        self.elements_watchers = []  # TODO: Trouver un meilleur nom
         pg.init()
 
     def __del__(self):
@@ -130,6 +131,8 @@ class WindowHelper:
             'bg': bg,
             'elements': []
         }
+        for element_watcher in self.elements_watchers:
+            element_watcher.watch_page(label)
         return label
 
     def go_to(self, label):
@@ -155,6 +158,17 @@ class WindowHelper:
         # TODO: Utiliser les secondes ou un nombre
         self.elements[label]['nb_usable'] = num
         return label
+
+    def register_element_watcher(self, element_watcher):
+        self.elements_watchers.append(element_watcher)
+        print "Element watcher registered : %s" % element_watcher
+
+    def remove_element_watcher(self, element_watcher):
+        try:
+            self.elements_watchers.remove(element_watcher)
+            print "Element watcher removed : %s" % element_watcher
+        except ValueError:
+            print "Element watcher absent from list : %s" % element_watcher
 
     def new_color(self, color, label=None, overwrite=True):
         """
@@ -232,10 +246,8 @@ class WindowHelper:
             'obj': obj,
             'nb_usable': -1
         }
-        if add_to_page == 'current':
-            self.add(self.current_page)
-        elif isinstance(add_to_page, int) or isinstance(add_to_page, str):
-            self.add(add_to_page)
+        if add_to_page is not None:
+            self.add(elem, add_to_page)
         self.elements[label] = elem
         return label
 
@@ -253,15 +265,15 @@ class WindowHelper:
             bg = pg.image.load(url).convert_alpha()
             # except Exception as e:
             #     raise ValueError("Can't import image : %s" % e)
-                # except:
-                #     raise ImportError("The " + url + " image cannot be loaded.")
+            # except:
+            #     raise ImportError("The " + url + " image cannot be loaded.")
         else:
             # try:
             bg = pg.image.load(url).convert()
             # except Exception as e:
             #     raise ValueError("Can't import image : %s" % e)
-                # except:
-                #     raise ImportError("The " + url + " image cannot be loaded.")
+            # except:
+            #     raise ImportError("The " + url + " image cannot be loaded.")
         elem = {
             'type': 'img',
             'content': url,
@@ -269,10 +281,8 @@ class WindowHelper:
             'obj': bg,
             'nb_usable': -1
         }
-        if add_to_page == 'current':
-            self.add(self.current_page)
-        elif isinstance(add_to_page, int) or isinstance(add_to_page, str):
-            self.add(add_to_page)
+        if add_to_page is not None:
+            self.add(elem, add_to_page)
         self.elements[label] = elem
         return label
 
@@ -291,10 +301,8 @@ class WindowHelper:
             'border': border,
             'nb_usable': -1
         }
-        if add_to_page == 'current':
-            self.add(self.current_page)
-        elif isinstance(add_to_page, int) or isinstance(add_to_page, str):
-            self.add(add_to_page)
+        if add_to_page is not None:
+            self.add(elem, add_to_page)
         self.elements[label] = elem
         return label
 
@@ -314,10 +322,8 @@ class WindowHelper:
             'border': border,
             'nb_usable': -1
         }
-        if add_to_page == 'current':
-            self.add(self.current_page)
-        elif isinstance(add_to_page, int) or isinstance(add_to_page, str):
-            self.add(add_to_page)
+        if add_to_page is not None:
+            self.add(elem, add_to_page)
         self.elements[label] = elem
         return label
 
@@ -338,10 +344,8 @@ class WindowHelper:
             'color': color,
             'nb_usable': -1
         }
-        if add_to_page == 'current':
-            self.add(self.current_page)
-        elif isinstance(add_to_page, int) or isinstance(add_to_page, str):
-            self.add(add_to_page)
+        if add_to_page is not None:
+            self.add(elem, add_to_page)
         self.elements[label] = elem
         return label
 
@@ -367,10 +371,8 @@ class WindowHelper:
             'playing': False,
             'nb_usable': -1
         }
-        if add_to_page == 'current':
-            self.add(self.current_page)
-        elif isinstance(add_to_page, int) or isinstance(add_to_page, str):
-            self.add(add_to_page)
+        if add_to_page is not None:
+            self.add(elem, add_to_page)
         self.elements[label] = elem
         return label
 
@@ -477,10 +479,10 @@ class WindowHelper:
             :type x: Any
             :type y: Any
         """
-        if page is None:
+        if page is None or page == 'current':
             page = self.current_page
         if label not in self.elements.keys():
-            raise ValueError("The element requested does not exist.")
+            raise ValueError("The requested element does not exist.")
         elem = {
             'label': label,
             'x': x,
@@ -489,6 +491,8 @@ class WindowHelper:
             'nb_recursion': -1  # récursion infinie
         }
         self.pages[page]['elements'].append(elem)
+        for element_watcher in self.elements_watchers:
+            element_watcher.watch_element(elem, page)
         return True
 
     def add_menu(self, label, x='centered', y='centered', before_fun=None, after_fun=None, opt=None, vars=None,
@@ -522,6 +526,8 @@ class WindowHelper:
         """
             Supprime le premier élément de label label demandé sur la fenêtre
         """
+        # TODO: Faire des tests
+        # TODO: Si son, le stoper
         if page is None:
             page = self.current_page
         for k in range(len(self.pages[page]['elements'])):
@@ -900,11 +906,24 @@ class WindowHelper:
     def dump_elements(self, page=None):
         """
             Supprime tous les éléments d'une page
-            param: page
+            param: page, par défaut l'actuelle
         """
         if page is None:
             page = self.current_page
         self.pages[page]['elements'] = []
+        # TODO: Faire ça ne supprime pas les éléments
+
+    def delete_page(self, page=None):
+        """
+            Supprime tous les éléments d'une page
+            param: page, par défaut l'actuelle
+        """
+        if page is None:
+            page = self.current_page
+        if page == self.current_page:
+            self.current_page = -1
+        self.dump_elements(page)
+        self.pages.pop(page)
 
     def fill(self, color):
         """
