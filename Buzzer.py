@@ -88,6 +88,7 @@ class Buzzer:
             print "Tentative...",
             try:
                 self.wiimote = cwiid.Wiimote()
+                self.connected = True
             except RuntimeError:
                 tries -= 1
                 print "tentative échouée !"
@@ -106,7 +107,6 @@ class Buzzer:
                 else:
                     self.allumer_led([1, 0, 0, 1])
                 self.vibrer()
-                self.connected = True
                 print "Manette connectée !"
 
                 # Initialise btn_state
