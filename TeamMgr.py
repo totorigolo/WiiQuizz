@@ -181,6 +181,8 @@ class TeamMgr:
         Ne garde qu'un seul buzzer, choisi au hasard.
         """
         if self.state == 'must_pick_one':
+            self.win.play_sound('sound_buzz')
+
             random_id = random.choice(self.buzzing_teams)
             self.clear_buzzes()
 
@@ -188,7 +190,6 @@ class TeamMgr:
             self.teams[random_id].is_buzzing = True
             self.teams[random_id].buzzer.vibrer()
 
-            self.win.play_sound('sound_buzz')
             self.state = 'waiting_answer'
 
     def accept_buzz(self, points=None):
