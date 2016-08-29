@@ -4,99 +4,28 @@ import os
 
 import pygame as pg
 
+from GameFileMgr import GameFileMgr
+
 from ListDialog import ListDialog
 from WindowHelper import WindowHelper
 from tools import list_files, safe_modulo
 
 
-class GameImageMgr:
+class GameImageMgr(GameFileMgr):
     """
     Gère les images
     """
 
     def __init__(self, dirname):
         if dirname == 'ask':
-            dirname = GameImageMgr.prompt_image_folder()
-        project_dir = os.path.abspath(
-            '/'.join((os.path.dirname(os.path.abspath(__file__)), '..'))) + "/games/images/" + dirname
-        self.files = list_files(project_dir)
+            dirname = GameFileMgr.prompt_image_folder()
+        dirname = "/games/images/" + dirname
 
-        # self.initialized = False
-        # if self.files is not None and not (len(self.files) > 0 and len(self.files[0]) > 0):
-        self.initialized = True
+        GameFileMgr.__init__(self, dirname)
 
-        self.image_dir = project_dir + "/"
-        self.question = 0
-        self.version = 0
-
-        self.win = WindowHelper.Instance()
-
-        self.win.new_font('Arial', 20, 'page_info_game_img_mgr')
-        self.is_paused = False
         self.printed = False
         self.showing = False
 
-        if self.initialized:
-            print "GameImageMgr initialisé !"
-        else:
-            print "GameImageMgr non initialisé !"
-
-    @staticmethod
-    def get_file_list(path):
-        try:
-            file_list = []
-            for image in os.listdir(path):
-                if os.path.isfile(os.path.join(path, image)):
-                    file_list.append(image)
-            return file_list
-        except OSError:
-            print 'Répertoire introuvable ({}) !'.format(path)
-            return []
-
-    @staticmethod
-    def get_folder_list(path):
-        try:
-            folders = []
-            for folder in os.listdir(os.path.abspath(path)):
-                if not os.path.isfile(os.path.join(os.path.abspath(path), folder)):
-                    folders.append(folder)
-            return path, folders
-        except OSError:
-            print u"Aucun répertoire d'images trouvé !"
-            return []
-
-    @staticmethod
-    def get_image_folders():
-        return GameImageMgr.get_folder_list('./games/images/')
-
-    # TODO: En faire un Dialog -> FolderDialog
-    @staticmethod
-    def prompt_image_folder():
-        folder, folder_list = GameImageMgr.get_image_folders()
-        dialog = ListDialog()
-        # TODO: Gérer quand il n'y a aucun dossier
-        choix = dialog.get_answer(folder_list + ['Annuler'], 'Sélectionnez un dossier :')
-        if choix >= len(folder_list):
-            return ''
-        return folder_list[choix]
-
-    def next_file(self):
-        self.question += 1
-        self.version = 0
-        self.image_changed()
-
-    def prev_file(self):
-        self.question -= 1
-        self.version = 0
-        self.image_changed()
-
-    def next_version(self):
-        self.version += 1
-        self.image_changed()
-
-    def prev_version(self):
-        self.version -= 1
-        self.image_changed()
 
     def image_changed(self):
         self.question = safe_modulo(self.question, len(self.files))
@@ -126,27 +55,25 @@ class GameImageMgr:
     def process_event(self, event):
         """
         Gère les événements
+        Cette méthode est appelé à chaque fois qu'un événement est détecté
+        (touche clavier, bouton wiimote appuyé...)
+        :param event: événement détecté
         :type event: événement
-        :return:
         """
-        if not self.initialized:
-            return
+        GameFileMgr.process_event(self, event)
 
-        if event.type == pg.USEREVENT and event.wiimote_id == 'master':
-            if event.btn == 'DROITE':
-                self.next_file()
-            elif event.btn == 'GAUCHE':
-                self.prev_file()
-            elif event.btn == 'HAUT':
-                self.prev_version()
-            elif event.btn == 'BAS':
-                self.next_version()
-            elif event.btn == '1':
-                self.showing = not self.showing
+        if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.btn == '1':
+            self.showing = not self.showing
 
     def draw_on(self, page_label):
-        if not self.initialized:
-            return
+        """
+        Affiche les éléments sur la page
+        Appelé à chaque tour de boucle
+        :param page_label:
+        :return:
+        """
+        # Use the draw_on version of the parent
+        GameFileMgr.draw_on(self, page_label)
 
         # if not self.is_paused and not self.printed and self.showing:
         if not self.is_paused and self.showing:
@@ -165,9 +92,3 @@ class GameImageMgr:
                           overwrite=True)  # Ajoute le numéro de version
         self.win.add('game_img_mgr_num_page', 50, 'bottom - 140', page=page_label)
         self.win.add('game_img_mgr_num_version', 50, 'bottom - 100', page=page_label)
-
-    def pause(self, state):
-        """
-        Est exécuté lorsque le jeu est mis en pause
-        """
-        self.id_paused = state

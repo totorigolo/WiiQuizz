@@ -1,15 +1,15 @@
 # coding: utf-8
 
-from GameImageMgr import GameImageMgr
+from GameFileMgr import GameFileMgr
 import pygame as pg
 
-class GameSoundMgr(GameImageMgr):
+class GameSoundMgr(GameFileMgr):
     def __init__(self, dirname):
-        GameImageMgr.__init__(self, dirname)
+        GameFileMgr.__init__(self, dirname)
         self.is_playing = False
 
     def process_event(self, event):
-        GameImageMgr.process_event(self, event)
+        GameFileMgr.process_event(self, event)
         if event.type == pg.USEREVENT:
             if event.btn == '1':
                 self.is_playing = not self.is_playing

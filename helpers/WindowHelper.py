@@ -8,6 +8,7 @@ import pygame as pg
 from pygame.locals import *
 
 from ColorHelper import ColorHelper
+from WindowRessources import WindowRessources
 from Singleton import Singleton
 from tools import py_encode_font_txt, py_encode_title
 
@@ -25,7 +26,7 @@ class WindowHelper:
     @staticmethod
     def Instance():
         """
-        Cette fonction est un workaround pour bénéficier de l'autocomplétion sur cette classe
+        This function is a workaround to benefit autocompletion
         :rtype: WindowHelper
         """
         return WindowHelper.Instance()
@@ -45,6 +46,8 @@ class WindowHelper:
         pg.init()
 
     def __del__(self):
+        del self.elements
+        del self.pages
         try:
             self.opened = False
             self.close()
@@ -54,7 +57,11 @@ class WindowHelper:
 
     def open_window(self, width=None, height=None, resizable=None):
         """
-            Ouvre une nouvelle fenêtre de taille width * height
+        Open a new window of size width * height
+        :param width: width of the window (default 500px)
+        :param height: height of the window (default 500px)
+        :param resizable: is the window resizable ? (defaut True)
+        :type resizable: bool
         """
         if width is None:
             width = 500
@@ -78,11 +85,14 @@ class WindowHelper:
         self.opened = True
 
     def is_open(self):
+        """
+        :return: return if a window already is opened
+        """
         return self.opened
 
     def close(self):
         """
-            Ferme la fenêtre
+        Close the current window
         """
         try:
             pg.display.quit()
@@ -90,21 +100,30 @@ class WindowHelper:
             self.opened = False
 
     def callback_close(self):
+        """
+        Set the opened var to False, used in callback to inform the helper
+        to close the window
+        """
         self.opened = False
 
     def quit(self):
         """
-            Ferme la session pygame
+            Close pygame session
         """
         self.__del__()
 
     def new_page(self, title, width=None, height=None, label=None, bg=None):
         """
-            Ajoute une page
-            param: title titre de la page
-            param: label optional (default: num)
-            param: bg optional couleur de fond (default: black)
-            returns: label donné
+        Define a new page. Use the go_to method to navigate between pages.
+        The open_window method is not required before using this one. If no
+        window is already opened, open_windo will automatically be called.
+        :param title: title of the page
+        :param width: width of the page (default, current width)
+        :param height: height of the page (default, current height)
+        :param label: label of the page
+        :param bg: color_background of the page
+        :type bg: str or tuple or ColorHelper
+        :return: label of the page
         """
         if not self.is_open():
             self.open_window(width, height)
@@ -135,7 +154,8 @@ class WindowHelper:
 
     def go_to(self, label):
         """
-            Change de page
+            Change page to the labeled page
+            :return: label of the new page
         """
         self.current_page = label
         pg.display.set_caption(py_encode_title(self.pages[label]['title']))
@@ -144,6 +164,11 @@ class WindowHelper:
         return label
 
     def page_exists(self, page):
+        """
+        Return if the page asked exists
+        :param page: label of the page
+        :rtype: bool
+        """
         return page in self.pages.keys()
 
     def nb_use(self, label, num=1):
@@ -159,10 +184,14 @@ class WindowHelper:
 
     def new_color(self, color, label=None, overwrite=True):
         """
-            Ajoute une couleur dans la liste des couleurs
-            param: color type str | ColorHelper | tuple
-            param: label optional (default: num)
-            returns: label, False si la couleur existe déjà
+        Create a new color
+        :param color: color
+        :type color: str or tuple or ColorHelper
+            if the type is str, it has to be a ColorHelper colorname
+        :param label: label to the color (default, auto set label)
+        :param overwrite: if True and another color with the same label already exists,
+            it will overwrite it
+        :return: label of the new color, False if the label already exists and overwrite is False
         """
         if label is None:
             if isinstance(color, str) and (color, color) not in self.colors.items():
@@ -181,8 +210,22 @@ class WindowHelper:
 
     def new_font(self, family, size, label=None, opt=None, overwrite=False):
         """
-            Ajoute une police de caractère
-            :return label ou False si l'élément existait déjà
+        Create a new font
+        :param family: family name of the font (example: Arial)
+        :param size: size of the font
+        :param label: label to set te the font (Default, auto set)
+        :param opt: options for the text (underline, bold, italic, anti-aliasing)
+            default dict :
+            {
+                'anti_aliasing': True,
+                'bold': False,
+                'italic': False,
+                'underline': False
+            }
+        :type opt: dict
+        :param overwrite: if True and another font with the same label already exists,
+            it will overwrite it
+        :return: label of the font, False if the label already exists and overwrite is False
         """
         if label is None:
             label = family + str(size)
@@ -213,8 +256,17 @@ class WindowHelper:
     def new_text(self, text, font, color, label=None, add_to_page=None,
                  overwrite=True):  # TODO: Possibilité de mettre un fond au texte
         """
-            Ajoute un texte dans la liste des éléments
-            :return label | False si l'élément existait déjà
+        Create a new text
+        :param text: Text
+        :param font: label of the font
+        :type font: str
+        :param color: label of the color
+        :param label: label for the new text
+        :param add_to_page: a new elements is not automatically added to the pages. Set this
+            parameter to the label of a page and it will be added to the page.
+        :param overwrite: if True and another text with the same label already exists,
+            it will overwrite it
+        :return: label of the text, False if the label already exists and overwrite is False
         """
         if label is None:
             label = self.get_unused_label()
@@ -240,8 +292,15 @@ class WindowHelper:
 
     def new_img(self, url, alpha=False, label=None, add_to_page=None, overwrite=False):
         """
-            Ajoute une image dans la liste des éléments
-            :return label | False si l'élément existait déjà
+        Create a new image
+        :param url: address of the image
+        :param alpha: if the image uses alpha
+        :type alpha: bool
+        :param label: label of the image (default, auto set)
+        :param add_to_page: label of the page to add on. If None, the element is not added (call add to do so)
+        :param overwrite: if True and another image with the same label already exists,
+            it will overwrite it
+        :return: label of the image, False if the label already exists and overwrite is False
         """
         if label is None:
             label = self.get_unused_label()
@@ -275,8 +334,15 @@ class WindowHelper:
 
     def new_rect(self, color, border, label=None, add_to_page=None, overwrite=True):
         """
-            Ajoute un rectangle dans la liste des éléments
-            :return label | False si l'élément existait déjà
+        Create a new rectangle
+        :param color: label of the color
+        :type color: str
+        :param border: border of the rectangle, if 0 the rectangle is filled
+        :param label: label of the rectangle (default, auto set)
+        :param add_to_page: label of the page to add on. If None, the element is not added (call add to do so)
+        :param overwrite: if True and another image with the same label already exists,
+            it will overwrite it
+        :return: label of the rectangle, False if the label already exists and overwrite is False
         """
         if label is None:
             label = self.get_unused_label()
@@ -295,8 +361,16 @@ class WindowHelper:
 
     def new_circle(self, color, radius, border, label=None, add_to_page=None, overwrite=True):
         """
-            Ajoute un cercle dans la liste des éléments
-            :return label | False si l'élément existait déjà
+        Create a new circle
+        :param color: label of the color
+        :type color: str
+        :param radius: radius of the circle
+        :param border: border width of the circle, if 0 the circle is filled
+        :param label: label of the circle (default, auto set)
+        :param add_to_page: label of the page to add on. If None, the element is not added (call add to do so)
+        :param overwrite: if True and another image with the same label already exists,
+            it will overwrite it
+        :return: label of the circle, False if the label already exists and overwrite is False
         """
         if label is None:
             label = self.get_unused_label()
@@ -316,11 +390,14 @@ class WindowHelper:
 
     def new_fill(self, color, label=None, add_to_page=None, overwrite=True):
         """
-            Ajoute un remplissage
-            param: color couleur à remplir
-            param: label de l'élément
-            param: add_to_page (défaut False)
-            returns: label donné | False si l'élément existait déjà
+        prepare to fill a window, call add to add the fill to the page
+        :param color: label of the color
+        :type color: str
+        :param label: label of the fill (default, auto set)
+        :param add_to_page: label of the page to add on. If None, the element is not added (call add to do so)
+        :param overwrite: if True and another image with the same label already exists,
+            it will overwrite it
+        :return: label of the fill, False if the label already exists and overwrite is False
         """
         if label is None:
             label = self.get_unused_label()
@@ -338,8 +415,13 @@ class WindowHelper:
 
     def new_sound(self, url, label=None, add_to_page=None, overwrite=False):
         """
-            Ajoute un son dans la liste des éléments
-            :return label | False si l'élément existait déjà
+        Create a new sound
+        :param url: address to the sound
+        :param label: label of the sound (default, auto set)
+        :param add_to_page: label of the page to add on. If None, the element is not added (call add to do so)
+        :param overwrite: if True and another image with the same label already exists,
+            it will overwrite it
+        :return: label of the sound, False if the label already exists and overwrite is False
         """
         if label is None:
             label = self.get_unused_label()
@@ -365,7 +447,8 @@ class WindowHelper:
 
     def play_sound(self, label):
         """
-            Joue un son
+        Play a sound
+        :param label: label of the sound
         """
         # if not self.elements[label]['playing']:
         self.elements[label]['obj'].play()
@@ -373,7 +456,8 @@ class WindowHelper:
 
     def stop_sound(self, label):
         """
-            Arrête un son
+        Stop a sound
+        :param label: label of the sound
         """
         # if self.elements[label]['playing']:
         self.elements[label]['obj'].stop()
@@ -381,13 +465,21 @@ class WindowHelper:
 
     def is_mixer_busy(self):
         """
-            Retourne True si le mixer est occupé, False sinon
+        Is the mixer busy ?
+        :return: True if it is, False otherwise
         """
         return pg.mixer.get_busy()
 
     def new_menu(self, choices, label=None, add_to_page=None):
         """
-            Ajoute un menu dans la liste des éléments
+        Create a menu
+        :param choices: the choices of the menu in a list
+        exemple : ["Option 1", "Option 2"]
+        To learn more, see the wiki (french) : https://github.com/totorigolo/WiiQuizz/wiki/WindowHelper#ajouter-un-menu
+        :type choices: list
+        :param label: label of the menu
+        :param add_to_page: label of the page to add on. If None, the element is not added (call add_menu to do so)
+        :return: label of the menu
         """
         if label is None:
             label = len(self.elements)
@@ -406,19 +498,29 @@ class WindowHelper:
 
     def get_menu_result(self, label):
         """
-            Récupère le résultat du menu demandé, renvoit None si pas de résultat
+        Return the outcome of a menu.
+        A result may be found only if an option of the menu has been selected
+        :param label: label of the menu
+        :return: Result of the menu
         """
         return self.elements[label]['result']
 
     def get_element(self, label):
         """
-            Retourne un élément
+        Return an element
+        :param label: label of the element
+        :return: the element
         """
         return self.elements[label]
 
     def edit_color(self, label, color):
         """
-            Modifie la couleur d'un élément
+        Edit the color of an element
+        :param label: label of the element to edit
+        :param color: new label of the color
+        :type color: str
+        :return: True is the element has an color attribute, False otherwise
+        :rtype: bool
         """
         if 'color' in self.elements[label].keys():
             if self.elements[label]['type'] == 'text':
@@ -436,7 +538,11 @@ class WindowHelper:
 
     def edit_text(self, label, text):
         """
-            Modifie le contenu d'un élément
+        Edit the text of an element
+        :param label: label of the element
+        :param text: new text
+        :return: True if the element has a text attribute, False otherwise
+        :rtype: bool
         """
         if self.elements[label]['type'] == 'text':
             font = self.elements[label]['font']
@@ -453,7 +559,11 @@ class WindowHelper:
 
     def edit_border(self, label, border):
         """
-            Modifie la bordure d'un élément
+        Edit the border of an element
+        :param label: label of the element
+        :param border: new border
+        :return: True if the element has a border attribute, False otherwise
+        :rtype: bool
         """
         if 'border' in self.elements[label].keys():
             self.elements[label]['border'] = border
@@ -462,14 +572,22 @@ class WindowHelper:
 
     def add(self, label, x='centered', y='centered', page=None):
         """
-            Ajoute l'élément à la page donnée
-            :type x: Any
-            :type y: Any
+        Add an element to the page
+        :param label: label of the element to add
+        :param x: x coordinate. Can be an int, 'centered' or a string using math and keywords : ('top', 'bottom', 'left'
+            ('right', 'x_center', 'y_center', 'self_width' and 'self_height'). See the wiki (in french) to learn more
+            https://github.com/totorigolo/WiiQuizz/wiki/WindowHelper#ajouter-des-%C3%A9l%C3%A9ments-%C3%A0-une-page
+        :param y: y coordinate.
+        :param page: label of the page to add, if None or 'current',
+            it will be added to the current page (if it exists)
+        :return: True if element added, False otherwise
         """
         if page is None or page == 'current':
+            if self.current_page == -1:
+                return False
             page = self.current_page
         if label not in self.elements.keys():
-            raise ValueError("The element to add does not exist.")
+            return False
         elem = {
             'label': label,
             'x': x,
@@ -483,9 +601,37 @@ class WindowHelper:
     def add_menu(self, label, x='centered', y='centered', before_fun=None, after_fun=None, opt=None, vars=None,
                  page=None):
         """
-            Ajoute un menu à la page donnée
+        Add a menu to a page
+        :param label: label of the menu
+        :param x: x coordinate. Can be an int, 'centered' or a string using math and keywords : ('top', 'bottom', 'left'
+            ('right', 'x_center', 'y_center', 'self_width' and 'self_height'). See the wiki (in french) to learn more
+            https://github.com/totorigolo/WiiQuizz/wiki/WindowHelper#ajouter-des-%C3%A9l%C3%A9ments-%C3%A0-une-page
+        :param y: y coordinate.
+        :param before_fun: callback function called at the begining of each loop.
+            This function must take 4 params : pg (a pygame instance), win (a windowHelper instance),
+            vars (the vars given in the vars param of this method) and menu (the choices param)
+        :param after_fun: callback function called at the end of each loop
+            This function must take 4 params : pg (a pygame instance), win (a windowHelper instance),
+            vars (the vars given in the vars param of this method) and menu (the choices param)
+        :param opt: Options on the text. Default options :
+            {
+                "font": "default",  label of the font for the options
+                "color": "white",  label of the color fot the options
+                "border": None,  if the text has a border
+                "font_active": "default",  label of the font for an active option
+                "color_active": "white",  label of the color for an active option
+                "border_active": None,  border of the text for an active option
+                "margin": 20   margin between options
+            }
+        :param vars: vars to pass on callback functions
+        :param page: label of the page to add on
+        :return: True if the menu has been added, False otherwise
+
+        Get the result of the menu by calling the get_menu_result method
         """
         if page is None:
+            if self.current_page == -1:
+                return False
             page = self.current_page
         if label not in self.elements.keys():
             return False
@@ -509,7 +655,10 @@ class WindowHelper:
 
     def delete(self, label, page=None):
         """
-            Supprime le premier élément de label label demandé sur la fenêtre
+        Delete the first instance of an element added to a given page
+        :param label: label of the element
+        :param page: label of the page
+        :return: True if deleted, False otherwise
         """
         # TODO: Faire des tests
         # TODO: Si son, le stoper
@@ -542,8 +691,9 @@ class WindowHelper:
 
     def print_page(self, page=None):
         """
-            Affiche tous les éléments d'une page donnée
-            :return: False si la page n'existe pas, True sinon
+        Print a page
+        :param page: label of a page
+        :return: True if the page has been printed, False otherwise
         """
         if page is None:
             page = self.current_page
@@ -560,7 +710,10 @@ class WindowHelper:
 
     def print_elem(self, num, page=None):
         """
-            Affiche un élément d'une page
+        Print a single element
+        :param num: number of the element
+        :param page: label of the page
+        :return: True if the element has been printed, False otherwise
         """
         if page is None:
             page = self.current_page
@@ -831,9 +984,18 @@ class WindowHelper:
             color = self.colors[elem['color']].get_rgb()
             pg.draw.circle(self.win, color, [x, y], radius, elem['border'])
 
-    def event(self, before_fun=None, event_fun=None, after_fun=None, vars=None, page=None, fps=10):
+    def event(self, before_fun=None, event_fun=None, after_fun=None, vars=None, fps=10):
         """
-            Créé un événement
+        Start an event
+        :param before_fun: callback function called at the begining of each loop.
+            This function must take 3 params : pg (a pygame instance), win (a windowHelper instance),
+            vars (the vars given in the vars param of this method)
+        :param event_fun: callback function called in the event for loop.
+            This function must take 4 params : pg (a pygame instance), win (a windowHelper instance),
+            vars (the vars given in the vars param of this method) and event (the event)
+        :param after_fun: callback function called at the end of each loop with the same params of before_fun
+        :param vars: vars to pass on the callback functions
+        :param fps: number of loop per second
         """
         if vars is None:
             vars = {}
@@ -889,7 +1051,7 @@ class WindowHelper:
 
     def reset(self):
         """
-            Enlève les éléments de la page
+        Reset the current page
         """
         try:
             color = self.colors[self.pages[self.current_page]['bg']]
@@ -901,15 +1063,16 @@ class WindowHelper:
 
     def refresh(self):
         """
-            Rafréchit la page courante
+        Refresh the current page
         """
         self.reset()
         self.print_page()
 
     def dump_elements(self, page=None):
         """
-            Supprime tous les éléments d'une page
-            param: page, par défaut l'actuelle
+        Dump all elements of a given page
+        :param page: label of the page
+        :return: None if the page does not exist
         """
         if page is None:
             page = self.current_page
@@ -925,8 +1088,9 @@ class WindowHelper:
 
     def delete_page(self, page=None):
         """
-            Supprime tous les éléments d'une page
-            param: page, par défaut l'actuelle
+        Delete a page (along with the elements on that page)
+        :param page: label of a page
+        :return: True if the page is deleted, False otherwise
         """
         if page is None:
             page = self.current_page
@@ -942,28 +1106,28 @@ class WindowHelper:
 
     def fill(self, color):
         """
-            Remplie la page courante d'une couleur donnée
-            param: color str couleur à remplir
+        Fill the current page
+        :param color: label of the color
+        :type color: str
         """
         self.win.fill(self.colors[color].get_rgb())
 
     def exists(self, label):
         """
-            Retourne si un élément existe
+        Rreturn if a given element exists
+        :param label: label of the element
+        :rtype: bool
         """
         return label in self.elements.keys()
 
-    def execute(self, line, mode='def'):
-        """
-            Exécute une ligne du langage skt
-        """
-        mode = '#' + mode
-        lines = [mode, line]
-        self.parse_template(lines)
-
     def parse_template(self, name, lines, file=None, opt=None):
         """
-            Parser de skt
+        Parse lines of skt file
+        :param name: name of the template
+        :param lines: lines to parse
+        :param file: filename of the element
+        :param opt: options
+        :return:
         """
         if opt is None:
             opt = {}
@@ -1136,7 +1300,16 @@ class WindowHelper:
     def import_template(self, name, filename=None,
                         opt=None):  # TODO: ajouter le page_label pour dire dans quelle page ajouter les éléments
         """
-            Importe un fichier .skt
+        Import a skt template
+        :param name: name of the template
+        :param filename: filename of the template (facultative)
+        :param opt: options
+            {
+                'IMG_FOLDER': project_dir + '/res',  directory of images to use
+                'SKT_FOLDER': project_dir + '/templates'  directory of the skt files
+            }
+        See the wiki (in french) to learn more about skt files
+        https://github.com/totorigolo/WiiQuizz/wiki/WindowHelper#les-fichiers-template
         """
 
         project_dir = os.path.abspath('/'.join((os.path.dirname(os.path.abspath(__file__)), '..')))
