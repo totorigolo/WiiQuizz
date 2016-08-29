@@ -6,7 +6,7 @@ import pygame as pg
 
 from ListDialog import ListDialog
 from WindowHelper import WindowHelper
-from tools import list_files, safe_modulo
+from tools import list_files
 
 
 class GameFileMgr:

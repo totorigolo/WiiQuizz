@@ -17,15 +17,9 @@ class Dialog:
         return Dialog.Instance()
 
     def __init__(self):
-        self.messages = []
         self.win = WindowHelper.Instance()
 
-        if self.win.current_page == -1:  # Si pas de page d'ouverte
-            self.win.new_page('Erreur', label='dialog_default')
-            self.win.go_to('dialog_default')
-
-        self.templates_options = {
-        }
+        self.templates_options = dict()
 
         self.types = ['error', 'success', 'warning', 'neutral']
 
@@ -63,22 +57,16 @@ class Dialog:
         """
         if type not in self.types:
             type = 'neutral'
-        msg = {
-            'type': type,
-            'message': message,
-            'mode': mode,
-            'time': time.time(),  # TODO: Ajouter des messages temporels
-            'active': True
-        }
         if mode == 'intrusive':
             self._print_intrusive_msg(type, message)
-            msg['active'] = False
-        self.messages.append(msg)
 
     def _print_intrusive_msg(self, type, message):
         """
             Affiche un message intrusif
         """
+        if self.win.current_page == -1:  # Si pas de page d'ouverte
+            self.win.go_to(self.win.new_page('Erreur', label='dialog_default'))
+
         self.win.new_rect('dialog_color_shadow_' + type, 0, label='dialog_shadow')
         self.win.new_rect('dialog_color_' + type, 0, label='dialog_holder')
         self.win.new_text(message, 'dialog_font', self.correspondence_type_text_color[type], label='dialog_msg')

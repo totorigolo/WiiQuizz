@@ -1,14 +1,8 @@
 # coding: utf-8
 
-import os
-
 import pygame as pg
-
 from GameFileMgr import GameFileMgr
-
-from ListDialog import ListDialog
-from WindowHelper import WindowHelper
-from tools import list_files, safe_modulo
+from tools import safe_modulo
 
 
 class GameImageMgr(GameFileMgr):
