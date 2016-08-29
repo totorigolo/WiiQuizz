@@ -72,4 +72,4 @@ class GameSoundMgr(GameFileMgr):
             self.win.add('game_sound_mgr_num_page', 50, 'bottom - 140', page=page_label)
             self.win.add('game_sound_mgr_num_version', 50, 'bottom - 100', page=page_label)
         elif self.is_paused and self.is_playing:
-            self.printed = False
+            self.is_playing = False
