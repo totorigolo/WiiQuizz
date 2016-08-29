@@ -118,6 +118,9 @@ class GameFileMgr:
         if self.initialized:
             return
 
+    def can_buzz(self):
+        return True
+
     def pause(self, state):
         """
         Est exécuté lorsque le jeu est mis en pause
