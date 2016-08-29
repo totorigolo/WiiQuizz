@@ -70,10 +70,17 @@ class GameImageMgr(GameFileMgr):
         :param event: événement détecté
         :type event: événement
         """
-        GameFileMgr.process_event(self, event)
-
-        if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.btn == '1':
-            self.showing = not self.showing
+        if event.type == pg.USEREVENT and event.wiimote_id == 'master':
+            if event.btn == 'DROITE':
+                self.next_file()
+            elif event.btn == 'GAUCHE':
+                self.prev_file()
+            elif event.btn == 'HAUT':
+                self.prev_version()
+            elif event.btn == 'BAS':
+                self.next_version()
+            elif event.btn == '1':
+                self.showing = not self.showing
 
     def draw_on(self, page_label):
         """
