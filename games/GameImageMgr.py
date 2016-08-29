@@ -20,6 +20,22 @@ class GameImageMgr(GameFileMgr):
         self.printed = False
         self.showing = False
 
+    def next_file(self):
+        GameFileMgr.next_file(self)
+        self.image_changed()
+
+    def prev_file(self):
+        GameFileMgr.prev_file(self)
+        self.image_changed()
+
+    def next_version(self):
+        GameFileMgr.next_version(self)
+        self.image_changed()
+
+    def prev_version(self):
+        GameFileMgr.prev_version(self)
+        self.image_changed()
+
 
     def image_changed(self):
         self.question = safe_modulo(self.question, len(self.files))

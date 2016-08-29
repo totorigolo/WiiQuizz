@@ -21,13 +21,13 @@ class GameFileMgr:
             '/'.join((os.path.dirname(os.path.abspath(__file__)), '..'))) + dirname
         self.files = list_files(project_dir)
 
-        self.initialized = False
-        if self.files is not None and not (len(self.files) > 0 and len(self.files[0]) > 0):
-            self.initialized = True
-
         self.image_dir = project_dir + "/"
         self.question = 0
         self.version = 0
+
+        self.initialized = False
+        if self.files is not None and  len(self.files) > 0 and len(self.files[0]) > 0:
+            self.initialized = True
 
         self.win = WindowHelper.Instance()
 
@@ -84,20 +84,16 @@ class GameFileMgr:
     def next_file(self):
         self.question += 1
         self.version = 0
-        self.image_changed()
 
     def prev_file(self):
         self.question -= 1
         self.version = 0
-        self.image_changed()
 
     def next_version(self):
         self.version += 1
-        self.image_changed()
 
     def prev_version(self):
         self.version -= 1
-        self.image_changed()
 
     def process_event(self, event):
         """

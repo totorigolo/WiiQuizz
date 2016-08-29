@@ -6,6 +6,7 @@ import pygame as pg
 class GameSoundMgr(GameFileMgr):
     def __init__(self, dirname):
         GameFileMgr.__init__(self, dirname)
+
         self.is_playing = False
 
     def process_event(self, event):
