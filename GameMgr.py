@@ -119,9 +119,12 @@ class GameMgr:
 
         def after_fun(pg, win, vars):
             """
-                Appelé après les événements
+                Appelé après les évènements
             """
             # Gestion du buzz
+            can_buzz = True
+            for cm in vars['game_content_mgr_list']:  # Se renseigne si le buzz est autorisé
+                can_buzz = can_buzz and cm.can_buzz()
             if vars['team_mgr'].awaiting_buzzes():
                 vars['team_mgr'].pick_one_buzz()
 

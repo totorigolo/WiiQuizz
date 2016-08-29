@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import pygame as pg
+
 from GameFileMgr import GameFileMgr
 from tools import safe_modulo
 
@@ -35,7 +36,6 @@ class GameImageMgr(GameFileMgr):
     def prev_version(self):
         GameFileMgr.prev_version(self)
         self.image_changed()
-
 
     def image_changed(self):
         self.question = safe_modulo(self.question, len(self.files))
