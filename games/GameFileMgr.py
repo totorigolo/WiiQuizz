@@ -31,7 +31,7 @@ class GameFileMgr:
 
         self.win = WindowHelper.Instance()
 
-        self.win.new_font('Arial', 20, 'page_info_game_img_mgr')
+        self.win.new_font('Arial', 20, 'page_info_game_mgr')
         self.is_paused = False
 
     @staticmethod
@@ -74,6 +74,16 @@ class GameFileMgr:
     @staticmethod
     def prompt_image_folder():
         folder, folder_list = GameFileMgr.get_image_folders()
+        dialog = ListDialog()
+        # TODO: Gérer quand il n'y a aucun dossier
+        choix = dialog.get_answer(folder_list + ['Annuler'], 'Sélectionnez un dossier :')
+        if choix >= len(folder_list):
+            return ''
+        return folder_list[choix]
+
+    @staticmethod
+    def prompt_sound_folder():
+        folder, folder_list = GameFileMgr.get_sound_folders()
         dialog = ListDialog()
         # TODO: Gérer quand il n'y a aucun dossier
         choix = dialog.get_answer(folder_list + ['Annuler'], 'Sélectionnez un dossier :')

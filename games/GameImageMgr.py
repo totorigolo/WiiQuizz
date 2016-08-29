@@ -102,10 +102,10 @@ class GameImageMgr(GameFileMgr):
         #     self.win.delete('game_img_mgr_image', page_label)
         #     self.printed = False
 
-        self.win.new_text("Image : " + str(self.question + 1) + "/" + str(len(self.files)), 'page_info_game_img_mgr',
+        self.win.new_text("Image : " + str(self.question + 1) + "/" + str(len(self.files)), 'page_info_game_mgr',
                           'black', label='game_img_mgr_num_page', overwrite=True)  # Ajoute le numéro de page
         self.win.new_text("Version : " + str(self.version + 1) + "/" + str(len(self.files[self.question])),
-                          'page_info_game_img_mgr', 'black', label='game_img_mgr_num_version',
+                          'page_info_game_mgr', 'black', label='game_img_mgr_num_version',
                           overwrite=True)  # Ajoute le numéro de version
         self.win.add('game_img_mgr_num_page', 50, 'bottom - 140', page=page_label)
         self.win.add('game_img_mgr_num_version', 50, 'bottom - 100', page=page_label)
