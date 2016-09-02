@@ -113,9 +113,9 @@ class GameMgr:
                 elif not vars['pause']:  # Gère le buzz des wiimotes
                     vars['team_mgr'].add_buzz(event.wiimote_id)
 
-            else:  # Evènements non gérés
-                for cm in vars['game_content_mgr_list']:
-                    cm.process_event(event)
+            # Fourni les évènements aux ContentMgr
+            for cm in vars['game_content_mgr_list']:
+                cm.process_event(event)
 
         def after_fun(pg, win, vars):
             """
@@ -148,3 +148,7 @@ class GameMgr:
             win.refresh()
 
         self.win.event(before_fun=before_fun, event_fun=event_fun, after_fun=after_fun, vars=vars, fps=60)
+
+        # Permet aux ContentMgr de se quitter
+        for cm in vars['game_content_mgr_list']:
+            cm.on_quit()

@@ -70,7 +70,7 @@ class Image(File):
         :param event: événement détecté
         :type event: événement
         """
-        if event.type == pg.USEREVENT and event.wiimote_id == 'master':
+        if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed:
             if event.btn == 'DROITE':
                 self.next_file()
             elif event.btn == 'GAUCHE':

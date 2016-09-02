@@ -114,7 +114,7 @@ class File:
         if self.initialized:
             return
 
-        if event.type == pg.USEREVENT and event.wiimote_id == 'master':
+        if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed:
             if event.btn == 'DROITE':
                 self.next_file()
             elif event.btn == 'GAUCHE':
@@ -125,8 +125,7 @@ class File:
                 self.next_version()
 
     def draw_on(self, page_label):
-        if self.initialized:
-            return
+        pass
 
     def can_buzz(self):
         return True
@@ -135,4 +134,7 @@ class File:
         """
         Est exécuté lorsque le jeu est mis en pause
         """
-        self.id_paused = state
+        pass
+
+    def on_quit(self):
+        pass

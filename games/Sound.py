@@ -14,11 +14,13 @@ class Sound(File):
         File.__init__(self, dirname)
 
         self.is_playing = False
+        self.sound_changed()
 
     def process_event(self, event):
         File.process_event(self, event)
 
-        if event.type == pg.USEREVENT and event.wiimote_id == 'master':
+        print event
+        if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed:
             if event.btn == 'DROITE':
                 self.next_file()
             elif event.btn == 'GAUCHE':
@@ -61,7 +63,7 @@ class Sound(File):
         self.question = safe_modulo(self.question, len(self.files))
         self.version = safe_modulo(self.version, len(self.files[self.question]))
         self.win.new_sound(self.image_dir + self.files[self.question][self.version],
-                           label='game_sound_mgr_son')  # Charge le son
+                           label='game_sound_mgr_son', overwrite=True)  # Charge le son
         self.is_playing = False
 
     def draw_on(self, page_label):
@@ -75,3 +77,8 @@ class Sound(File):
         self.win.add('game_sound_mgr_num_version', 50, 'bottom - 100', page=page_label)
         if self.is_paused and self.is_playing:
             self.is_playing = False
+
+    def on_quit(self):
+        self.is_playing = False
+        self.win.stop_sound('game_sound_mgr_son')
+        print 'Sound stopped'
