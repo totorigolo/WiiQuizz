@@ -16,8 +16,8 @@ class Sound(File):
         self.is_playing = False
         self.sound_changed()
 
-    def process_event(self, event):
-        File.process_event(self, event)
+    def process_event(self, event, page_label):
+        File.process_event(self, event, page_label)
 
         print event
         if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed:
@@ -78,7 +78,7 @@ class Sound(File):
         if self.is_paused and self.is_playing:
             self.is_playing = False
 
-    def on_quit(self):
+    def on_quit(self, page_label):
         self.is_playing = False
         self.win.stop_sound('game_sound_mgr_son')
         print 'Sound stopped'

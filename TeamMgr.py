@@ -45,7 +45,9 @@ class TeamMgr:
         self.losing_points = 0
         self.set_score_mode()
         self.state = 'accept'  # voir docstring
-        self.waiting_msg_state = ''  # win ou lose
+        self.state_done = False
+        self.waiting_msg = ''  # win ou lose
+        self.delete_templates = None
 
         self.win = WindowHelper.Instance()
         self.dialog = Dialog.Instance()
@@ -85,29 +87,45 @@ class TeamMgr:
                               label=(team_num + '_result'), overwrite=True)
         self.win.import_template(name_template)
 
-        self.win.delete('msg_buzzer', page_label)
-        if self.state == 'must_pick_one':
-            self.dialog.new_message('error', "Erreur: appeler la méthode pick_one_buzz()")
+        # Affichage si ce n'est pas déjà fait
+        if not self.state_done:
+            # Msg d'erreur si must_pick_one n'a pas été géré
+            if self.state == 'must_pick_one':
+                self.dialog.new_message('error', "Erreur: appeler la méthode pick_one_buzz()")
 
-        if self.state == 'waiting_answer':
-            team_text = "team{}".format(self.buzzing_teams[0])
-            color = self.color_correspondence["team{}".format(self.buzzing_teams[0])]
+            # Une équipe vient de buzzer
+            elif self.state == 'waiting_answer':
+                team_text = "team{}".format(self.buzzing_teams[0])
+                color = self.color_correspondence["team{}".format(self.buzzing_teams[0])]
 
-            self.win.new_text(self.teams[self.buzzing_teams[0]].team_name, 'very_big', color, label="text_buzz_"+team_text)
-            self.win.import_template('buzz_'+team_text)
-        else:
-            for i in range(1, 4):
-                self.win.undo_template('buzz_team%d' % i)
-            pass
+                self.win.new_text(self.teams[self.buzzing_teams[0]].team_name, 'very_big', color,
+                                  label="text_buzz_" + team_text)
+                self.win.import_template('buzz_' + team_text)
 
-        if self.state == 'waiting_msg':
-            if self.waiting_msg == 'win':
-                self.win.import_template('good_answer')
-            elif self.waiting_msg == 'lose':
-                self.win.import_template('bad_answer')
-        else:
-            self.win.undo_template('good_answer')
-            self.win.undo_template('bad_answer')
+            # Affichage de vrai ou faux
+            elif self.state == 'waiting_msg':
+                if self.waiting_msg == 'win':
+                    self.win.import_template('good_answer')
+                elif self.waiting_msg == 'lose':
+                    self.win.import_template('bad_answer')
+
+        self.state_done = True
+
+        # Supprime les vieux templates si on a changé d'état
+        if self.delete_templates is not None:
+            if self.delete_templates == 'waiting_answer':
+                for i in range(1, 4):
+                    self.win.undo_template('buzz_team%d' % i)
+            elif self.delete_templates == 'waiting_msg':
+                self.win.undo_template('good_answer')
+                self.win.undo_template('bad_answer')
+            self.delete_templates = None
+
+    def change_state(self, state):
+        self.state_done = False
+        if self.state == 'waiting_answer' or self.state == 'waiting_msg':
+            self.delete_templates = self.state
+        self.state = state
 
     def add_team(self, id, buzzer, team_name):
         """
@@ -163,7 +181,7 @@ class TeamMgr:
         self.teams[id].is_buzzing = True
         self.teams[id].buzzer.vibrer()
         self.win.play_sound('sound_buzz')
-        self.state = 'waiting_answer'
+        self.change_state('waiting_answer')
         return True
 
     def add_buzz(self, id):
@@ -174,7 +192,7 @@ class TeamMgr:
         if self.state == 'accept' or self.state == 'must_pick_one':
             self.buzzing_teams.append(id)
             self.teams[id].is_buzzing = True
-            self.state = 'must_pick_one'
+            self.change_state('must_pick_one')
 
     def pick_one_buzz(self):
         """
@@ -190,7 +208,7 @@ class TeamMgr:
             self.teams[random_id].is_buzzing = True
             self.teams[random_id].buzzer.vibrer()
 
-            self.state = 'waiting_answer'
+            self.change_state('waiting_answer')
 
     def accept_buzz(self, points=None):
         """
@@ -209,7 +227,7 @@ class TeamMgr:
         else:
             self.teams[id].add_points(points)
             self.clear_buzzes()
-            self.state = 'waiting_msg'
+            self.change_state('waiting_msg')
             self.waiting_msg = 'win'
             self.win.play_sound('sound_win')
         return points
@@ -231,7 +249,7 @@ class TeamMgr:
         else:
             self.teams[id].add_points(-points)
             self.clear_buzzes()
-            self.state = 'waiting_msg'
+            self.change_state('waiting_msg')
             self.waiting_msg = 'lose'
             self.win.play_sound('sound_loose')
         return -points
@@ -249,7 +267,7 @@ class TeamMgr:
             return
         else:
             self.teams[id].is_buzzing = False
-            self.state = 'accept'
+            self.change_state('accept')
         return True
 
     def clear_buzzes(self):
@@ -259,14 +277,14 @@ class TeamMgr:
         for t in self.buzzing_teams:
             self.teams[t].is_buzzing = False
         self.buzzing_teams = []
-        self.state = 'accept'
+        self.change_state('accept')
 
     def skip_msg(self):
         """
         Quand state est 'waiting_msg', passe en attente de buzz (à state = 'accept')
         """
         if self.state == 'waiting_msg':
-            self.state = 'accept'
+            self.change_state('accept')
 
     def awaiting_buzzes(self):
         """

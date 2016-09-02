@@ -8,7 +8,6 @@ import pygame as pg
 from pygame.locals import *
 
 from ColorHelper import ColorHelper
-from WindowRessources import WindowRessources
 from Singleton import Singleton
 from tools import py_encode_font_txt, py_encode_title
 
@@ -653,9 +652,9 @@ class WindowHelper:
         self.pages[page]['elements'].append(elem)
         return True
 
-    def delete(self, label, page=None):
+    def remove(self, label, page=None):
         """
-        Delete the first instance of an element added to a given page
+        Delete the first instance of an element added to a given page.
         :param label: label of the element
         :param page: label of the page
         :return: True if deleted, False otherwise
@@ -673,16 +672,43 @@ class WindowHelper:
                             self.pages[page]['elements'].remove(elem_info)
                             return True
                     except KeyError:
-                        print "delete() : problem when deleting element."
+                        print "remove() : problem when deleting element."
             except KeyError:
-                print "delete() : page %s doesn't exist." % page
+                print "remove() : page %s doesn't exist." % page
+            return False
+
+        return delete_from_page_elements(self, page, label)
+
+    def destroy(self, label, page=None):
+        """
+        Delete the first instance of an element added to a given page, and from win.elements
+        :param label: label of the element
+        :param page: label of the page
+        :return: True if deleted, False otherwise
+        """
+        # TODO: Faire des tests
+        # TODO: Si son, le stoper
+        if page is None:
+            page = self.current_page
+
+        def delete_from_page_elements(self, page, label):
+            try:
+                for elem_info in self.pages[page]['elements']:
+                    try:
+                        if elem_info['label'] == label:
+                            self.pages[page]['elements'].remove(elem_info)
+                            return True
+                    except KeyError:
+                        print "destroy(%s, %s) : problem when deleting element." % (label, page)
+            except KeyError:
+                print "destroy(%s, %s) : page %s doesn't exist." % (page, label, page)
             return False
 
         def delete_from_elements(self, label):
             if label in self.elements:
                 self.elements.pop(label)
                 return True
-            print "delete() : element %s not in win.elements." % label
+            print "destroy() : element %s not in win.elements." % label
             return False
 
         r1 = delete_from_elements(self, label)
@@ -1068,10 +1094,11 @@ class WindowHelper:
         self.reset()
         self.print_page()
 
-    def dump_elements(self, page=None):
+    def dump_elements(self, page=None, destroy=False):
         """
         Dump all elements of a given page
         :param page: label of the page
+        :param destroy: delete the element from win.elements
         :return: None if the page does not exist
         """
         if page is None:
@@ -1081,8 +1108,12 @@ class WindowHelper:
             return
         try:
             for label in [e['label'] for e in self.pages[page]['elements']]:
-                r = self.delete(label, page)
-                print "Element %s deleted : %s" % (label, r)
+                if not destroy:
+                    r = self.remove(label, page)
+                    # print "Element %s deleted : %s" % (label, r)
+                else:
+                    r = self.destroy(label, page)
+                    # print "Element %s destroyed : %s" % (label, r)
         except KeyError:
             print 'dump_elements() : la page %s est invalide' % page
 
@@ -1339,7 +1370,7 @@ class WindowHelper:
         if name not in self.templates:
             return False
         for element_label in self.templates[name]['elements']:
-            self.delete(element_label, self.templates[name]['page'])
+            self.destroy(element_label, self.templates[name]['page'])
 
     def get_unused_label(self):
         new_label = len(self.elements)

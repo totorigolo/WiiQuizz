@@ -1,7 +1,5 @@
 # coding: utf8
 
-import time
-
 from Singleton import Singleton
 from WindowHelper import WindowHelper
 
@@ -85,7 +83,7 @@ class Dialog:
 
         self.win.event(event_fun=event_fun)  # On attend que quelqu'un appuie sur un bouton
 
-        self.win.delete('dialog_shadow')
-        self.win.delete('dialog_holder')
-        self.win.delete('dialog_msg')
-        self.win.delete('dialog_msg_info')
+        self.win.destroy('dialog_shadow')
+        self.win.destroy('dialog_holder')
+        self.win.destroy('dialog_msg')
+        self.win.destroy('dialog_msg_info')

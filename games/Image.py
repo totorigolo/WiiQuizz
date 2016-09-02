@@ -18,8 +18,10 @@ class Image(File):
 
         File.__init__(self, dirname)
 
-        self.printed = False
+        self.once = False
         self.showing = False
+        self.is_paused = False
+        self.image_changed()
 
     def next_file(self):
         File.next_file(self)
@@ -40,29 +42,20 @@ class Image(File):
     def image_changed(self):
         self.question = safe_modulo(self.question, len(self.files))
         self.version = safe_modulo(self.version, len(self.files[self.question]))
-        self.printed = False
 
         # Chargement et préchargement
-        # self.win.new_img(self.image_dir + self.files[self.question][self.version], label='game_img_mgr_image',
-        #                  overwrite=True)  # Ajoute l'image
-        # self.win.__preload_image(self.question, self.version)
+        self.win.new_img(self.image_dir + self.files[self.question][self.version], label='game_img_mgr_image',
+                         overwrite=True)  # Ajoute l'image
 
-    def __preload_image(self, question, version):
-        """
+        self.win.new_text("Image : " + str(self.question + 1) + "/" + str(len(self.files)), 'page_info_game_mgr',
+                          'black', label='game_img_mgr_num_page', overwrite=True)  # Ajoute le numéro de page
+        self.win.new_text("Version : " + str(self.version + 1) + "/" + str(len(self.files[self.question])),
+                          'page_info_game_mgr', 'black', label='game_img_mgr_num_version',
+                          overwrite=True)  # Ajoute le numéro de version
 
-        :param question: La question à précharger
-        :param version: La version de la question à précharger
-        :return:
-        """
-        try:
-            self.win.preload_img(self.image_dir + self.files[self.question][self.version])  # Charge l'image l'image
-            return True
-        except AttributeError, NameError:
-            print 'Préchagement pas encore implémenté (futur = RAII).'
-        except KeyError:
-            return False
+        print 'image changed'
 
-    def process_event(self, event):
+    def process_event(self, event, page_label):
         """
         Gère les événements
         Cette méthode est appelé à chaque fois qu'un événement est détecté
@@ -79,8 +72,18 @@ class Image(File):
                 self.prev_version()
             elif event.btn == 'BAS':
                 self.next_version()
-            elif event.btn == '1':
+            elif event.btn == '1' and not self.is_paused:
+                print '1'
                 self.showing = not self.showing
+                if self.showing:
+                    # Pour le z-index
+                    self.win.remove('game_img_mgr_num_page', page=page_label)
+                    self.win.remove('game_img_mgr_num_version', page=page_label)
+                    self.win.add('game_img_mgr_image', page=page_label)
+                    self.win.add('game_img_mgr_num_page', 50, 'bottom - 140', page=page_label)
+                    self.win.add('game_img_mgr_num_version', 50, 'bottom - 100', page=page_label)
+                else:
+                    self.win.remove('game_img_mgr_image', page_label)
 
     def draw_on(self, page_label):
         """
@@ -92,20 +95,16 @@ class Image(File):
         # Use the draw_on version of the parent
         File.draw_on(self, page_label)
 
-        # if not self.is_paused and not self.printed and self.showing:
-        if not self.is_paused and self.showing:
-            self.win.new_img(self.image_dir + self.files[self.question][self.version], label='game_img_mgr_image',
-                             overwrite=True)  # Ajoute l'image
-            self.win.add('game_img_mgr_image', page=page_label)
-            self.printed = True
-        # elif not self.showing or self.id_paused:
-        #     self.win.delete('game_img_mgr_image', page_label)
-        #     self.printed = False
+        if not self.once:
+            self.win.add('game_img_mgr_num_page', 50, 'bottom - 140', page=page_label)
+            self.win.add('game_img_mgr_num_version', 50, 'bottom - 100', page=page_label)
+            self.once = True
 
-        self.win.new_text("Image : " + str(self.question + 1) + "/" + str(len(self.files)), 'page_info_game_mgr',
-                          'black', label='game_img_mgr_num_page', overwrite=True)  # Ajoute le numéro de page
-        self.win.new_text("Version : " + str(self.version + 1) + "/" + str(len(self.files[self.question])),
-                          'page_info_game_mgr', 'black', label='game_img_mgr_num_version',
-                          overwrite=True)  # Ajoute le numéro de version
-        self.win.add('game_img_mgr_num_page', 50, 'bottom - 140', page=page_label)
-        self.win.add('game_img_mgr_num_version', 50, 'bottom - 100', page=page_label)
+    def pause(self, state, page_label):
+        File.pause(self, state, page_label)
+        if self.is_paused:
+            self.showing = False
+            self.win.remove('game_img_mgr_image', page_label)
+
+    def on_quit(self, page_label):
+        self.win.destroy('game_img_mgr_image', page_label)

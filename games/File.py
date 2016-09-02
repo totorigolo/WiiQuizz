@@ -105,7 +105,7 @@ class File:
     def prev_version(self):
         self.version -= 1
 
-    def process_event(self, event):
+    def process_event(self, event, page_label):
         """
         Gère les événements
         :type event: événement
@@ -130,11 +130,11 @@ class File:
     def can_buzz(self):
         return True
 
-    def pause(self, state):
+    def pause(self, state, page_label):
         """
         Est exécuté lorsque le jeu est mis en pause
         """
-        pass
+        self.is_paused = state
 
-    def on_quit(self):
+    def on_quit(self, page_label):
         pass

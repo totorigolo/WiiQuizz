@@ -77,7 +77,8 @@ class GameMgr:
         }
 
         def before_fun(pg, win, vars):
-            win.dump_elements(vars['page_label'])
+            pass
+            # win.dump_elements(vars['page_label'])
 
         def event_fun(pg, win, vars, event):
             """
@@ -108,14 +109,14 @@ class GameMgr:
                         # Informe les GameSomeMgr
                         for cm in vars['game_content_mgr_list']:
                             print 'pause changed'
-                            cm.pause(vars['pause'])
+                            cm.pause(vars['pause'], vars['page_label'])
 
                 elif not vars['pause']:  # Gère le buzz des wiimotes
                     vars['team_mgr'].add_buzz(event.wiimote_id)
 
             # Fourni les évènements aux ContentMgr
             for cm in vars['game_content_mgr_list']:
-                cm.process_event(event)
+                cm.process_event(event, vars['page_label'])
 
         def after_fun(pg, win, vars):
             """
@@ -151,4 +152,4 @@ class GameMgr:
 
         # Permet aux ContentMgr de se quitter
         for cm in vars['game_content_mgr_list']:
-            cm.on_quit()
+            cm.on_quit(vars['page_label'])
