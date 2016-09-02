@@ -1,7 +1,8 @@
 # coding=utf-8
 
-game_list = {
-    'Buzzer Simple': 'SimpleBuzzGame',
-    'Image Buzzer': 'ImageBuzzGame',
-    'Blind Test': 'MusicBuzzGame'
-}
+game_list = [
+    ('Buzzer Simple', None),
+    ('Image Buzzer', 'Image'),
+    ('Blind Test', 'Sound'),
+    ('Music & Sound', ['Sound', 'Sound'])
+]

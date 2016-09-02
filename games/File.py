@@ -9,7 +9,7 @@ from WindowHelper import WindowHelper
 from tools import list_files
 
 
-class GameFileMgr:
+class File:
     """
     Gère les fichiers
     """
@@ -26,7 +26,7 @@ class GameFileMgr:
         self.version = 0
 
         self.initialized = False
-        if self.files is not None and  len(self.files) > 0 and len(self.files[0]) > 0:
+        if self.files is not None and len(self.files) > 0 and len(self.files[0]) > 0:
             self.initialized = True
 
         self.win = WindowHelper.Instance()
@@ -60,20 +60,20 @@ class GameFileMgr:
 
     @staticmethod
     def get_image_folders():
-        return GameFileMgr.get_folder_list('./games/images/')
+        return File.get_folder_list('./games/images/')
 
     @staticmethod
     def get_sound_folders():
-        return GameFileMgr.get_folder_list('./games/sounds/')
+        return File.get_folder_list('./games/sounds/')
 
     @staticmethod
     def get_text_folders():
-        return GameFileMgr.get_folder_list('./games/texts/')
+        return File.get_folder_list('./games/texts/')
 
     # TODO: En faire un Dialog -> FolderDialog
     @staticmethod
     def prompt_image_folder():
-        folder, folder_list = GameFileMgr.get_image_folders()
+        folder, folder_list = File.get_image_folders()
         dialog = ListDialog()
         # TODO: Gérer quand il n'y a aucun dossier
         choix = dialog.get_answer(folder_list + ['Annuler'], 'Sélectionnez un dossier :')
@@ -83,7 +83,7 @@ class GameFileMgr:
 
     @staticmethod
     def prompt_sound_folder():
-        folder, folder_list = GameFileMgr.get_sound_folders()
+        folder, folder_list = File.get_sound_folders()
         dialog = ListDialog()
         # TODO: Gérer quand il n'y a aucun dossier
         choix = dialog.get_answer(folder_list + ['Annuler'], 'Sélectionnez un dossier :')

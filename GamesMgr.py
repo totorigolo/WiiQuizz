@@ -4,6 +4,7 @@ import importlib
 
 from BuzzerMgr import BuzzerMgr
 from Dialog import Dialog
+from GameMgr import GameMgr
 from ListDialog import ListDialog
 from games import game_list
 
@@ -14,9 +15,7 @@ class GamesMgr:
     """
     def __init__(self):
         print 'Recherche de jeux...',
-        self.games = []
-        for name, file in game_list.iteritems():
-            self.games.append((name, file))
+        self.games = game_list[:]
         print '%d jeux trouvés.' % len(self.games)
 
         # Buzzers
@@ -31,14 +30,30 @@ class GamesMgr:
             if choix == 0:
                 break
 
-            print ('Chargement du jeu %s...' % self.games[choix - 1][0]),
-            game_module = importlib.import_module('games.{}'.format(self.games[choix - 1][1]))
-            game_class = getattr(game_module, game_module.__name__.split('.')[1])
-            print 'jeu chargé !'
-
             try:
-                game = game_class()
-                game.run()
+                game_info = self.games[choix - 1]
+                print game_info
+                print ('Chargement du jeu %s...' % game_info[0])
+                game_content_mgr_classes = []
+
+                def load_addon(list, name):
+                    module = importlib.import_module(name)
+                    print 'Loading addon %s...' % name,
+                    list.append(getattr(module, name))
+                    print 'loaded !'
+
+                if isinstance(game_info[1], str):
+                    load_addon(game_content_mgr_classes, game_info[1])
+                elif isinstance(game_info[1], list):
+                    for addon in game_info[1]:
+                        load_addon(game_content_mgr_classes, addon)
+
+                print 'Creating The Game...'
+                game_mgr = GameMgr(game_info[0], game_content_mgr_classes)
+                print 'Game created, launching.'
+                game_mgr.run()
+                print 'Game terminated.'
+
             except Exception as e:
                 import sys, traceback, time
                 traceback.print_exception(*sys.exc_info())

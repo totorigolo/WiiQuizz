@@ -91,7 +91,7 @@ class BuzzerMgr:
         # Si on est déjà initialisé, on regarde combien de wiimotes on a de trop pour les désactiver
         if nb_joueuses_requises - self.get_nb_buzzers(False) < 0:
             # Désactive les wiimotes joueuses dont on a plus besoin
-            for b in self.buzzers:
+            for b in self.buzzers.keys():  # TODO: Ca ne marche pas
                 if b not in range(1, nb_joueuses_requises):
                     self.__idle_buzzer(b)
 

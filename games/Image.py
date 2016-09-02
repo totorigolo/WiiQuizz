@@ -2,39 +2,39 @@
 
 import pygame as pg
 
-from GameFileMgr import GameFileMgr
+from File import File
 from tools import safe_modulo
 
 
-class GameImageMgr(GameFileMgr):
+class Image(File):
     """
     Gère les images
     """
 
     def __init__(self, dirname):
         if dirname == 'ask':
-            dirname = GameFileMgr.prompt_image_folder()
+            dirname = File.prompt_image_folder()
         dirname = "/games/images/" + dirname
 
-        GameFileMgr.__init__(self, dirname)
+        File.__init__(self, dirname)
 
         self.printed = False
         self.showing = False
 
     def next_file(self):
-        GameFileMgr.next_file(self)
+        File.next_file(self)
         self.image_changed()
 
     def prev_file(self):
-        GameFileMgr.prev_file(self)
+        File.prev_file(self)
         self.image_changed()
 
     def next_version(self):
-        GameFileMgr.next_version(self)
+        File.next_version(self)
         self.image_changed()
 
     def prev_version(self):
-        GameFileMgr.prev_version(self)
+        File.prev_version(self)
         self.image_changed()
 
     def image_changed(self):
@@ -90,7 +90,7 @@ class GameImageMgr(GameFileMgr):
         :return:
         """
         # Use the draw_on version of the parent
-        GameFileMgr.draw_on(self, page_label)
+        File.draw_on(self, page_label)
 
         # if not self.is_paused and not self.printed and self.showing:
         if not self.is_paused and self.showing:
