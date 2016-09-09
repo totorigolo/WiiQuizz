@@ -19,17 +19,32 @@ class Sound(File):
     def process_event(self, event, page_label):
         File.process_event(self, event, page_label)
 
-        print event
-        if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed:
-            if event.btn == 'DROITE':
+        keyboard_pressed = keyboard_up = keyboard_down = keyboard_left = keyboard_right = keyboard_return = False
+        if event.type == pg.KEYDOWN:
+            keyboard_pressed = True
+            event.btn = ""
+            if event.key == pg.K_UP:
+                keyboard_up = True
+            elif event.key == pg.K_DOWN:
+                keyboard_down = True
+            elif event.key == pg.K_LEFT:
+                keyboard_left = True
+            elif event.key == pg.K_RIGHT:
+                keyboard_right = True
+            elif event.key == pg.K_RETURN:
+                keyboard_return = True
+            else:
+                keyboard_pressed = False
+        if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed or keyboard_pressed:
+            if event.btn == 'DROITE' or keyboard_right:
                 self.next_file()
-            elif event.btn == 'GAUCHE':
+            elif event.btn == 'GAUCHE' or keyboard_left:
                 self.prev_file()
-            elif event.btn == 'HAUT':
+            elif event.btn == 'HAUT' or keyboard_up:
                 self.prev_version()
-            elif event.btn == 'BAS':
+            elif event.btn == 'BAS' or keyboard_down:
                 self.next_version()
-            elif event.btn == '1':
+            elif event.btn == '1' or keyboard_return:
                 self.play()
                 self.is_playing = not self.is_playing
 

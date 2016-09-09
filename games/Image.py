@@ -63,16 +63,32 @@ class Image(File):
         :param event: événement détecté
         :type event: événement
         """
-        if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed:
-            if event.btn == 'DROITE':
+        keyboard_pressed = keyboard_up = keyboard_down = keyboard_left = keyboard_right = keyboard_return = False
+        if event.type == pg.KEYDOWN:
+            keyboard_pressed = True
+            event.btn = ""
+            if event.key == pg.K_UP:
+                keyboard_up = True
+            elif event.key == pg.K_DOWN:
+                keyboard_down = True
+            elif event.key == pg.K_LEFT:
+                keyboard_left = True
+            elif event.key == pg.K_RIGHT:
+                keyboard_right = True
+            elif event.key == pg.K_RETURN:
+                keyboard_return = True
+            else:
+                keyboard_pressed = False
+        if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed or keyboard_pressed:
+            if keyboard_right or event.btn == 'DROITE':
                 self.next_file()
-            elif event.btn == 'GAUCHE':
+            elif keyboard_left or event.btn == 'GAUCHE':
                 self.prev_file()
-            elif event.btn == 'HAUT':
+            elif keyboard_up or event.btn == 'HAUT':
                 self.prev_version()
-            elif event.btn == 'BAS':
+            elif keyboard_down or event.btn == 'BAS':
                 self.next_version()
-            elif event.btn == '1' and not self.is_paused:
+            elif (keyboard_return or event.btn == '1') and not self.is_paused:
                 print '1'
                 self.showing = not self.showing
                 if self.showing:
