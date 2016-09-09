@@ -16,6 +16,8 @@ class Sound(File):
         self.is_playing = False
         self.sound_changed()
 
+        self.once = False
+
     def process_event(self, event, page_label):
         File.process_event(self, event, page_label)
 
@@ -81,15 +83,19 @@ class Sound(File):
                            label='game_sound_mgr_son', overwrite=True)  # Charge le son
         self.is_playing = False
 
-    def draw_on(self, page_label):
         self.win.new_text("Son : " + str(self.question + 1) + "/" + str(len(self.files)),
                           'page_info_game_mgr',
                           'black', label='game_sound_mgr_num_page', overwrite=True)  # Ajoute le numéro de page
         self.win.new_text("Version : " + str(self.version + 1) + "/" + str(len(self.files[self.question])),
                           'page_info_game_mgr', 'black', label='game_sound_mgr_num_version',
                           overwrite=True)  # Ajoute le numéro de version
-        self.win.add('game_sound_mgr_num_page', 50, 'bottom - 140', page=page_label)
-        self.win.add('game_sound_mgr_num_version', 50, 'bottom - 100', page=page_label)
+
+    def draw_on(self, page_label):
+        if not self.once:
+            self.win.add('game_sound_mgr_num_page', 50, 'bottom - 140', page=page_label)
+            self.win.add('game_sound_mgr_num_version', 50, 'bottom - 100', page=page_label)
+            self.once = True
+
         if self.is_paused and self.is_playing:
             self.is_playing = False
 
