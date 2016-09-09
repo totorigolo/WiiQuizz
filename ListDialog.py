@@ -42,6 +42,6 @@ class ListDialog:
         self.win.refresh()
         r = self.win.get_menu_result('menu_list_dialog')
 
-        self.win.delete_page(page_label)
+        self.win.delete_page(page_label, destroy=True)
 
         return r

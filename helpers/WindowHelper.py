@@ -1117,7 +1117,7 @@ class WindowHelper:
         except KeyError:
             print 'dump_elements() : la page %s est invalide' % page
 
-    def delete_page(self, page=None):
+    def delete_page(self, page=None, destroy=False):
         """
         Delete a page (along with the elements on that page)
         :param page: label of a page
@@ -1130,7 +1130,7 @@ class WindowHelper:
         if page not in self.pages:
             print "delete_page() : the page %s doesn't exists" % page
             return False
-        self.dump_elements(page)
+        self.dump_elements(page, destroy=destroy)
         self.pages.pop(page)
         print "Page %s deleted." % page
         return True
