@@ -2,6 +2,7 @@
 
 import pygame as pg
 
+import FSDialog
 from File import File
 from tools import safe_modulo
 
@@ -9,7 +10,7 @@ from tools import safe_modulo
 class Sound(File):
     def __init__(self, dirname):
         if dirname == 'ask':
-            dirname = File.prompt_sound_folder()
+            dirname = FSDialog.get_folder('./games/sounds/')
         dirname = "/games/sounds/" + dirname
         File.__init__(self, dirname)
 
@@ -79,7 +80,7 @@ class Sound(File):
     def sound_changed(self):
         self.question = safe_modulo(self.question, len(self.files))
         self.version = safe_modulo(self.version, len(self.files[self.question]))
-        self.win.new_sound(self.image_dir + self.files[self.question][self.version],
+        self.win.new_sound(self.files_dir + self.files[self.question][self.version],
                            label='game_sound_mgr_son', overwrite=True)  # Charge le son
         self.is_playing = False
 
@@ -99,7 +100,10 @@ class Sound(File):
         if self.is_paused and self.is_playing:
             self.is_playing = False
 
+    def pause(self, state, page_label):
+        if state:  # pause
+            self.is_playing = False
+            self.win.stop_sound('game_sound_mgr_son')
+
     def on_quit(self, page_label):
-        self.is_playing = False
-        self.win.stop_sound('game_sound_mgr_son')
-        print 'Sound stopped'
+        self.pause(True, page_label)

@@ -48,6 +48,7 @@ class TeamMgr:
         self.state_done = False
         self.waiting_msg = ''  # win ou lose
         self.delete_templates = None
+        self.template_imported = False
 
         self.win = WindowHelper.Instance()
         self.dialog = Dialog.Instance()
@@ -79,13 +80,17 @@ class TeamMgr:
         Affiche les scores sur la page
         :param page_label: label de la page sur lequel afficher les scores
         """
-        name_template = '{}_players'.format(len(self.teams))
-        for id, team in self.teams.items():
-            team_num = "team{}".format(id)
-            self.win.new_text(team.team_name, 'very_big', self.color_correspondence[team_num], label=team_num)
-            self.win.new_text(str(team.points), 'title', self.color_correspondence[team_num],
-                              label=(team_num + '_result'), overwrite=True)
-        self.win.import_template(name_template)
+        if not self.template_imported:
+            name_template = '{}_players'.format(len(self.teams))
+            self.win.import_template(name_template)
+            for id, team in self.teams.items():
+                team_num = "team{}".format(id)
+                self.win.edit_text('%s_result' % team_num, str(team.points))
+                self.win.edit_color('%s_result' % team_num, self.color_correspondence[team_num])
+            self.template_imported = True
+        else:
+            for id, team in self.teams.items():
+                self.win.edit_text('team%d_result' % id, str(team.points))
 
         # Affichage si ce n'est pas déjà fait
         if not self.state_done:
@@ -136,6 +141,10 @@ class TeamMgr:
         """
         # TODO: Gérer 'new'
         self.teams[id] = Team(id, buzzer, team_name)
+        self.template_imported = False
+
+    def quit_game(self):
+        self.template_imported = False
 
     def set_score_mode(self, mode='add_more', wining_points=None, loosing_points=None):
         """

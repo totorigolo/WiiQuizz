@@ -65,13 +65,14 @@ class Dialog:
         if self.win.current_page == -1:  # Si pas de page d'ouverte
             self.win.go_to(self.win.new_page('Erreur', label='dialog_default'))
 
-        self.win.new_rect('dialog_color_shadow_' + type, 0, label='dialog_shadow')
-        self.win.new_rect('dialog_color_' + type, 0, label='dialog_holder')
-        self.win.new_text(message, 'dialog_font', self.correspondence_type_text_color[type], label='dialog_msg')
-        self.win.new_text('Appuyez sur une touche pour continuer...', 'dialog_font_small',
-                          self.correspondence_type_text_color[type], label='dialog_msg_info')
-
         self.win.import_template('dialog_messages', opt=self.templates_options)
+
+        self.win.edit_text('dialog_msg', message)
+        self.win.edit_text('dialog_msg_info', 'Appuyez sur une touche pour continuer...')
+        self.win.edit_color('dialog_msg', self.correspondence_type_text_color[type])
+        self.win.edit_color('dialog_msg_info', self.correspondence_type_text_color[type])
+        self.win.edit_color('dialog_shadow', 'dialog_color_shadow_' + type)
+        self.win.edit_color('dialog_holder', 'dialog_color_' + type)
 
         self.win.refresh()
 
@@ -82,8 +83,3 @@ class Dialog:
             return False
 
         self.win.event(event_fun=event_fun)  # On attend que quelqu'un appuie sur un bouton
-
-        self.win.destroy('dialog_shadow')
-        self.win.destroy('dialog_holder')
-        self.win.destroy('dialog_msg')
-        self.win.destroy('dialog_msg_info')

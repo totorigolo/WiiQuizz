@@ -132,7 +132,6 @@ class GameMgr:
                 else:
                     vars['team_mgr'].clear_buzzes()
 
-
             # Affichage des contenus
             for cm in vars['game_content_mgr_list']:
                 cm.draw_on(vars['page_label'])
@@ -153,3 +152,6 @@ class GameMgr:
         # Permet aux ContentMgr de se quitter
         for cm in vars['game_content_mgr_list']:
             cm.on_quit(vars['page_label'])
+
+        # Informe le TeamMgr que le jeu est fini
+        self.team_mgr.quit_game()

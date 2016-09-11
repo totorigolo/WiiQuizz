@@ -18,15 +18,18 @@ class ListDialog:
     def get_answer(self, choices, question=None, sub_text=None):
         page_label = self.win.go_to(self.win.new_page(question, WIN_WIDTH, WIN_HEIGHT, bg='white'))
 
-        self.win.dump_elements(page_label)
+        self.win.import_template('menu')
 
         if question is not None:
-            self.win.new_text(question, 'title', 'dark_blue', label='title_list_dialog')
+            self.win.edit_text('title_list_dialog', question)
+        else:
+            self.win.edit_text('title_list_dialog', " ")  # TODO: Permettre de supprimer des éléments des templates
         if sub_text is not None:
-            self.win.new_text(sub_text, 'sub_title', 'dark_blue', label='sub_title_list_dialog')
-        self.win.new_menu(choices, label='menu_list_dialog')
+            self.win.edit_text('sub_title_list_dialog', sub_text)
+        else:
+            self.win.edit_text('sub_title_list_dialog', " ")
 
-        self.win.import_template('menu')
+        self.win.new_menu(choices, label='menu_list_dialog')
 
         opt = {
             "font": "options",
@@ -40,8 +43,4 @@ class ListDialog:
 
         self.win.add_menu('menu_list_dialog', 'centered', 180, opt=opt, page=page_label)
         self.win.refresh()
-        r = self.win.get_menu_result('menu_list_dialog')
-
-        self.win.delete_page(page_label, destroy=True)
-
-        return r
+        return self.win.get_menu_result('menu_list_dialog')

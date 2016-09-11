@@ -1,5 +1,6 @@
 #def
 rect: team1_bg(team1, 0)
+text: team1_result("0", title, white)
 
 #placing
 team1_bg(left, top, right, 60)

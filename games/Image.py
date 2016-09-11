@@ -2,6 +2,7 @@
 
 import pygame as pg
 
+import FSDialog
 from File import File
 from tools import safe_modulo
 
@@ -13,7 +14,7 @@ class Image(File):
 
     def __init__(self, dirname):
         if dirname == 'ask':
-            dirname = File.prompt_image_folder()
+            dirname = FSDialog.get_folder('./games/images/')
         dirname = "/games/images/" + dirname
 
         File.__init__(self, dirname)
@@ -44,7 +45,7 @@ class Image(File):
         self.version = safe_modulo(self.version, len(self.files[self.question]))
 
         # Chargement et préchargement
-        self.win.new_img(self.image_dir + self.files[self.question][self.version], label='game_img_mgr_image',
+        self.win.new_img(self.files_dir + self.files[self.question][self.version], label='game_img_mgr_image',
                          overwrite=True)  # Ajoute l'image
 
         self.win.new_text("Image : " + str(self.question + 1) + "/" + str(len(self.files)), 'page_info_game_mgr',
@@ -89,7 +90,6 @@ class Image(File):
             elif keyboard_down or event.btn == 'BAS':
                 self.next_version()
             elif (keyboard_return or event.btn == '1') and not self.is_paused:
-                print '1'
                 self.showing = not self.showing
                 if self.showing:
                     # Pour le z-index

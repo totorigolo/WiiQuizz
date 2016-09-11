@@ -1,15 +1,15 @@
 #def
 text: team1_name("Pastèque", title, team2)
-text: team1_score("200", very_big, team2)
+text: team1_score("0", very_big, team2)
 rect: team1_bg(team1, 0)
 text: team2_name("Ananas", title, team1)
-text: team2_score("200", very_big, team1)
+text: team2_score("0", very_big, team1)
 rect: team2_bg(team2, 0)
 text: team3_name("Kiwi", title, team4)
-text: team3_score("200", very_big, team4)
+text: team3_score("0", very_big, team4)
 rect: team3_bg(team3, 0)
 text: team4_name("Melon", title, team3)
-text: team4_score("200", very_big, team3)
+text: team4_score("0", very_big, team3)
 rect: team4_bg(team4, 0)
 
 #placing

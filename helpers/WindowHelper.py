@@ -1172,6 +1172,8 @@ class WindowHelper:
             'height': None,
             'bg': None
         }
+        """ Supprime le template s'il existe déjà """
+        self.undo_template(name)
         elements = {'colors_and_fonts': {}, 'def': {}, 'placing': []}
         """ Récupération des éléments du fichier """
         for line in lines:
@@ -1290,18 +1292,18 @@ class WindowHelper:
         for label, elem in elements['def'].items():
             if elem['type'] == 'text':
                 self.new_text(elem['content'], elem['params'][0].replace(' ', ''), elem['params'][1].replace(' ', ''),
-                              label)
+                              label, overwrite=True)
             elif elem['type'] == 'rect':
-                self.new_rect(elem['params'][0].replace(' ', ''), int(elem['params'][1]), label)
+                self.new_rect(elem['params'][0].replace(' ', ''), int(elem['params'][1]), label, overwrite=True)
             elif elem['type'] == 'circle':
                 self.new_circle(elem['params'][0].replace(' ', ''), int(elem['params'][1]), int(elem['params'][2]),
-                                label)
+                                label, overwrite=True)
             elif elem['type'] == 'img':
                 elem['params'][0] = elem['params'][0].replace('IMG_FOLDER', options['IMG_FOLDER']).replace('\\', '/')
                 if len(elem['params']) == 2 and elem['params'][1] == 'True':
-                    self.new_img(elem['params'][0], alpha=elem['params'][1], label=label)
+                    self.new_img(elem['params'][0], alpha=elem['params'][1], label=label, overwrite=True)
                 else:
-                    self.new_img(elem['params'][0], label=label)
+                    self.new_img(elem['params'][0], label=label, overwrite=True)
 
         # On ajoute à la page
         for info in elements['placing']:
@@ -1369,8 +1371,9 @@ class WindowHelper:
         """
         if name not in self.templates:
             return False
-        for element_label in self.templates[name]['elements']:
-            self.destroy(element_label, self.templates[name]['page'])
+        for elem in self.templates[name]["elements"]:
+            self.destroy(elem, self.templates[name]["page"])
+        self.templates.pop(name, None)
 
     def get_unused_label(self):
         new_label = len(self.elements)

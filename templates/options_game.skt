@@ -1,4 +1,9 @@
-#def
+#defdialog_msg
+text: question_text("Question", title, black)
+text: option_up_text("Réponse haut", title, black)
+text: option_left_text("Réponse gauche", title, black)
+text: option_down_text("Réponse bas", title, black)
+text: option_right_text("Réponse droite", title, black)
 rect: option_up(blue_options, 0)
 rect: option_left(blue_options, 0)
 rect: option_down(blue_options, 0)
@@ -21,6 +26,7 @@ arrow_left(60, y_center + 40)
 arrow_down(x_center + 30, y_center + 40)
 arrow_right(x_center + 30, y_center - 60)
 
+question_text(centered, y_center - 180)
 option_up_text((x_center-80)/2 - self_width/4, y_center - 68)
 option_left_text((x_center-80)/2 - self_width/4, y_center + 32)
 option_down_text((x_center-80)/2 - self_width/4 + x_center, y_center + 32)

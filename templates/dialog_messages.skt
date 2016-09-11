@@ -1,3 +1,9 @@
+#def
+rect: dialog_shadow(black, 0)
+rect: dialog_holder(black, 0)
+text: dialog_msg("Question", dialog_font, white)
+text: dialog_msg_info("info", dialog_font_small, white)
+
 #placing
 dialog_shadow(0, y_center - 75, right, 150)
 dialog_holder(0, y_center - 70, right, 140)

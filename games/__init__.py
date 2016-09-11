@@ -4,5 +4,6 @@ game_list = [
     ('Buzzer Simple', None),
     ('Image Buzzer', 'Image'),
     ('Blind Test', 'Sound'),
-    ('Music & Sound', ['Sound', 'Sound'])
+    ('Image & Sound', ['Image', 'Sound']),
+    ('Questions', ['MultipleOuts'])
 ]

@@ -1,3 +1,7 @@
+#def
+text: title_list_dialog("Question", title, dark_blue)
+text: sub_title_list_dialog("info", sub_title, dark_blue)
+
 #placing
 title_list_dialog(centered, 50)
 sub_title_list_dialog(centered, 120)
