@@ -86,12 +86,48 @@ class GameMgr:
             """
             if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:  # Event clavier
                 return True
+            elif event.type == pg.KEYDOWN:  # Emulation des manettes Master et 1 au clavier (utile au debug)
+                # Manette Master
+                if event.key == pg.K_UP:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id='master', btn="HAUT", pressed=True))
+                elif event.key == pg.K_DOWN:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id='master', btn="BAS", pressed=True))
+                elif event.key == pg.K_LEFT:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id='master', btn="GAUCHE", pressed=True))
+                elif event.key == pg.K_RIGHT:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id='master', btn="DROITE", pressed=True))
+                elif event.key == pg.K_RETURN:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id='master', btn="A", pressed=True))
+                elif event.key == pg.K_RSHIFT:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id='master', btn="B", pressed=True))
+                elif event.key == pg.K_KP1:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id='master', btn="1", pressed=True))
+                elif event.key == pg.K_KP2:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id='master', btn="2", pressed=True))
+                elif event.key == pg.K_KP_PLUS:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id='master', btn="+", pressed=True))
+                elif event.key == pg.K_KP_MINUS:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id='master', btn="-", pressed=True))
+
+                # Manette équipe 1
+                elif event.key == pg.K_z:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id=1, btn="HAUT", pressed=True))
+                elif event.key == pg.K_q:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id=1, btn="GAUCHE", pressed=True))
+                elif event.key == pg.K_s:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id=1, btn="BAS", pressed=True))
+                elif event.key == pg.K_d:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id=1, btn="DROITE", pressed=True))
+                elif event.key == pg.K_a:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id=1, btn="A", pressed=True))
+                elif event.key == pg.K_e:
+                    pg.event.post(pg.event.Event(pg.USEREVENT, wiimote_id=1, btn="B", pressed=True))
             elif event.type == pg.USEREVENT and event.pressed:  # Event wiimote
                 if event.wiimote_id == 'master':  # Gestion de la télécommande master
                     if event.btn == 'HOME':
                         return True
 
-                    elif not vars['pause'] and vars['team_mgr'].state == 'waiting_answer':  # Une équipe a buzzé
+                    elif not vars['pause'] and 'waiting_answer' in vars['team_mgr'].state:  # Une équipe a buzzé
                         if event.btn == '+':
                             vars['team_mgr'].accept_buzz()
                         elif event.btn == '-':
@@ -100,7 +136,7 @@ class GameMgr:
                             vars['team_mgr'].cancel_buzz()
 
                     # Message de réponse juste ou fausse : A pour passer
-                    elif not vars['pause'] and vars['team_mgr'].state == 'waiting_msg' and event.btn == 'A':
+                    elif not vars['pause'] and 'waiting_msg' in vars['team_mgr'].state and event.btn == 'A':
                         vars['team_mgr'].skip_msg()
 
                     elif event.btn == 'B':  # B: Bascule la pause
@@ -112,7 +148,7 @@ class GameMgr:
                             cm.pause(vars['pause'], vars['page_label'])
 
                 elif not vars['pause']:  # Gère le buzz des wiimotes
-                    vars['team_mgr'].add_buzz(event.wiimote_id)
+                    vars['team_mgr'].add_buzz(event.wiimote_id, event.btn)
 
             # Fourni les évènements aux ContentMgr
             for cm in vars['game_content_mgr_list']:

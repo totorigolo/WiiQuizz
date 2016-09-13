@@ -59,4 +59,4 @@ class GamesMgr:
                 traceback.print_exception(*sys.exc_info())
 
                 dialog = Dialog.Instance()
-                dialog.new_message('error', e)
+                dialog.new_message('error', e if len(e.message) > 0 else "Erreur")

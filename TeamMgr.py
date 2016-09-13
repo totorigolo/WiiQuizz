@@ -49,6 +49,7 @@ class TeamMgr:
         self.waiting_msg = ''  # win ou lose
         self.delete_templates = None
         self.template_imported = False
+        self.buzz_fun = self.default_buzz
 
         self.win = WindowHelper.Instance()
         self.dialog = Dialog.Instance()
@@ -175,25 +176,13 @@ class TeamMgr:
             print "Mode inconnu. Par défaut, mode 'add_more' utilisé."
             self.set_score_mode()
 
-    def buzz(self, id):
-        """
-        Tente de faire buzzer une équipe. Si une équipe a buzzé avant nous, notre requête est ignorée et False est
-        retourné. Si c'est accepté, alors True est retourné.
-        :param id: id de l'équipe qui veut buzzer
-        :return: boolean indiquant si ça a fonctionné
-        """
-        # if self.max_simult_buzzer != -1 and len(self.buzzing_teams) >= self.max_simult_buzzer:
-        #     return False
-        if len(self.buzzing_teams) >= 1:
-            return False
-        self.buzzing_teams.append(id)
-        self.teams[id].is_buzzing = True
-        self.teams[id].buzzer.vibrer()
-        self.win.play_sound('sound_buzz')
-        self.change_state('waiting_answer')
-        return True
+    def set_buzz_fun(self, fun):
+        self.buzz_fun = fun
 
-    def add_buzz(self, id):
+    def add_buzz(self, id, btn):
+        self.buzz_fun(id, btn)
+
+    def default_buzz(self, id, btn):
         """
         Ajoute un buzz à la liste. Il faut impérativement appeler pick_one_buzz() pour n'en garder qu'un seul.
         :param id: le buzzer à ajouter
@@ -208,16 +197,21 @@ class TeamMgr:
         Ne garde qu'un seul buzzer, choisi au hasard.
         """
         if self.state == 'must_pick_one':
-            self.win.play_sound('sound_buzz')
-
             random_id = random.choice(self.buzzing_teams)
-            self.clear_buzzes()
+            self.just_buzzed_now_waiting(random_id)
 
-            self.buzzing_teams.append(random_id)
-            self.teams[random_id].is_buzzing = True
-            self.teams[random_id].buzzer.vibrer()
+    def just_buzzed_now_waiting(self, id, display=True):
+        self.win.play_sound('sound_buzz')
+        self.clear_buzzes()
 
+        self.buzzing_teams.append(id)
+        self.teams[id].is_buzzing = True
+        self.teams[id].buzzer.vibrer()
+
+        if display:
             self.change_state('waiting_answer')
+        else:
+            self.change_state('waiting_answer_nodisplay')
 
     def accept_buzz(self, points=None):
         """
@@ -228,6 +222,8 @@ class TeamMgr:
         """
         if points is None:
             points = self.wining_points
+        if self.buzz_fun != self.default_buzz:
+            self.buzz_fun('accept', None)
         try:
             id = random.choice(self.buzzing_teams)
             self.buzzing_teams.remove(id)
@@ -250,6 +246,8 @@ class TeamMgr:
         """
         if points is None:
             points = self.losing_points
+        if self.buzz_fun != self.default_buzz:
+            self.buzz_fun('refuse', None)
         try:
             id = random.choice(self.buzzing_teams)
             self.buzzing_teams.remove(id)
@@ -269,6 +267,8 @@ class TeamMgr:
         :param id: id de l'équipe à annuler
         :return: True si l'annulation a réussi, False sinon.
         """
+        if self.buzz_fun != self.default_buzz:
+            self.buzz_fun('cancel', None)
         try:
             id = random.choice(self.buzzing_teams)
             self.buzzing_teams.remove(id)

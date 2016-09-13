@@ -6,6 +6,7 @@ import pygame as pg
 
 import FSDialog
 from File import File
+from TeamMgr import TeamMgr
 from tools import safe_modulo
 
 
@@ -22,6 +23,7 @@ class MultipleOuts(File):
 
         self.win.new_color('black')
         self.win.new_color((80, 100, 255), 'blue_options')
+        self.win.new_color((30, 255, 60), 'green_buzz')
 
         self.once = False
         self.showing = False
@@ -31,39 +33,53 @@ class MultipleOuts(File):
         self.answers = []
         self.good_answer_index = -1
 
+        self.who_buzzed = None
+        self.which_buzzed = None
+        self.team_mgr = TeamMgr.Instance()
+        self.team_mgr.set_buzz_fun(self.buzz_fun)
+
         self.question_changed()
 
     def process_event(self, event, page_label):
         File.process_event(self, event, page_label)
 
-        keyboard_pressed = keyboard_up = keyboard_down = keyboard_left = keyboard_right = keyboard_return = False
-        if event.type == pg.KEYDOWN:
-            keyboard_pressed = True
-            event.btn = ""
-            if event.key == pg.K_UP:
-                keyboard_up = True
-            elif event.key == pg.K_DOWN:
-                keyboard_down = True
-            elif event.key == pg.K_LEFT:
-                keyboard_left = True
-            elif event.key == pg.K_RIGHT:
-                keyboard_right = True
-            elif event.key == pg.K_RETURN:
-                keyboard_return = True
-            else:
-                keyboard_pressed = False
-        if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed or keyboard_pressed:
-            if event.btn == 'DROITE' or keyboard_right:
+        if event.type == pg.USEREVENT and event.wiimote_id == 'master' and event.pressed:
+            if event.btn == 'DROITE':
                 self.next_file()
-            elif event.btn == 'GAUCHE' or keyboard_left:
+            elif event.btn == 'GAUCHE':
                 self.prev_file()
-            elif event.btn == 'HAUT' or keyboard_up:
+            elif event.btn == 'HAUT':
                 self.prev_version()
-            elif event.btn == 'BAS' or keyboard_down:
+            elif event.btn == 'BAS':
                 self.next_version()
-            elif event.btn == '1' or keyboard_return:
+            elif event.btn == '1':
                 self.showing = not self.showing
                 self.__draw_questions()
+
+    def buzz_fun(self, id, btn_or_pts):
+        if not self.showing:
+            return
+
+        if self.who_buzzed is None:
+            self.which_buzzed = None
+            if btn_or_pts == "HAUT":
+                self.which_buzzed = "up"
+                self.win.edit_color('option_up', 'green_buzz')
+            elif btn_or_pts == "BAS":
+                self.which_buzzed = "down"
+                self.win.edit_color('option_down', 'green_buzz')
+            elif btn_or_pts == "GAUCHE":
+                self.which_buzzed = "left"
+                self.win.edit_color('option_left', 'green_buzz')
+            elif btn_or_pts == "DROITE":
+                self.which_buzzed = "right"
+                self.win.edit_color('option_right', 'green_buzz')
+            if self.which_buzzed is not None:
+                self.who_buzzed = id
+                self.team_mgr.just_buzzed_now_waiting(self.who_buzzed, display=False)
+        else:
+            if id == 'accept' or id == 'refuse' or id == 'cancel':
+                self.who_buzzed = False
 
     def __draw_questions(self):
         if self.showing:
@@ -150,6 +166,14 @@ class MultipleOuts(File):
             self.win.add('game_sound_mgr_num_version', 50, 'bottom - 100', page=page_label)
             self.once = True
 
+        if not self.who_buzzed and self.who_buzzed is not None:
+            self.win.edit_color('option_up', 'blue_options')
+            self.win.edit_color('option_down', 'blue_options')
+            self.win.edit_color('option_left', 'blue_options')
+            self.win.edit_color('option_right', 'blue_options')
+            self.who_buzzed = None
+            self.which_buzzed = None
+
     def pause(self, state, page_label):
         File.pause(self, state, page_label)
         if self.is_paused:
@@ -157,4 +181,4 @@ class MultipleOuts(File):
             self.win.undo_template('options_game')
 
     def on_quit(self, page_label):
-        self.win.destroy('game_img_mgr_image', page_label)
+        self.team_mgr.set_buzz_fun(self.team_mgr.default_buzz)
