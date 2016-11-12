@@ -18,5 +18,5 @@ Ce programme ne fonctionne (pour le moment) que sur Linux et avec python 2.
 
 ## Développeurs
 
-- totorigolo
+- Thomas Lacroix aka totorigolo
 - bdvllrs
